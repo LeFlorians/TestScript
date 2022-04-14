@@ -8,6 +8,9 @@ TARGET_EXEC := lang
 SRCS := $(wildcard ./src/*.c)
 OBJS := $(SRCS:%.c=%.o)
 
+test: all
+	./$(TARGET_EXEC)
+
 all: $(OBJS)
 	$(CC) $(OBJS) -o $(TARGET_EXEC)
 
