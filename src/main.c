@@ -1,6 +1,8 @@
 #include <stdio.h>
-#include <stdbool.h>>
+#include <stdbool.h>
 #include <unistd.h>
+
+#include "tokenizer.h"
 
 int main(int argc, char** argv){
 
@@ -14,5 +16,27 @@ int main(int argc, char** argv){
         // Just read from standard input
         input = stdin;
     }
+
+    token tkn;
+    do {
+        printf(">>> ");
+        tokenize(input, &tkn);
+
+        printf("Type: %i ", tkn.type);
+
+        switch(tkn.type){
+            case 4:
+                printf("Integer value: %lli\n", tkn.num.integer);
+                break;
+            case 5:
+                printf("Floating-point value: %f\n", tkn.num.number);
+                break;
+            default:
+                printf("Content: %s\n", tkn.content);
+                break;
+        }
+
+
+    } while(tkn.type != INVALID);
 
 }

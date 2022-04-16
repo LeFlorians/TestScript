@@ -4,6 +4,7 @@
         "*.java": "java",
         "unistd.h": "c",
         "getopt.h": "c",
-        "regstr.h": "c"
+        "regstr.h": "c",
+        "string.h": "c"
     }
 }

@@ -1,101 +1,205 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 
 #include "tokenizer.h"
 
 // Reads the next token from stream
 void tokenize(FILE *input, token *dst) {
     // Character variable (ints for non-ASCII  charsets)
-    int current;
+    int cur;
+    char *con = dst->content;
 
     /*
         Bitflags:
-        0 | If we're currently in a string
-        1 | Escape next character in string
-        2 | 1 if string is "", 0 if ''
-        3 | If we're in a number sequence
-        4 | If we're at the right position for a decimal/ocatal/hex declaration
+        0 | Escape next character in string
+        1 | 1 if string is "", 0 if ''
+        2 | First character matches any of + -
+        3 | 1 if Actual token has begun
+        4 | If number contains a dot / is floating-point
+        5 | If number started with a sign
     */
     char flags = 0;
 
-    int content_index = 0;
+    // Set type to invalid by default
+    dst->type = INVALID;
 
-    while((current = getc(input)) != EOF) {
+    while((cur = getc(input)) != EOF) {
 
-        if(content_index >= 256){
-            perror("Token length exceeded length limit of 255. Halting program.");
-            exit(1);
+        if(isspace(cur) && (flags & 8) == 0)
+            continue;
+        flags |= 8;
+
+        if(con - dst->content >= 256){
+            strcpy(dst->content, "Token exceeded maximum length of 256");
+            dst->type = INVALID;
+            break;
         }
 
         // --- Tokenize ---
 
         // Check if in string
-        if(flags & 1 != 0) {
+        if(dst->type == STRING) {
             // check if character is escaped
-            if(flags & 2 != 0) {
+            if((flags & 1) != 0) {
                 // Match escape sequence (Java-like)
-                switch (current) {
+                switch (cur) {
                     case 't':
-                        dst->content[content_index++] = '\t';
+                        *(con++) = '\t';
                         break;
                     case 'b':
-                        dst->content[content_index++] = '\b';
+                        *(con++) = '\b';
                         break;
                     case 'n':
-                        dst->content[content_index++] = '\n';
+                        *(con++) = '\n';
                         break;
                     case 'r':
-                        dst->content[content_index++] = '\r';
+                        *(con++) = '\r';
                         break;
                     case 'f':
-                        dst->content[content_index++] = '\f';
+                        *(con++) = '\f';
                         break;
                     default:
                         // Nothing is printed if escape sequence is invalid
-                        if(current == '\'' || current == '"' || current == '\\')
-                            dst->content[content_index++] = current;
+                        if(cur == '\'' || cur == '"' || cur == '\\')
+                            *(con++) = cur;
                         break;
                 }
 
                 // Unset escape flag
-                flags &= ~2;
+                flags &= ~1;
                 continue;
             } else {
-                if((flags & 4 != 0 && current == '"') || (flags & 4 == 0 && current == '\'') ){
-                    // Done with string, return
+                if(((flags & 2) != 0 && cur == '"') || ((flags & 2) == 0 && cur == '\'') ){
+                    // Done with string, quit loop
                     break;
                 }
                 // Set escape flag
-                if(current = '\\'){
+                if(cur == '\\'){
                     flags |= 2;
                 }
             }
 
             // append character
-            dst->content[content_index++] = current;
+            *(con++) = cur;
 
         } else {
-            // Skip spaces
-            if(isspace(current))
-                continue;
 
-            // Check if number
-            if(flags & 8 != 0) {
-                if(!isdigit(current) && (current != 'b')) {
-                    // push back the last character
-                    ungetc(current, input);
+            // Check if type is yet undefined
+            if(dst->type == INVALID) {
+                
+                // String with '
+                if(cur == '\'') {
+                    dst->type = STRING;
+                    continue;
+                }
+
+                // String with "
+                if(cur == '"'){
+                    dst->type = STRING;
+                    flags |= 2;
+                    continue;
+                }
+
+                if(con - dst->content == 0) {
+                    if(cur == '+' || cur == '-') {
+                        flags |= 32;
+                        *(con++) = cur;
+                    }
+                }
+
+
+                if(isalpha(cur) || ispunct(cur))
+                    dst->type = FIELD;
+                else if(isdigit(cur))
+                    dst->type = NUMBER;
+                else if(cur == '(' || cur == ')' || cur == '{' || cur == '}' || cur == '[' || cur == ']'){
+                    dst->type = BRACKET;
+                    *(con++) = cur;
                     break;
                 }
+            
             }
 
+            if(isspace(cur))
+                break;
+
+            if(dst->type == NUMBER) {
+                int loc = con - dst->content;
+                // Check for non-digit characters in number
+                if(!isdigit(cur) 
+                    && !( (((flags & 32) != 0 && (loc == 2)) || ((flags & 32) == 0 || (loc == 1)) ) 
+                    && (cur == 'b' || cur == 'B' || cur == 'x' || cur == 'X' || cur == 'o' || cur == 'O') ) ){
+                    
+                    // Invalid character found
+                    ungetc(cur, input); // push back character
+                    break;
+
+                }
+
+            }
+
+            *(con++) = cur;
+
+            if(cur == '.')
+                flags |= 16; // set floating point flag
+
         }
-        
+    }
 
+    // Set error message on invalid token
+    if((flags & 8) != 0 && dst->type == INVALID) {
+        strcpy(dst->content, "Reached end of stream / Uncategorizable token");
+        return;
+    }
 
+    // Make sure last character is a 0
+    *con = '\0';
 
+    // Check if it's really a number
+    if(dst->type == NUMBER) {
+        // Reset con
+        con = dst->content;
+        if((flags & 16) == 0) {
 
+            // parse base
+            int base = 10;
 
+            if(dst->content[0] == '0'){
+                char base_char = dst->content[1];
+                if(base_char == 'x' || base_char == 'X')
+                    base = 16;
+                else if(base_char == 'b' || base_char == 'B')
+                    base = 2; 
+                else if(base_char == 'o' || base_char == 'O')
+                    base = 8;
 
+                if(base != 10)
+                    con += 2; // skip base charactesr if valid
+            }
+
+            dst->type = INTEGER;
+
+            char* end;
+            dst->num.integer = strtoll(con, &end, base);
+            if(*end != '\0' || *con == '\0') {
+                // Invalid integer
+                strcpy(dst->content, "Invalid integer number format");
+                dst->type = INVALID;
+                return;
+            }
+
+        } else {
+            char* end;
+            dst->num.number = strtod(con, &end);
+            if(*end != '\0' || *con == '\0') {
+                // Invalid floating-point
+                strcpy(dst->content, "Invalid floating-point number format");
+                dst->type = INVALID;
+                return;
+            }
+        }
     }
 
 

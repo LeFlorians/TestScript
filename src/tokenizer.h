@@ -7,9 +7,18 @@ typedef struct token token;
 
 struct token {
     enum {
-        STRING, NUMBER,
+        INVALID,
+        BRACKET,
+        FIELD,
+        STRING,
+        INTEGER,
+        NUMBER, // floating-point
     } type;
     char content[256];
+    union {
+        long long integer; // only if INTEGER
+        double number; // only if NUMBER
+    } num;
 };
 
 // Read one token from stream and place it in dst
