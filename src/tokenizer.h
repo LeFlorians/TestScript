@@ -7,19 +7,22 @@ typedef struct token token;
 
 struct token {
     enum {
-        INVALID,
+        INVALID, // content always carries error message
+        NULLTKN, // Empty token
+        COMMENT,
         BRACKET,
         FIELD,
+        SYMBOL,
         STRING,
         INTEGER,
         NUMBER, // floating-point
     } type;
     char content[256];
     union {
-        long long integer; // only if INTEGER
+        unsigned long long integer; // only if INTEGER
         double number; // only if NUMBER
     } num;
 };
 
-// Read one token from stream and place it in dst
-void tokenize(FILE *input, token *dst);
+// Read next token from stream and place it in dst
+void readtkn(FILE *input, token *dst);

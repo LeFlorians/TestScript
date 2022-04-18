@@ -19,17 +19,19 @@ int main(int argc, char** argv){
 
     token tkn;
     do {
-        printf(">>> ");
-        tokenize(input, &tkn);
+        readtkn(input, &tkn);
 
         printf("Type: %i ", tkn.type);
 
         switch(tkn.type){
-            case 4:
+            case INTEGER:
                 printf("Integer value: %lli\n", tkn.num.integer);
                 break;
-            case 5:
-                printf("Floating-point value: %f\n", tkn.num.number);
+            case NUMBER:
+                printf("Floating-point value: %lf\n", tkn.num.number);
+                break;
+            case NULLTKN:
+                printf("Reached NULLTKN");
                 break;
             default:
                 printf("Content: %s\n", tkn.content);
@@ -37,6 +39,6 @@ int main(int argc, char** argv){
         }
 
 
-    } while(tkn.type != INVALID);
+    } while(tkn.type != INVALID && tkn.type != NULLTKN);
 
 }

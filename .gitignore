@@ -1,6 +1,9 @@
 # Executable
 lang
 
+# VS Code
+.vscode
+
 # Prerequisites
 *.d
 
