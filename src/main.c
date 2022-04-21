@@ -1,8 +1,7 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <unistd.h>
 
-#include "tokenizer.h"
+#include "interpreter.h"
 
 int main(int argc, char** argv){
 
@@ -17,28 +16,11 @@ int main(int argc, char** argv){
         input = stdin;
     }
 
-    token tkn;
-    do {
-        readtkn(input, &tkn);
+    
+    // create interpreter environment
+    environment memory;
 
-        printf("Type: %i ", tkn.type);
-
-        switch(tkn.type){
-            case INTEGER:
-                printf("Integer value: %lli\n", tkn.num.integer);
-                break;
-            case NUMBER:
-                printf("Floating-point value: %lf\n", tkn.num.number);
-                break;
-            case NULLTKN:
-                printf("Reached NULLTKN");
-                break;
-            default:
-                printf("Content: %s\n", tkn.content);
-                break;
-        }
-
-
-    } while(tkn.type != INVALID && tkn.type != NULLTKN);
+    // interpret input
+    f_interpret(&memory, input);
 
 }

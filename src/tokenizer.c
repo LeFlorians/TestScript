@@ -5,8 +5,11 @@
 
 #include "tokenizer.h"
 
+int _line = 0, _char;
+
 // Reads the next token from stream
 void readtkn(FILE *input, token *dst) {
+
     // Character variable (ints for non-ASCII  charsets)
     int cur;
     char *con = dst->content;
@@ -17,19 +20,32 @@ void readtkn(FILE *input, token *dst) {
         1 | 1 if string is "", 0 if ''
         2 | First character matches any of + -
         3 | 1 if Actual token has begun
-        4 | If number contains a dot / is floating-point
+        4 | unused
         5 | 0=line comment, 1=block comment
+        6 | unused
+        7 | unused
     */
     char flags = 0;
 
     // Set type to invalid by default
     dst->type = INVALID;
 
-    while((cur = getc(input)) != EOF) {
+    for(;(cur = getc(input)) != EOF; _char++) {
 
-        if(isspace(cur) && (flags & 8) == 0)
-            continue;
-        flags |= 8;
+        if(cur == '\n'){
+            _line++;
+            _char = 0;
+        }
+
+        if((flags & 8) == 0) {
+            if(isspace(cur))
+                continue;
+            flags |= 8;
+
+            // set debug info
+            dst->info.character = _char;
+            dst->info.line = _line;
+        }
 
         if(con - dst->content >= 255){
             strcpy(dst->content, "Token exceeded maximum length of 256");
@@ -149,20 +165,18 @@ void readtkn(FILE *input, token *dst) {
 
 
         if(dst->type == NUMBER) {
-            int loc = con - dst->content;
-            // Check for non-digit characters in number
-            if(!isdigit(cur) && !(loc == 1
-                && (cur == 'b' || cur == 'B' || cur == 'x' || cur == 'X' || cur == 'o' || cur == 'O') )){
+            // Check for non-number characters 
+            if(!isalnum(cur)){
 
-                if(*(con-1) == '.'){
-                    ungetc(cur, input);
-                    ungetc('.', input);
-                    con--;
-                    flags &= ~16; // Unset floating-point flag
-                    break;
-                }
-
-                if((flags & 16) != 0 || cur != '.'){
+                if(cur == '.') {
+                    if(*(con-1) == '.') {
+                        ungetc(cur, input);
+                        ungetc('.', input);
+                        con--;
+                        flags &= ~16; // Unset floating-point flag
+                        break;
+                    }
+                } else if(!((cur == '+' || cur == '-') && *(con-1) == 'e')) {
                     ungetc(cur, input);
                     break;
                 }
@@ -205,9 +219,6 @@ void readtkn(FILE *input, token *dst) {
         }
 
         *(con++) = cur;
-
-        if(cur == '.')
-            flags |= 16; // set floating point flag for numbers
     }
 
     // End of stream
@@ -225,50 +236,9 @@ void readtkn(FILE *input, token *dst) {
     // Make sure last character is a 0
     *con = '\0';
 
-    // Check if it's really a number
     if(dst->type == NUMBER) {
-        // Reset con
-        con = dst->content;
-        if((flags & 16) == 0) {
+        // TODO: Check if pattern matches
 
-            // parse base
-            int base = 10;
-
-            if(dst->content[0] == '0'){
-                char base_char = dst->content[1];
-                if(base_char == 'x' || base_char == 'X')
-                    base = 16;
-                else if(base_char == 'b' || base_char == 'B')
-                    base = 2; 
-                else if(base_char == 'o' || base_char == 'O')
-                    base = 8;
-
-                if(base != 10)
-                    con += 2; // skip base charactesr if valid
-            }
-
-            dst->type = INTEGER;
-
-            char* end;
-            dst->num.integer = strtoll(con, &end, base);
-            if(*end != '\0' || *con == '\0') {
-                // Invalid integer
-                strcpy(dst->content, "Invalid integer number format");
-                dst->type = INVALID;
-                return;
-            }
-
-        } else {
-            char* end;
-            dst->num.number = strtod(con, &end);
-            if(*end != '\0' || *con == '\0') {
-                // Invalid floating-point
-                strcpy(dst->content, "Invalid floating-point number format");
-                dst->type = INVALID;
-                return;
-            }
-        }
     }
-
 
 }

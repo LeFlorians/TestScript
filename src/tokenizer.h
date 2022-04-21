@@ -1,28 +1,30 @@
+#include <stdio.h>
+
 /*
 * The Tokenizer takes a string and converts it to easy-to-understand tokens
 */
 
-// Define a token
-typedef struct token token;
+// Define token types
 
-struct token {
-    enum {
-        INVALID, // content always carries error message
-        NULLTKN, // Empty token
-        COMMENT,
-        BRACKET,
-        FIELD,
-        SYMBOL,
-        STRING,
-        INTEGER,
-        NUMBER, // floating-point
-    } type;
+typedef enum {
+    INVALID, // content always carries error message
+    NULLTKN, // Empty token
+    COMMENT,
+    BRACKET,
+    FIELD,
+    SYMBOL,
+    STRING,
+    NUMBER,
+} tkntype;
+
+// Define a token
+typedef struct {
+    tkntype type;
     char content[256];
-    union {
-        unsigned long long integer; // only if INTEGER
-        double number; // only if NUMBER
-    } num;
-};
+    struct {
+        long character, line;
+    } info;
+} token;
 
 // Read next token from stream and place it in dst
 void readtkn(FILE *input, token *dst);
