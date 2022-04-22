@@ -1,5 +1,5 @@
 /*
-* This file defines all different value types and provides simple type conversions
+* This file declares all different value types and provides simple type conversions
 * v_ prefixes any type defined in this file
 */
 

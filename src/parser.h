@@ -20,7 +20,7 @@ struct stnode {
 // Parser memory struct
 typedef struct {
     stnode *op, *val; // pointers to current operator/value node
-} parsemem;
+} parsermem;
 
 // Define a syntax tree struct
 typedef struct {
@@ -28,7 +28,7 @@ typedef struct {
 } syntaxtree;
 
 // Function to append token to tree
-void appendtkn(syntaxtree *tree, parsemem *mem, token *tkn);
+void appendtkn(syntaxtree *tree, parsermem *mem, token *tkn);
 
 // function to init the tree and memory
-void init_syntaxtree(syntaxtree *tree, parsemem *mem);
+void init_syntaxtree(syntaxtree *tree, parsermem *mem);

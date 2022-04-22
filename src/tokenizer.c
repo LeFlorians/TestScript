@@ -30,12 +30,14 @@ void readtkn(FILE *input, token *dst) {
     // Set type to invalid by default
     dst->type = INVALID;
 
-    for(;(cur = getc(input)) != EOF; _char++) {
+    while((cur = getc(input)) != EOF) {
 
         if(cur == '\n'){
             _line++;
             _char = 0;
         }
+
+        _char++;
 
         if((flags & 8) == 0) {
             if(isspace(cur))

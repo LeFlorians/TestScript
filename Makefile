@@ -1,22 +1,21 @@
 CC := gcc
 CFLAGS := -Wall -g
 
-TARGET_EXEC := lang
+TARGET := lang
 
 .PHONY: all clean
 
-SRCS := $(wildcard ./src/*.c)
+SRCS := $(shell find src -type f -iname '*.c')
 OBJS := $(SRCS:%.c=%.o)
 
 all: $(OBJS)
-	$(CC) $(OBJS) -o $(TARGET_EXEC)
+	$(CC) $(OBJS) -o $(TARGET)
 
 test: all
-	./$(TARGET_EXEC)
+	./$(TARGET)
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
-
 clean:
-	rm $(TARGET_EXEC) $(wildcard ./src/*.o)
+	rm $(TARGET) $(shell find src -type f -iname '*.o')
