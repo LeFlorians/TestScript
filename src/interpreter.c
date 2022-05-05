@@ -32,11 +32,3 @@ void f_interpret(environment *memory, FILE *stream) {
     }
 
 }
-
-void interpret(environment *memory, char *text) {
-    FILE *stream;
-    
-    stream = fmemopen(text, strlen(text), "r");
-    f_interpret(memory, stream);
-}
-

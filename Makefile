@@ -21,8 +21,9 @@ test: all
 	$(CC) -c $(CFLAGS) $< -o $@
 
 # set windows compiler and define target
+# do not use this target on windows
 win : CC = x86_64-w64-mingw32-gcc 
 win: all
 
 clean:
-	rm $(TARGET) $(call rwildcard,src/,*.o)
+	rm -f -- $(TARGET) $(TARGET).exe $(call rwildcard,src/,*.o)
