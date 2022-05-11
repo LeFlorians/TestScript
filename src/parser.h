@@ -1,34 +1,42 @@
+#include <stdlib.h>
+
 #include "tokenizer.h"
 
+// All the operators in ascending binding-power order
 typedef enum {
-    BLK, // Block, contain many operator nodes
-    OP, // contain multiple arguments to operator
-    CONST, // constant in-place value
-    VAR, // Field reference
-} stnode_type;
+    LIST, // ,
+    ADD,
+    SUB,
+    MUL,
+} operator;
 
-// Define a tree node
+typedef enum {      // n_children   represents
+    BLOCK,          // 1            { (start of new scope)
+    BLOCK_END,      // 0            }
+    MEMBER,         // 1-2          expr (+ member)
+    FUNC,           // 1            ( function call; left: expr
+    FUNC_END,       // 0            )
+    EXPR,           // 1-2 + op     expression;
+    VALUE,
+} nodetype;
+
+// Defines a tree node
 typedef struct stnode stnode;
 
 struct stnode {
-    stnode_type type;
-    stnode *child, *sibling;
+    nodetype type;
+    stnode *left, *right;
+    operator op;
 
-    token token;
+    // Only for VALUE type
+    char *value;
 };
 
-// Parser memory struct
-typedef struct {
-    stnode *op, *val; // pointers to current operator/value node
-} parsermem;
+// Function to allocate stnode
+stnode  *allocate_stnode() {
+    // TODO: set default values
+    return (stnode *)malloc(sizeof(stnode));
+}
 
-// Define a syntax tree struct
-typedef struct {
-    stnode root; // root node
-} syntaxtree;
-
-// Function to append token to tree
-void appendtkn(syntaxtree *tree, parsermem *mem, token *tkn);
-
-// function to init the tree and memory
-void init_syntaxtree(syntaxtree *tree, parsermem *mem);
+// Function to parse a stream and save resulting tree in dst
+void parse(FILE* input, stnode *dst);
