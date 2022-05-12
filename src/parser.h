@@ -4,6 +4,7 @@
 
 // All the operators in ascending binding-power order
 typedef enum {
+    OP_NULL, // internal, lowest precedence
     LIST, // ,
     ADD,
     SUB,
@@ -11,12 +12,10 @@ typedef enum {
 } operator;
 
 typedef enum {      // n_children   represents
-    BLOCK,          // 1            { (start of new scope)
     BLOCK_END,      // 0            }
     MEMBER,         // 1-2          expr (+ member)
-    FUNC,           // 1            ( function call; left: expr
     FUNC_END,       // 0            )
-    EXPR,           // 1-2 + op     expression;
+    EXPR,           // 1-2 & op     any expression
     VALUE,
 } nodetype;
 
@@ -25,18 +24,23 @@ typedef struct stnode stnode;
 
 struct stnode {
     nodetype type;
-    stnode *left, *right;
-    operator op;
 
-    // Only for VALUE type
-    char *value;
+    union {
+        // for any non-leaf node type
+        struct {
+            stnode *left, *right;
+            operator op;
+        } parent;
+
+        // only for VALUE type
+        struct {
+            char *value;
+
+        } leaf;
+    } data;
+
+
 };
 
-// Function to allocate stnode
-stnode  *allocate_stnode() {
-    // TODO: set default values
-    return (stnode *)malloc(sizeof(stnode));
-}
-
 // Function to parse a stream and save resulting tree in dst
-void parse(FILE* input, stnode *dst);
+stnode *parse(FILE* input);

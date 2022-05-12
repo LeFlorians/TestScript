@@ -19,7 +19,36 @@ char ispostfix(operator op) {
 
 }
 
-// TODO : readtkn only return useful tokens
+// For simplification
+typedef struct {
+    token *cur, *peek;
+    FILE *input;
+} tkncache;
+
+/*
+    Read a new token
+    @param peek The token variable to overwrite
+*/
+void advance(tkncache *cache) {
+    // Switch the two tokens and read a new one
+    token *temp = cache->cur;
+    cache->cur = cache->peek;
+    cache->peek = temp;
+    // TODO: readtkn should only return useful tokens
+    readtkn(cache->input, cache->peek);
+}
+
+// Function to allocate stnode
+stnode  *allocate_stnode() {
+    // TODO: set default values
+    return (stnode *)malloc(sizeof(stnode));
+}
+
+// Private declaration of some of the functions
+stnode *phase0(tkncache *cache);
+stnode *phase1(tkncache *cache);
+stnode *phase2(tkncache *cache);
+stnode *expr(tkncache *cache, operator op);
 
 /*
     Builds chain of phase1 members
@@ -27,159 +56,184 @@ char ispostfix(operator op) {
     Returns a MEMBER node
     -> left: block/expr, right: member/block_end
 */
-stnode *phase0(FILE* input) {
-    stnode *start, *next, *cur;
-   
-    // allocate starting node
-    start = allocate_stnode();
-    start->type = MEMBER;
+stnode *phase0(tkncache *cache) {
 
-    cur = start;
+    stnode *cur, *last = NULL;
 
-    while(cur->type != BLOCK_END){
-        // set left to be block/expr
-        cur->left = phase1(input);
+    do {
+        cur = allocate_stnode();
+        cur->type = MEMBER;
 
-        next = allocate_stnode();
-        next->type = cur->left->type == BLOCK_END ? BLOCK_END : MEMBER;
-        
-        cur->right = next;
-        cur = next;
+        // set right to be expression / block
+        cur->data.parent.right = phase1(cache);
 
-    }
-    return start;
+        // Append current node to next node (reverse direction / bottom-up)  
+        cur->data.parent.left = last;
+        last = cur;
+    } while(cur->type != BLOCK_END);
+
+    // Don't return the empty BLOCK_END node
+    return cur->data.parent.left;
 }
 
 /*
-    Returns EXPR/BLOCK nodes
+    Returns EXPR nodes
     -> left: MEMBER
 */
-stnode *phase1(FILE* input) {
-    stnode *ret = allocate_stnode();
-    token tkn;
+stnode *phase1(tkncache *cache) {
 
-    readtkn(input, &tkn);
+    // read next token
+    advance(cache);
 
-    switch (tkn.type) {
+    switch (cache->cur->type) {
         case BRACKET: {
-            if(tkn.content[0] == '{') {
-                // set type, load member chain into block, return
-                ret->type = BLOCK;
-                ret->left = phase0(input);
-                return ret;
+            if(cache->cur->content[0] == '{') {
+                // load member chain and return
+                return phase0(cache);
             }
-            if(tkn.content[0] == '}') {
+
+            // allocate a return node
+            stnode *ret = allocate_stnode();
+
+            if(cache->cur->content[0] == '}') {
                 // signal block end and return
                 ret->type = BLOCK_END;
                 return ret;
             }
-            if(tkn.content[0] == ')') {
-                // signal block end and return
+            if(cache->cur->content[0] == ')') {
+                // signal function end and return
                 ret->type = FUNC_END;
                 return ret;
             }
             // TODO: wrong bracket / undefined 
             break;
         }
-        case FIELD: {
-            // Create expression
-            ret->type = EXPR;
 
-            // deal with field
-            phase2(input, &ret);
-
-            break;
-        }
-        case SYMBOL: {
-            // prefix operators
-            ret->type = EXPR;
-
-            // TODO: improve
-            ret->op = mapop(tkn.content);
-
-            // ret->left will be the next field
-            readtkn(input, &tkn);
-            if(tkn.type != FIELD){
-                // TODO: Throw error. need field after prefix operator
-            }
-            ret->left = allocate_stnode();
-            // TODO: load contents & info from field
-
-            break;
-        }
     }
 
-    return ret;
+    // create stack variable of token address as pushback placeholder
+    token *addr = NULL;
+
+    // return  an expression
+    return expr(cache, OP_NULL);
 }
 
 /*
-    Decodes what comes after a field
-    Acts on expression
+    Decodes any expression
+    Returns an EXPR/VALUE node
+
+    @param rbp Right binding power (default=OP_NONE)
+    @param infeed Use this token instead of reading a new one
+    @param pushback Used internally to return unused tokens to caller function
 */
-stnode *phase2(FILE* input, stnode *expr) {
-    stnode *ret = allocate_stnode();
-    token tkn;
+stnode *expr(tkncache *cache, operator rbp) {
+    stnode *left = phase2(cache);
 
-    readtkn(input, &tkn);
-
-    switch (tkn.type) {
+    // act depending on peek's type
+    switch(cache->peek->type) {
         case BRACKET: {
-            if(tkn.content[0] == '(') {
-                // function call, since ( after field
-                // TODO: call function
-                ret->type = FUNC;
-                ret->left = phase1(input);
+
+            // advance
+            advance(cache);
+
+            if(cache->cur->content[0] == '(') {
+                // TODO: this would be a function call
 
             }
-            // wrong bracket
+            if(cache->cur->content[0] == ')') {
+                // TODO: maybe return sth else
+                return left;
+            }
 
             break;
         }
         case SYMBOL: {
-            // deal with postfix/infix operators
-            expr->op = mapop(tkn.content);
 
-            if(ispostfix(ret->op)) {
+            // allocate stack variables
+            operator op ;
+            stnode *new;
 
-            }
-            if(isinfix(ret->op)) {
+            while((op = mapop(cache->peek->content)) >= rbp 
+                    && cache->peek->type == SYMBOL) {
+
+                new = allocate_stnode();
                 
-            }
+                // set operator and attach current 'left' to the new node
+                new->data.parent.op = op;
+                new->data.parent.left = left;
 
+                advance(cache);
+                
+                // the right hand side will be a newly parsed expression
+                if(isinfix(op))
+                    new->data.parent.right = expr(cache, op);
+                
+
+                // updat operator
+                op = mapop(cache->peek->content);
+
+                // set left to new
+                left = new;
+            }
         }
+
     }
+
+    return left;
+}
+
+/*
+    Decodes Fields/Values/Prefixes
+    Returns a VALUE or one-handed EXPR
+*/
+stnode *phase2(tkncache *cache) {
+    stnode *ret, *val;
+
+    advance(cache);
+
+    ret = allocate_stnode();
+    val = ret;
+
+
+    if(cache->cur->type == SYMBOL) {
+
+        // set the operator
+        ret->data.parent.op = mapop(cache->cur->content);
+        
+        // Throw an error if its not a prefix operator
+        if(!isprefix(ret->data.parent.op)) {
+            // TODO: throw error
+        }
+
+        // set the node type
+        ret->type = EXPR;
+
+        // allocate new node for value and attach it to ret
+        val = allocate_stnode();
+        ret->data.parent.left = val;
+
+        // read the next token for the value
+        advance(cache);
+    }
+    
+    val->type = VALUE;
+
+    // TODO: allocate and copy content properly
+    val->data.leaf.value = cache->cur->content;
 
     return ret;
 }
 
 
-/*
-    Decodes what comes after an infix operator (SYMBOL)
-*/
-stnode *phase2(FILE* input, stnode *expr) {
-
-}
-
-// rbp=right binding power
-void expr(FILE *input, char rbp) {
-    token tkn;
-
-    // Load next token
-    readtkn(input, &tkn);
-
-    stnode *left = nulldenotation(tkn.content);
+stnode *parse(FILE* input) {
+    // allocate current & peek tokens
+    token cur, peek;
     
+    // create a token cache
+    tkncache cache;
+    cache.cur = &cur;
+    cache.peek = &peek;
+    cache.input = input;
 
-}
-
-void parse(FILE* input, stnode *dst) {
-    // Allocate some stack variables
-    token tkn;
-
-    // Get the next token
-    readtkn(input, &tkn);
-
-
-
-
+    return phase0(&cache);
 }
