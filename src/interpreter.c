@@ -10,9 +10,6 @@ void f_interpret(environment *memory, FILE *stream) {
 
     stnode* root = parse(stream);
 
-    printf("%i", root->type);
-
-    printf("\nPrinting tree:\n");
     printst(root);
 
 }

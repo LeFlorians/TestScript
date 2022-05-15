@@ -31,7 +31,7 @@ stnode  *allocate_stnode() {
 stnode *phase0(tkncache *cache);
 stnode *phase1(tkncache *cache);
 stnode *phase2(tkncache *cache);
-stnode *expr(tkncache *cache, char op);
+stnode *expr(tkncache *cache, unsigned char op);
 
 
 /*
@@ -43,9 +43,6 @@ stnode *expr(tkncache *cache, char op);
     This is used to parse an entire file into a parse tree
 */
 stnode *phase0(tkncache *cache) {
-
-    printf("Phase0\n");
-
     stnode *cur, *last = NULL;
 
     do {
@@ -70,9 +67,6 @@ stnode *phase0(tkncache *cache) {
     -> left: MEMBER
 */
 stnode *phase1(tkncache *cache) {
-
-    printf("Phase1\n");
-
     // read next token
     advance(cache);
 
@@ -115,7 +109,7 @@ stnode *phase1(tkncache *cache) {
     }
 
     // return an expression
-    return expr(cache, 0);
+    return expr(cache, 0xFF);
 }
 
 /*
@@ -126,10 +120,7 @@ stnode *phase1(tkncache *cache) {
     @param infeed Use this token instead of reading a new one
     @param pushback Used internally to return unused tokens to caller function
 */
-stnode *expr(tkncache *cache, char rbp) {
-    printf("Expr\n");
-
-
+stnode *expr(tkncache *cache, unsigned char rbp) {
     stnode *left = phase2(cache);
 
     // act depending on peek's type
@@ -157,12 +148,11 @@ stnode *expr(tkncache *cache, char rbp) {
 
             // allocate stack variables
             operator *op;
-            char precedence;
 
             stnode *new;
 
             while(cache->cur->type == SYMBOL 
-                    && (precedence = (op = mapop(cache->cur->content))->precedence) >= rbp) {
+                    && (op = mapop(cache->cur->content))->precedence < rbp) {
 
                 new = allocate_stnode();
                 new->type = EXPR;
@@ -176,7 +166,7 @@ stnode *expr(tkncache *cache, char rbp) {
                 // the right hand side will be a newly parsed expression,
                 // taking associativity into consideration
                 if(op->position == INFIX)
-                    new->data.parent.right = expr(cache, op->precedence - op->associativity);
+                    new->data.parent.right = expr(cache, op->precedence + op->associativity);
                 else
                     new->data.parent.right = NULL;
 
@@ -195,8 +185,6 @@ stnode *expr(tkncache *cache, char rbp) {
     Returns a VALUE or one-handed EXPR
 */
 stnode *phase2(tkncache *cache) {
-    printf("Phase2\n");
-
     stnode *ret, *val;
 
     // advance(cache);
@@ -260,6 +248,9 @@ stnode *parse(FILE* input) {
     return phase0(&cache);
 }
 
+
+/* Functions to print out syntaxtree */
+
 void _printside(int depth) {
     // Print lines on the side
     for(int i = 0; i < depth; i++)
@@ -275,10 +266,12 @@ void _printst(stnode *root, int depth) {
 
     printf(". %s", typeNames[root->type]);
     // printf(". %i", root->type);
+
+    if(root->type == EXPR)
+        printf(" [%s]", root->data.parent.op->name);
     
     if(root->type == VALUE) {
         printf(" (%s)", root->data.leaf.value);
-
     } else {
         putchar('\n');
 
@@ -288,6 +281,7 @@ void _printst(stnode *root, int depth) {
             putchar('L');
 
             _printst(root->data.parent.left, depth+1);
+
             putchar('\n');
         }
 
@@ -297,9 +291,8 @@ void _printst(stnode *root, int depth) {
             putchar('R');
 
             _printst(root->data.parent.right, depth+1);
-            putchar('\n');
-
         }
+        
 
     }
 
