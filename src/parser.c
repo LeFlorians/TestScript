@@ -1,21 +1,21 @@
-#include "parser.h"
+#include <string.h>
 
-// Function to map a char *operator to an operator type
-// TODO: binary search
-operator mapop(char* op) {
-    
-}
+#include "parser.h"
 
 // TODO: implement
 char isprefix(operator op) {
-
+    return 1;
 }
 
 char isinfix(operator op) {
-
+    return 1;
 }
 
 char ispostfix(operator op) {
+    return 1;
+}
+
+char getprecedence(operator op) {
 
 }
 
@@ -34,8 +34,10 @@ void advance(tkncache *cache) {
     token *temp = cache->cur;
     cache->cur = cache->peek;
     cache->peek = temp;
-    // TODO: readtkn should only return useful tokens
-    readtkn(cache->input, cache->peek);
+    // Read next token, skip comments
+    do {
+        readtkn(cache->input, cache->peek);
+    } while(cache->peek->type == COMMENT);
 }
 
 // Function to allocate stnode
@@ -48,15 +50,20 @@ stnode  *allocate_stnode() {
 stnode *phase0(tkncache *cache);
 stnode *phase1(tkncache *cache);
 stnode *phase2(tkncache *cache);
-stnode *expr(tkncache *cache, operator op);
+stnode *expr(tkncache *cache, char op);
+
 
 /*
     Builds chain of phase1 members
     Stops when reaching BLOCK_END
     Returns a MEMBER node
     -> left: block/expr, right: member/block_end
+
+    This is used to parse an entire file into a parse tree
 */
 stnode *phase0(tkncache *cache) {
+
+    printf("Phase0\n");
 
     stnode *cur, *last = NULL;
 
@@ -70,10 +77,11 @@ stnode *phase0(tkncache *cache) {
         // Append current node to next node (reverse direction / bottom-up)  
         cur->data.parent.left = last;
         last = cur;
-    } while(cur->type != BLOCK_END);
+    } while(cur->data.parent.right->type != BLOCK_END);
 
     // Don't return the empty BLOCK_END node
-    return cur->data.parent.left;
+    // return cur->data.parent.left;
+    return cur;
 }
 
 /*
@@ -81,6 +89,8 @@ stnode *phase0(tkncache *cache) {
     -> left: MEMBER
 */
 stnode *phase1(tkncache *cache) {
+
+    printf("Phase1\n");
 
     // read next token
     advance(cache);
@@ -94,6 +104,8 @@ stnode *phase1(tkncache *cache) {
 
             // allocate a return node
             stnode *ret = allocate_stnode();
+            ret->data.parent.left = NULL;
+            ret->data.parent.right = NULL;
 
             if(cache->cur->content[0] == '}') {
                 // signal block end and return
@@ -109,13 +121,20 @@ stnode *phase1(tkncache *cache) {
             break;
         }
 
+        // End on invalid tokens
+        case INVALID:
+        case NULLTKN:
+            stnode *end = allocate_stnode();
+            end->data.parent.left = NULL;
+            end->data.parent.right = NULL;
+            end->type = BLOCK_END;
+            return end;
+        break;
+
     }
 
-    // create stack variable of token address as pushback placeholder
-    token *addr = NULL;
-
-    // return  an expression
-    return expr(cache, OP_NULL);
+    // return an expression
+    return expr(cache, 0);
 }
 
 /*
@@ -126,7 +145,10 @@ stnode *phase1(tkncache *cache) {
     @param infeed Use this token instead of reading a new one
     @param pushback Used internally to return unused tokens to caller function
 */
-stnode *expr(tkncache *cache, operator rbp) {
+stnode *expr(tkncache *cache, char rbp) {
+    printf("Expr\n");
+
+
     stnode *left = phase2(cache);
 
     // act depending on peek's type
@@ -149,14 +171,22 @@ stnode *expr(tkncache *cache, operator rbp) {
         }
         case SYMBOL: {
 
+            // advance, then act on cur
+            advance(cache);
+
             // allocate stack variables
-            operator op ;
+            operator op;
+            char precedence;
+
             stnode *new;
 
-            while((op = mapop(cache->peek->content)) >= rbp 
-                    && cache->peek->type == SYMBOL) {
+            while(cache->cur->type == SYMBOL 
+                // TODO: map operator
+                //    && (precedence = getprecedence(op = mapop(cache->cur->content))) >= rbp
+            ) {
 
                 new = allocate_stnode();
+                new->type = EXPR;
                 
                 // set operator and attach current 'left' to the new node
                 new->data.parent.op = op;
@@ -167,10 +197,8 @@ stnode *expr(tkncache *cache, operator rbp) {
                 // the right hand side will be a newly parsed expression
                 if(isinfix(op))
                     new->data.parent.right = expr(cache, op);
-                
-
-                // updat operator
-                op = mapop(cache->peek->content);
+                else
+                    new->data.parent.right = NULL;
 
                 // set left to new
                 left = new;
@@ -187,18 +215,22 @@ stnode *expr(tkncache *cache, operator rbp) {
     Returns a VALUE or one-handed EXPR
 */
 stnode *phase2(tkncache *cache) {
+    printf("Phase2\n");
+
     stnode *ret, *val;
 
-    advance(cache);
+    // advance(cache);
 
     ret = allocate_stnode();
     val = ret;
 
 
     if(cache->cur->type == SYMBOL) {
-
         // set the operator
-        ret->data.parent.op = mapop(cache->cur->content);
+        operator op;
+
+        // TODO: map operator
+        // ret->data.parent.op = mapop(cache->cur->content);
         
         // Throw an error if its not a prefix operator
         if(!isprefix(ret->data.parent.op)) {
@@ -211,6 +243,7 @@ stnode *phase2(tkncache *cache) {
         // allocate new node for value and attach it to ret
         val = allocate_stnode();
         ret->data.parent.left = val;
+        ret->data.parent.right = NULL;
 
         // read the next token for the value
         advance(cache);
@@ -219,7 +252,13 @@ stnode *phase2(tkncache *cache) {
     val->type = VALUE;
 
     // TODO: allocate and copy content properly
-    val->data.leaf.value = cache->cur->content;
+    
+    int len = strlen(cache->cur->content) + 1;
+    // allocate string
+    char *dst = (char *) malloc(len * sizeof(char));
+    strncpy(dst, cache->cur->content, len);
+
+    val->data.leaf.value = dst;
 
     return ret;
 }
@@ -235,5 +274,54 @@ stnode *parse(FILE* input) {
     cache.peek = &peek;
     cache.input = input;
 
+    // advance once to load token into peek slot
+    advance(&cache);
+
     return phase0(&cache);
+}
+
+void _printside(int depth) {
+    // Print lines on the side
+    for(int i = 0; i < depth; i++)
+        printf("|");
+}
+
+void _printst(stnode *root, int depth) {
+    // _printside(out, depth);
+
+    printf(". %s", typeNames[root->type]);
+    // printf(". %i", root->type);
+    
+    if(root->type == VALUE) {
+        printf(" (%s)", root->data.leaf.value);
+
+    } else {
+        putchar('\n');
+
+        if(root->data.parent.left != NULL){
+            _printside(depth);
+
+            putchar('L');
+
+            _printst(root->data.parent.left, depth+1);
+            putchar('\n');
+        }
+
+        if(root->data.parent.right != NULL){
+            _printside(depth);
+
+            putchar('R');
+
+            _printst(root->data.parent.right, depth+1);
+            putchar('\n');
+
+        }
+
+    }
+
+    
+} 
+
+void printst(stnode *root) {
+    _printst(root, 0);
 }

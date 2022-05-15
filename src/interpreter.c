@@ -9,26 +9,12 @@
 
 // interpret from a stream
 void f_interpret(environment *memory, FILE *stream) {
-    // -- Step 1: read tokens & build syntax tree
 
-    token tkn;
+    stnode* root = parse(stream);
 
-    while(1) {
-        readtkn(stream, &tkn);
+    printf("%i", root->type);
 
-        printf("type %i @ %li:%li ", tkn.type, tkn.info.line, tkn.info.character);
-
-        switch(tkn.type){
-            case NULLTKN:
-                printf("NULLTKN\n");
-                break;
-            default:
-                printf("content: %s\n", tkn.content);
-                break;
-        }
-
-        if(tkn.type == INVALID || tkn.type == NULLTKN)
-            break;
-    }
+    printf("\nPrinting tree:\n");
+    printst(root);
 
 }
