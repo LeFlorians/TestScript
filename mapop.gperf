@@ -12,10 +12,10 @@
     /*
      ! These have to be manually replaced if used as prefix:
         
-        INC -> PIN, 0x91
-        DEC -> PDE, 0x91
-        ADD -> POS, 0x91
-        SUB -> NEG, 0x91
+        INC -> PIN
+        DEC -> PDE
+        ADD -> POS
+        SUB -> NEG
     */
 %}
 
@@ -23,27 +23,27 @@
 struct s_op;
 
 %%
-++\     INC, 0x41
---\     DEC, 0x41
-+\      POS, 0x92
--\      NEG, 0x92
-!\      NOT, 0x92
-*\      MUL, 0x03
-/\      DIV, 0x03
-"%"\    MOD, 0x03
-<\      LET, 0x05
-<=\     LEQ, 0x05
->\      GRT, 0x05
->=\     GEQ, 0x05
-==\     EQU, 0x06
-!=\     NEQ, 0x06
-&&\     AND, 0x07
-||\     ORO, 0x08
-=\      ASS, 0x1A
-+=\     PEQ, 0x1A
--=\     MEQ, 0x1A
-*=\     TEQ, 0x1A
-/=\     DEQ, 0x1A
-"%="\   REQ, 0x1A
-,\      LIS, 0x0B
+++\     INC,    POSTFIX,    LTR,    1
+--\     DEC,    POSTFIX,    LTR,    1
+!\      NOT,    PREFIX,     RTL,    2
+*\      MUL,    INFIX,      LTR,    3
+/\      DIV,    INFIX,      LTR,    3
+"%"\    MOD,    INFIX,      LTR,    3
++\      ADD,    INFIX,      LTR,    4
+-\      SUB,    INFIX,      LTR,    4
+<\      LET,    INFIX,      LTR,    5
+<=\     LEQ,    INFIX,      LTR,    5
+>\      GRT,    INFIX,      LTR,    5
+>=\     GEQ,    INFIX,      LTR,    5
+==\     EQU,    INFIX,      LTR,    6
+!=\     NEQ,    INFIX,      LTR,    6
+&&\     AND,    INFIX,      LTR,    7
+||\     ORO,    INFIX,      LTR,    8
+=\      ASS,    INFIX,      RTL,    10
++=\     PEQ,    INFIX,      RTL,    10
+-=\     MEQ,    INFIX,      RTL,    10
+*=\     TEQ,    INFIX,      RTL,    10
+/=\     DEQ,    INFIX,      RTL,    10
+"%="\   REQ,    INFIX,      RTL,    10
+,\      LIS,    INFIX,      RTL,    11
 %%

@@ -37,10 +37,10 @@
     /*
      ! These have to be manually replaced if used as prefix:
         
-        INC -> PIN, 0x91
-        DEC -> PDE, 0x91
-        ADD -> POS, 0x91
-        SUB -> NEG, 0x91
+        INC -> PIN
+        DEC -> PDE
+        ADD -> POS
+        SUB -> NEG
     */
 #line 23 "mapop.gperf"
 struct s_op;
@@ -112,59 +112,59 @@ _lookup (register const char *str, register size_t len)
     {
       {""},
 #line 42 "mapop.gperf"
-      {"=",      ASS, 0x1A},
+      {"=",      ASS,    INFIX,      RTL,    10},
 #line 38 "mapop.gperf"
-      {"==",     EQU, 0x06},
-      {""},
-#line 32 "mapop.gperf"
-      {"/",      DIV, 0x03},
-#line 46 "mapop.gperf"
-      {"/=",     DEQ, 0x1A},
-#line 29 "mapop.gperf"
-      {"-",      NEG, 0x92},
-#line 44 "mapop.gperf"
-      {"-=",     MEQ, 0x1A},
-      {""},
-#line 31 "mapop.gperf"
-      {"*",      MUL, 0x03},
-#line 45 "mapop.gperf"
-      {"*=",     TEQ, 0x1A},
-#line 48 "mapop.gperf"
-      {",",      LIS, 0x0B},
-#line 27 "mapop.gperf"
-      {"--",     DEC, 0x41},
-      {""},
-#line 33 "mapop.gperf"
-      {"%",    MOD, 0x03},
-#line 47 "mapop.gperf"
-      {"%=",   REQ, 0x1A},
-#line 28 "mapop.gperf"
-      {"+",      POS, 0x92},
-#line 43 "mapop.gperf"
-      {"+=",     PEQ, 0x1A},
+      {"==",     EQU,    INFIX,      LTR,    6},
       {""},
 #line 30 "mapop.gperf"
-      {"!",      NOT, 0x92},
+      {"/",      DIV,    INFIX,      LTR,    3},
+#line 46 "mapop.gperf"
+      {"/=",     DEQ,    INFIX,      RTL,    10},
+#line 33 "mapop.gperf"
+      {"-",      SUB,    INFIX,      LTR,    4},
+#line 44 "mapop.gperf"
+      {"-=",     MEQ,    INFIX,      RTL,    10},
+      {""},
+#line 29 "mapop.gperf"
+      {"*",      MUL,    INFIX,      LTR,    3},
+#line 45 "mapop.gperf"
+      {"*=",     TEQ,    INFIX,      RTL,    10},
+#line 48 "mapop.gperf"
+      {",",      LIS,    INFIX,      RTL,    11},
+#line 27 "mapop.gperf"
+      {"--",     DEC,    POSTFIX,    LTR,    1},
+      {""},
+#line 31 "mapop.gperf"
+      {"%",    MOD,    INFIX,      LTR,    3},
+#line 47 "mapop.gperf"
+      {"%=",   REQ,    INFIX,      RTL,    10},
+#line 32 "mapop.gperf"
+      {"+",      ADD,    INFIX,      LTR,    4},
+#line 43 "mapop.gperf"
+      {"+=",     PEQ,    INFIX,      RTL,    10},
+      {""},
+#line 28 "mapop.gperf"
+      {"!",      NOT,    PREFIX,     RTL,    2},
 #line 39 "mapop.gperf"
-      {"!=",     NEQ, 0x06},
+      {"!=",     NEQ,    INFIX,      LTR,    6},
 #line 36 "mapop.gperf"
-      {">",      GRT, 0x05},
+      {">",      GRT,    INFIX,      LTR,    5},
 #line 37 "mapop.gperf"
-      {">=",     GEQ, 0x05},
+      {">=",     GEQ,    INFIX,      LTR,    5},
       {""}, {""}, {""},
 #line 34 "mapop.gperf"
-      {"<",      LET, 0x05},
+      {"<",      LET,    INFIX,      LTR,    5},
 #line 35 "mapop.gperf"
-      {"<=",     LEQ, 0x05},
+      {"<=",     LEQ,    INFIX,      LTR,    5},
       {""}, {""}, {""}, {""},
 #line 26 "mapop.gperf"
-      {"++",     INC, 0x41},
+      {"++",     INC,    POSTFIX,    LTR,    1},
       {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""},
 #line 41 "mapop.gperf"
-      {"||",     ORO, 0x08},
+      {"||",     ORO,    INFIX,      LTR,    8},
       {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""},
 #line 40 "mapop.gperf"
-      {"&&",     AND, 0x07}
+      {"&&",     AND,    INFIX,      LTR,    7}
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)

@@ -1,6 +1,6 @@
 #include <string.h>
 
-typedef struct s_op op;
+typedef struct s_op operator;
 
 struct s_op {
     char *name;
@@ -12,50 +12,56 @@ struct s_op {
         ASS, PEQ, MEQ, TEQ, DEQ, REQ, LIS, 
     } opcode;
 
-    /* 
-        Info description:
-        char info = 0b aa bb cccc;
-        - a: 00=Infix, 01=Postfix, 10=Prefix, 11=Unspecified 
-        - b: 00=LTR, 01=RTL, 10,11=Unspecified
-        - c: Associativity (see table in parser.h)
-    
-        ab hex table:
+    enum {
+        INFIX=0b00, POSTFIX=0b01, PREFIX=0b10,
+    } position;
 
+    enum {
+        LTR=0, RTL=1,
+    } associativity;
 
-    */    
-    char info;
+    unsigned char precedence;
 };
 
 // For internal use
 struct s_op *_lookup(register const char *str, register size_t len);
 
 // Function to map infix/postfix operators
-op *mapop(char *expr) {
+operator *mapop(char *expr) {
     return _lookup(expr, strlen(expr));
 }
 
 // Function to map expecially prefix operators
 // This replaces ++,--,+,- with the correct values if necessary
-op *mappreop(char *expr) {
-    op *ret = _lookup(expr, strlen(expr));
+operator *mappreop(char *expr) {
+    operator *ret = _lookup(expr, strlen(expr));
     switch(ret->opcode) {
         case INC:
             ret->opcode = PIN;
-            ret->info = 0x91;
+            ret->associativity = RTL;
+            ret->position = PREFIX;
+            ret->precedence = 2;
             break;
         case DEC:
             ret->opcode = PDE;
-            ret->info = 0x91;
+            ret->associativity = RTL;
+            ret->position = PREFIX;
+            ret->precedence = 2;
             break;
-        case POS:
-            ret->opcode = PDE;
-            ret->info = 0x91;
+        case ADD:
+            ret->opcode = POS;
+            ret->associativity = RTL;
+            ret->position = PREFIX;
+            ret->precedence = 2;
             break;
         case SUB:
             ret->opcode = NEG;
-            ret->info = 0x91;
-            break;
+            ret->associativity = RTL;
+            ret->position = PREFIX;
+            ret->precedence = 2;
         default: break;
     }
     return ret;
 }
+
+
