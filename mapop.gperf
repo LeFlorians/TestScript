@@ -1,0 +1,49 @@
+// This file contains rules to create a perfect hash function for operator mapping
+
+%delimiters="\"
+%language=ANSI-C
+%define lookup-function-name _lookup
+%struct-type
+
+%{
+    // Manually include header header file
+    #include "mapop.h"
+
+    /*
+     ! These have to be manually replaced if used as prefix:
+        
+        INC -> PIN, 0x91
+        DEC -> PDE, 0x91
+        ADD -> POS, 0x91
+        SUB -> NEG, 0x91
+    */
+%}
+
+// Struct to map operators to
+struct s_op;
+
+%%
+++\     INC, 0x41
+--\     DEC, 0x41
++\      POS, 0x92
+-\      NEG, 0x92
+!\      NOT, 0x92
+*\      MUL, 0x03
+/\      DIV, 0x03
+"%"\    MOD, 0x03
+<\      LET, 0x05
+<=\     LEQ, 0x05
+>\      GRT, 0x05
+>=\     GEQ, 0x05
+==\     EQU, 0x06
+!=\     NEQ, 0x06
+&&\     AND, 0x07
+||\     ORO, 0x08
+=\      ASS, 0x1A
++=\     PEQ, 0x1A
+-=\     MEQ, 0x1A
+*=\     TEQ, 0x1A
+/=\     DEQ, 0x1A
+"%="\   REQ, 0x1A
+,\      LIS, 0x0B
+%%

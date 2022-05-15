@@ -34,13 +34,13 @@
 |            |               | MEQ       | -=     |          |
 |            |               | TEQ       | *=     |          |
 |            |               | DEQ       | /=     |          |
-|            |               | MEQ       | %=     |          |
+|            |               | REQ       | %=     |          |
 | 11         | Left to Right | LIS       | ,      |          |
 
 * Operators are defined as follows
 * char op = 0b a b ccccccc;
-* a: Associativity: 0=LTR, 1=RTL
-* b: Position:      0=Infix, 1: (LTR: Postfix, RTL: Prefix)
+* a: Position:      0=Infix, 1: (LTR: Postfix, RTL: Prefix)
+* b: Associativity: 0=LTR, 1=RTL
 * c: Operator code (opcode) 
 
 */

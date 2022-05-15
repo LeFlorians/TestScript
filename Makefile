@@ -20,6 +20,11 @@ test: all
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
+# target to generate mapop.c
+# requires gperf to be installed
+mapop:
+	gperf --output-file=src/mapop.c mapop.gperf
+
 # set windows compiler and define target
 # do not use this target on windows
 win : CC = x86_64-w64-mingw32-gcc 
