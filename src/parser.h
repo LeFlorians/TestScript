@@ -10,9 +10,6 @@ typedef enum {      // n_children   represents
     EXPR,           // 1-2 & op     any expression
     VALUE,
 } nodetype;
-const char* typeNames[] = {
-    "BlockEnd", "Member", "FuncEnd", "Expr", "Value",
-};
 
 // Defines a tree node
 typedef struct stnode stnode;
@@ -24,7 +21,7 @@ struct stnode {
         // for any non-leaf node type
         struct {
             stnode *left, *right;
-            operator op;
+            operator *op;
         } parent;
 
         // only for VALUE type

@@ -1,4 +1,4 @@
-#include "parser.h"
+#include <stdio.h>
 
 // TODO: define an interpreter environment
 typedef struct {

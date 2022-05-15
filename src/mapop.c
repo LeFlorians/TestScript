@@ -106,7 +106,7 @@ hash (register const char *str, register size_t len)
 }
 
 struct s_op *
-_lookup (register const char *str, register size_t len)
+lookup (register const char *str, register size_t len)
 {
   static struct s_op wordlist[] =
     {
@@ -180,4 +180,41 @@ _lookup (register const char *str, register size_t len)
         }
     }
   return 0;
+}
+#line 49 "mapop.gperf"
+
+
+operator *mapop(char *expr) {
+    return lookup(expr, strlen(expr));
+}
+
+operator *mappreop(char *expr) {
+    operator *ret = lookup(expr, strlen(expr));
+    switch(ret->opcode) {
+        case INC:
+            ret->opcode = PIN;
+            ret->associativity = RTL;
+            ret->position = PREFIX;
+            ret->precedence = 2;
+            break;
+        case DEC:
+            ret->opcode = PDE;
+            ret->associativity = RTL;
+            ret->position = PREFIX;
+            ret->precedence = 2;
+            break;
+        case ADD:
+            ret->opcode = POS;
+            ret->associativity = RTL;
+            ret->position = PREFIX;
+            ret->precedence = 2;
+            break;
+        case SUB:
+            ret->opcode = NEG;
+            ret->associativity = RTL;
+            ret->position = PREFIX;
+            ret->precedence = 2;
+        default: break;
+    }
+    return ret;
 }

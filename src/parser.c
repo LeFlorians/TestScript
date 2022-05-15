@@ -1,23 +1,4 @@
-#include <string.h>
-
 #include "parser.h"
-
-// TODO: implement
-char isprefix(operator op) {
-    return 1;
-}
-
-char isinfix(operator op) {
-    return 1;
-}
-
-char ispostfix(operator op) {
-    return 1;
-}
-
-char getprecedence(operator op) {
-
-}
 
 // For simplification
 typedef struct {
@@ -175,15 +156,13 @@ stnode *expr(tkncache *cache, char rbp) {
             advance(cache);
 
             // allocate stack variables
-            operator op;
+            operator *op;
             char precedence;
 
             stnode *new;
 
             while(cache->cur->type == SYMBOL 
-                // TODO: map operator
-                //    && (precedence = getprecedence(op = mapop(cache->cur->content))) >= rbp
-            ) {
+                    && (precedence = (op = mapop(cache->cur->content))->precedence) >= rbp) {
 
                 new = allocate_stnode();
                 new->type = EXPR;
@@ -194,9 +173,10 @@ stnode *expr(tkncache *cache, char rbp) {
 
                 advance(cache);
                 
-                // the right hand side will be a newly parsed expression
-                if(isinfix(op))
-                    new->data.parent.right = expr(cache, op);
+                // the right hand side will be a newly parsed expression,
+                // taking associativity into consideration
+                if(op->position == INFIX)
+                    new->data.parent.right = expr(cache, op->precedence - op->associativity);
                 else
                     new->data.parent.right = NULL;
 
@@ -229,11 +209,11 @@ stnode *phase2(tkncache *cache) {
         // set the operator
         operator op;
 
-        // TODO: map operator
-        // ret->data.parent.op = mapop(cache->cur->content);
+        // Map prefix operator
+        ret->data.parent.op = mappreop(cache->cur->content);
         
         // Throw an error if its not a prefix operator
-        if(!isprefix(ret->data.parent.op)) {
+        if(ret->data.parent.op->position != PREFIX) {
             // TODO: throw error
         }
 
@@ -288,6 +268,10 @@ void _printside(int depth) {
 
 void _printst(stnode *root, int depth) {
     // _printside(out, depth);
+
+    static const char* typeNames[] = {
+        "BlockEnd", "Member", "FuncEnd", "Expr", "Value",
+    };
 
     printf(". %s", typeNames[root->type]);
     // printf(". %i", root->type);

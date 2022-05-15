@@ -1,7 +1,5 @@
-#include <stdio.h>
-#include <string.h>
-
 #include "interpreter.h"
+#include "parser.h"
 
 /*
 * The interpreter provides an environment for code to run
