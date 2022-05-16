@@ -1,6 +1,9 @@
 # Executable
 lang
 
+# Text files
+*.txt
+
 # VS Code
 .vscode
 

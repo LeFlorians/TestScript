@@ -17,8 +17,8 @@ void _resize_stack(stack *st, size_t newsize) {
     size_t offset =  st->current - st->start;
         
     // free unused elements
-    for(void *e = st->start + newsize; e < st->end; e++)
-        free(e);
+    for(void **e = &(st->start) + 1; e < &(st->end) && e != NULL; e++)
+        free(*e);
 
     // resize array
     if((newptr = realloc(st->start, newsize)) != NULL) {
@@ -51,8 +51,8 @@ stack *create_stack(size_t size){
 
 void free_stack(stack *st) {
     // free all elements
-    for(void *e = st->start + 1; e < st->end && e != NULL; e++)
-        free(e);
+    for(void **e = &(st->start) + 1; e < &(st->end) && e != NULL; e++)
+        free(*e);
 
     // free allocated memory
     free(st->start);
