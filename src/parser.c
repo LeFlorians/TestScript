@@ -152,7 +152,7 @@ stnode *expr(tkncache *cache, unsigned char rbp) {
             stnode *new;
 
             while(cache->cur->type == SYMBOL 
-                    && (op = mapop(cache->cur->content))->precedence < rbp) {
+                    && (op = mapop(cache->cur->content)) != 0 && op->precedence < rbp) {
 
                 new = allocate_stnode();
                 new->type = EXPR;
@@ -172,6 +172,9 @@ stnode *expr(tkncache *cache, unsigned char rbp) {
 
                 // set left to new
                 left = new;
+            }
+            if(op == 0) {
+                // TODO: Throw error, invalid operator in cache->cur->content
             }
         }
 
@@ -199,6 +202,10 @@ stnode *phase2(tkncache *cache) {
 
         // Map prefix operator
         ret->data.parent.op = mappreop(cache->cur->content);
+
+        if(ret->data.parent.op == 0) {
+            // TODO: throw error, invalid operator in cache->cur->content
+        }
         
         // Throw an error if its not a prefix operator
         if(ret->data.parent.op->position != PREFIX) {

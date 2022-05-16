@@ -54,31 +54,33 @@ operator *mapop(char *expr) {
 
 operator *mappreop(char *expr) {
     operator *ret = lookup(expr, strlen(expr));
-    switch(ret->opcode) {
-        case INC:
-            ret->opcode = PIN;
-            ret->associativity = RTL;
-            ret->position = PREFIX;
-            ret->precedence = 2;
-            break;
-        case DEC:
-            ret->opcode = PDE;
-            ret->associativity = RTL;
-            ret->position = PREFIX;
-            ret->precedence = 2;
-            break;
-        case ADD:
-            ret->opcode = POS;
-            ret->associativity = RTL;
-            ret->position = PREFIX;
-            ret->precedence = 2;
-            break;
-        case SUB:
-            ret->opcode = NEG;
-            ret->associativity = RTL;
-            ret->position = PREFIX;
-            ret->precedence = 2;
-        default: break;
+    if(ret != 0) {
+        switch(ret->opcode) {
+            case INC:
+                ret->opcode = PIN;
+                ret->associativity = RTL;
+                ret->position = PREFIX;
+                ret->precedence = 2;
+                break;
+            case DEC:
+                ret->opcode = PDE;
+                ret->associativity = RTL;
+                ret->position = PREFIX;
+                ret->precedence = 2;
+                break;
+            case ADD:
+                ret->opcode = POS;
+                ret->associativity = RTL;
+                ret->position = PREFIX;
+                ret->precedence = 2;
+                break;
+            case SUB:
+                ret->opcode = NEG;
+                ret->associativity = RTL;
+                ret->position = PREFIX;
+                ret->precedence = 2;
+            default: break;
+        }
     }
     return ret;
 }
