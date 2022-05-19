@@ -7,9 +7,24 @@
 
 // interpret from a stream
 void f_interpret(environment *memory, FILE *stream) {
+    stnode *root;
 
-    stnode* root = parse(stream);
+    tkncache *cache = gencache(stream);
 
-    printst(root);
+    int level = 1;
 
+    do {
+        printf("New Parse tree:\n");
+        root = parse(cache);
+
+        printst(root);
+
+        if(root->type == BLOCK)
+            level++;
+        else if(root->type == BLOCK_END)
+            level--;
+
+    } while (level != 0);
+
+    printf("Reached end of file!\n");
 }

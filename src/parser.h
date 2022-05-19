@@ -4,9 +4,9 @@
 #include "mapop.h"
 
 typedef enum {      // n_children   represents
+    BLOCK, 
     BLOCK_END,      // 0            }
-    MEMBER,         // 1-2          expr (+ member)
-    FUNC_END,       // 0            )
+    CALL,
     EXPR,           // 1-2 & op     any expression
     VALUE,
 } nodetype;
@@ -34,8 +34,17 @@ struct stnode {
 
 };
 
+// For simplification
+typedef struct {
+    token *cur, *peek;
+    FILE *input;
+} tkncache;
+
+tkncache *gencache(FILE *input);
+
 // Function to parse a stream and save resulting tree in dst
-stnode *parse(FILE* input);
+// @param cache Cache created by gencache()
+stnode *parse(tkncache *cache);
 
 // Function to print a tree to a stream
 void printst(stnode *root);
