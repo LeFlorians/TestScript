@@ -23,29 +23,29 @@
 struct s_op;
 
 %%
-++\     INC,    POSTFIX,    LTR,    1
---\     DEC,    POSTFIX,    LTR,    1
-!\      NOT,    PREFIX,     RTL,    2
-*\      MUL,    INFIX,      LTR,    3
-/\      DIV,    INFIX,      LTR,    3
-"%"\    MOD,    INFIX,      LTR,    3
-+\      ADD,    INFIX,      LTR,    4
--\      SUB,    INFIX,      LTR,    4
-<\      LET,    INFIX,      LTR,    5
-<=\     LEQ,    INFIX,      LTR,    5
->\      GRT,    INFIX,      LTR,    5
->=\     GEQ,    INFIX,      LTR,    5
-==\     EQU,    INFIX,      LTR,    6
-!=\     NEQ,    INFIX,      LTR,    6
-&&\     AND,    INFIX,      LTR,    7
-||\     ORO,    INFIX,      LTR,    8
-=\      ASS,    INFIX,      RTL,    10
-+=\     PEQ,    INFIX,      RTL,    10
--=\     MEQ,    INFIX,      RTL,    10
-*=\     TEQ,    INFIX,      RTL,    10
-/=\     DEQ,    INFIX,      RTL,    10
-"%="\   REQ,    INFIX,      RTL,    10
-,\      LIS,    INFIX,      RTL,    11
+++\     INC,    POSTFIX,    LTR,    10
+--\     DEC,    POSTFIX,    LTR,    10
+!\      NOT,    PREFIX,     RTL,    9
+*\      MUL,    INFIX,      LTR,    8
+/\      DIV,    INFIX,      LTR,    8
+"%"\    MOD,    INFIX,      LTR,    8
++\      ADD,    INFIX,      LTR,    7
+-\      SUB,    INFIX,      LTR,    7
+<\      LET,    INFIX,      LTR,    6
+<=\     LEQ,    INFIX,      LTR,    6
+>\      GRT,    INFIX,      LTR,    6
+>=\     GEQ,    INFIX,      LTR,    6
+==\     EQU,    INFIX,      LTR,    5
+!=\     NEQ,    INFIX,      LTR,    5
+&&\     AND,    INFIX,      LTR,    4
+||\     ORO,    INFIX,      LTR,    3
+=\      ASS,    INFIX,      RTL,    2
++=\     PEQ,    INFIX,      RTL,    2
+-=\     MEQ,    INFIX,      RTL,    2
+*=\     TEQ,    INFIX,      RTL,    2
+/=\     DEQ,    INFIX,      RTL,    2
+"%="\   REQ,    INFIX,      RTL,    2
+,\      LIS,    INFIX,      RTL,    1
 %%
 
 operator *mapop(char *expr) {

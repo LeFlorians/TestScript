@@ -1,6 +1,6 @@
 #include "parser.h"
 
-#define DEFAULT_RBP 0xFF
+#define DEFAULT_RBP 0
 
 /*
     Read a new token
@@ -103,7 +103,7 @@ stnode *expr(tkncache *cache, unsigned char rbp) {
             stnode *new;
 
             while(cache->cur->type == SYMBOL 
-                    && (op = mapop(cache->cur->content)) != 0 && op->precedence < rbp) {
+                    && (op = mapop(cache->cur->content)) != 0 && op->precedence > rbp) {
 
                 new = allocate_stnode();
                 new->type = EXPR;
@@ -117,7 +117,7 @@ stnode *expr(tkncache *cache, unsigned char rbp) {
                 // the right hand side will be a newly parsed expression,
                 // taking associativity into consideration
                 if(op->position == INFIX)
-                    new->data.parent.right = expr(cache, op->precedence + op->associativity);
+                    new->data.parent.right = expr(cache, op->precedence - op->associativity);
                 else
                     new->data.parent.right = NULL;
 
