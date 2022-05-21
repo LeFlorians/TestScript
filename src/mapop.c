@@ -45,12 +45,12 @@
 #line 23 "mapop.gperf"
 struct s_op;
 
-#define TOTAL_KEYWORDS 23
+#define TOTAL_KEYWORDS 33
 #define MIN_WORD_LENGTH 1
 #define MAX_WORD_LENGTH 2
 #define MIN_HASH_VALUE 1
-#define MAX_HASH_VALUE 52
-/* maximum key range = 52, duplicates = 0 */
+#define MAX_HASH_VALUE 62
+/* maximum key range = 62, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -64,32 +64,32 @@ hash (register const char *str, register size_t len)
 {
   static unsigned char asso_values[] =
     {
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 18, 53, 53, 53, 13, 25, 53,
-      53, 53,  8, 15, 10,  5, 53,  3, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      25,  0, 20, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 20, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 53
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 22, 63, 63, 63, 17, 25, 63,
+      63, 63, 12, 20, 30,  5, 63,  7, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 10, 63,
+       2,  0, 55, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 45, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 15, 63, 35, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63
     };
   register unsigned int hval = len;
 
@@ -111,60 +111,84 @@ lookup (register const char *str, register size_t len)
   static struct s_op wordlist[] =
     {
       {""},
-#line 42 "mapop.gperf"
-      {"=",      ASS,    INFIX,      RTL,    2},
-#line 38 "mapop.gperf"
-      {"==",     EQU,    INFIX,      LTR,    5},
-      {""},
-#line 30 "mapop.gperf"
-      {"/",      DIV,    INFIX,      LTR,    8},
 #line 46 "mapop.gperf"
-      {"/=",     DEQ,    INFIX,      RTL,    2},
-#line 33 "mapop.gperf"
-      {"-",      SUB,    INFIX,      LTR,    7},
-#line 44 "mapop.gperf"
-      {"-=",     MEQ,    INFIX,      RTL,    2},
-      {""},
-#line 29 "mapop.gperf"
-      {"*",      MUL,    INFIX,      LTR,    8},
-#line 45 "mapop.gperf"
-      {"*=",     TEQ,    INFIX,      RTL,    2},
-#line 48 "mapop.gperf"
-      {",",      LIS,    INFIX,      RTL,    1},
-#line 27 "mapop.gperf"
-      {"--",     DEC,    POSTFIX,    LTR,    10},
-      {""},
-#line 31 "mapop.gperf"
-      {"%",    MOD,    INFIX,      LTR,    8},
-#line 47 "mapop.gperf"
-      {"%=",   REQ,    INFIX,      RTL,    2},
-#line 32 "mapop.gperf"
-      {"+",      ADD,    INFIX,      LTR,    7},
-#line 43 "mapop.gperf"
-      {"+=",     PEQ,    INFIX,      RTL,    2},
-      {""},
-#line 28 "mapop.gperf"
-      {"!",      NOT,    PREFIX,     RTL,    9},
+      {"=",    OP_ASS,     INFIX,   RTL, 2     /*  Assign                    */},
 #line 39 "mapop.gperf"
-      {"!=",     NEQ,    INFIX,      LTR,    5},
-#line 36 "mapop.gperf"
-      {">",      GRT,    INFIX,      LTR,    6},
-#line 37 "mapop.gperf"
-      {">=",     GEQ,    INFIX,      LTR,    6},
-      {""}, {""}, {""},
-#line 34 "mapop.gperf"
-      {"<",      LET,    INFIX,      LTR,    6},
+      {"==",   OP_EQU,     INFIX,   LTR, 8     /*  Equals                    */},
 #line 35 "mapop.gperf"
-      {"<=",     LEQ,    INFIX,      LTR,    6},
+      {"<",    OP_LET,     INFIX,   LTR, 9    /*  Less Than                 */},
+#line 36 "mapop.gperf"
+      {"<=",   OP_LEQ,     INFIX,   LTR, 9    /*  Less than or equal to     */},
+      {""},
+#line 34 "mapop.gperf"
+      {"-",    OP_SUB,     INFIX,   LTR, 10    /*  Subtract                  */},
+#line 52 "mapop.gperf"
+      {"-=",   OP_SUBASS,  INFIX,   RTL, 2     /*  Subtraction Assignment    */},
+#line 31 "mapop.gperf"
+      {"/",    OP_DIV,     INFIX,   LTR, 11    /*  Divide                    */},
+#line 54 "mapop.gperf"
+      {"/=",   OP_DIVASS,  INFIX,   RTL, 2     /*  Division Assignment       */},
+      {""},
+#line 56 "mapop.gperf"
+      {":",    OP_DEFAULT, INFIX,   RTL, 2     /*  Default Assignment        */},
+#line 27 "mapop.gperf"
+      {"--",   OP_DECR,    POSTFIX, LTR, 13    /*  Decrement                 */},
+#line 30 "mapop.gperf"
+      {"*",    OP_MUL,     INFIX,   LTR, 11    /*  Multiply                  */},
+#line 53 "mapop.gperf"
+      {"*=",   OP_MULASS,  INFIX,   RTL, 2     /*  Multiplication Assignment */},
+      {""},
+#line 43 "mapop.gperf"
+      {"|",    OP_BOR,     INFIX,   LTR, 5     /*  Bitwise OR                */},
+#line 50 "mapop.gperf"
+      {"|=",   OP_BORASS,  INFIX,   RTL, 2     /*  Bitwise OR Assignment     */},
+#line 32 "mapop.gperf"
+      {"%",  OP_MOD,     INFIX,   LTR, 11    /*  Modulo                    */},
+#line 55 "mapop.gperf"
+      {"%=", OP_MODASS,  INFIX,   RTL, 2     /*  Modulo Assignment         */},
+      {""},
+#line 33 "mapop.gperf"
+      {"+",    OP_ADD,     INFIX,   LTR, 10    /*  Add                       */},
+#line 51 "mapop.gperf"
+      {"+=",   OP_ADDASS,  INFIX,   RTL, 2     /*  Addition Assignment       */},
+#line 28 "mapop.gperf"
+      {"!",    OP_LNOT,    PREFIX,  RTL, 12    /*  Logical NOT               */},
+#line 40 "mapop.gperf"
+      {"!=",   OP_NEQU,    INFIX,   LTR, 8     /*  Not Equals                */},
+      {""},
+#line 41 "mapop.gperf"
+      {"&",    OP_BAND,    INFIX,   LTR, 7     /*  Bitwise AND               */},
+#line 49 "mapop.gperf"
+      {"&=",   OP_BANDASS, INFIX,   RTL, 2     /*  Bitwise AND Assignment    */},
+      {""}, {""}, {""},
+#line 58 "mapop.gperf"
+      {",",    OP_LIST,    INFIX,   RTL, 1     /*  List                      */},
+#line 45 "mapop.gperf"
+      {"||",   OP_LOR,     INFIX,   LTR, 3     /*  Logical OR                */},
+      {""}, {""}, {""},
+#line 29 "mapop.gperf"
+      {"~",    OP_BNOT,    PREFIX,  RTL, 12    /*  Bitwise NOT               */},
+#line 48 "mapop.gperf"
+      {"~=",   OP_BNOTASS, INFIX,   RTL, 2     /*  Bitwise NOT Assignment    */},
       {""}, {""}, {""}, {""},
 #line 26 "mapop.gperf"
-      {"++",     INC,    POSTFIX,    LTR,    10},
-      {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""},
-#line 41 "mapop.gperf"
-      {"||",     ORO,    INFIX,      LTR,    3},
-      {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""},
-#line 40 "mapop.gperf"
-      {"&&",     AND,    INFIX,      LTR,    4}
+      {"++",   OP_INCR,    POSTFIX, LTR, 13    /*  Increment                 */},
+      {""}, {""}, {""},
+#line 42 "mapop.gperf"
+      {"^",    OP_BXOR,    INFIX,   LTR, 6     /*  Bitwise XOR               */},
+#line 47 "mapop.gperf"
+      {"^=",   OP_BXORASS, INFIX,   RTL, 2     /*  Bitwise XOR Assignment    */},
+      {""}, {""}, {""}, {""},
+#line 44 "mapop.gperf"
+      {"&&",   OP_LAND,    INFIX,   LTR, 4     /*  Logical AND               */},
+      {""}, {""}, {""},
+#line 37 "mapop.gperf"
+      {">",    OP_GRT,     INFIX,   LTR, 9    /*  Greater than              */},
+#line 38 "mapop.gperf"
+      {">=",   OP_GEQ,     INFIX,   LTR, 9    /*  Greater than or equal to  */},
+      {""}, {""}, {""}, {""},
+#line 57 "mapop.gperf"
+      {"->",   OP_LAMBDA,  INFIX,   RTL, 2     /*  Lambda declaration        */}
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
@@ -181,7 +205,7 @@ lookup (register const char *str, register size_t len)
     }
   return 0;
 }
-#line 49 "mapop.gperf"
+#line 59 "mapop.gperf"
 
 
 operator *mapop(char *expr) {
@@ -192,29 +216,29 @@ operator *mappreop(char *expr) {
     operator *ret = lookup(expr, strlen(expr));
     if(ret != 0) {
         switch(ret->opcode) {
-            case INC:
-                ret->opcode = PIN;
+            case OP_INCR:
+                ret->opcode = OP_PREINCR;
                 ret->associativity = RTL;
                 ret->position = PREFIX;
-                ret->precedence = 2;
+                ret->precedence = 9;
                 break;
-            case DEC:
-                ret->opcode = PDE;
+            case OP_DECR:
+                ret->opcode = OP_PREDECR;
                 ret->associativity = RTL;
                 ret->position = PREFIX;
-                ret->precedence = 2;
+                ret->precedence = 9;
                 break;
-            case ADD:
-                ret->opcode = POS;
+            case OP_ADD:
+                ret->opcode = OP_POS;
                 ret->associativity = RTL;
                 ret->position = PREFIX;
-                ret->precedence = 2;
+                ret->precedence = 9;
                 break;
-            case SUB:
-                ret->opcode = NEG;
+            case OP_SUB:
+                ret->opcode = OP_NEG;
                 ret->associativity = RTL;
                 ret->position = PREFIX;
-                ret->precedence = 2;
+                ret->precedence = 9;
             default: break;
         }
     }

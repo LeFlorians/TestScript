@@ -6,10 +6,17 @@ struct s_op {
     char *name;
     
     enum {
-        INC, DEC, PIN, PDE, POS, NEG, NOT,
-        MUL, DIV, MOD, ADD, SUB, LET, LEQ, 
-        GRT, GEQ, EQU, NEQ, AND, ORO, CON,
-        ASS, PEQ, MEQ, TEQ, DEQ, REQ, LIS, 
+        OP_INCR, OP_DECR, OP_LNOT, OP_BNOT, OP_MUL, 
+        OP_DIV, OP_MOD, OP_ADD, OP_SUB, OP_LET, 
+        OP_LEQ, OP_GRT, OP_GEQ, OP_EQU, OP_NEQU, 
+        OP_BAND, OP_BXOR, OP_BOR, OP_LAND, OP_LOR, 
+        OP_LAMBDA, OP_ASS, OP_BXORASS, OP_BNOTASS, 
+        OP_BANDASS, OP_BORASS, OP_ADDASS, OP_SUBASS, 
+        OP_MULASS, OP_DIVASS, OP_MODASS, OP_DEFAULT, 
+        OP_LIST,
+
+        // Special prefix operators
+        OP_PREINCR, OP_PREDECR, OP_POS, OP_NEG,
     } opcode;
 
     enum {

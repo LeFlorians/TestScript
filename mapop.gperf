@@ -23,29 +23,39 @@
 struct s_op;
 
 %%
-++\     INC,    POSTFIX,    LTR,    10
---\     DEC,    POSTFIX,    LTR,    10
-!\      NOT,    PREFIX,     RTL,    9
-*\      MUL,    INFIX,      LTR,    8
-/\      DIV,    INFIX,      LTR,    8
-"%"\    MOD,    INFIX,      LTR,    8
-+\      ADD,    INFIX,      LTR,    7
--\      SUB,    INFIX,      LTR,    7
-<\      LET,    INFIX,      LTR,    6
-<=\     LEQ,    INFIX,      LTR,    6
->\      GRT,    INFIX,      LTR,    6
->=\     GEQ,    INFIX,      LTR,    6
-==\     EQU,    INFIX,      LTR,    5
-!=\     NEQ,    INFIX,      LTR,    5
-&&\     AND,    INFIX,      LTR,    4
-||\     ORO,    INFIX,      LTR,    3
-=\      ASS,    INFIX,      RTL,    2
-+=\     PEQ,    INFIX,      RTL,    2
--=\     MEQ,    INFIX,      RTL,    2
-*=\     TEQ,    INFIX,      RTL,    2
-/=\     DEQ,    INFIX,      RTL,    2
-"%="\   REQ,    INFIX,      RTL,    2
-,\      LIS,    INFIX,      RTL,    1
+++\   OP_INCR,    POSTFIX, LTR, 13    /*  Increment                 */
+--\   OP_DECR,    POSTFIX, LTR, 13    /*  Decrement                 */
+!\    OP_LNOT,    PREFIX,  RTL, 12    /*  Logical NOT               */
+~\    OP_BNOT,    PREFIX,  RTL, 12    /*  Bitwise NOT               */
+*\    OP_MUL,     INFIX,   LTR, 11    /*  Multiply                  */
+/\    OP_DIV,     INFIX,   LTR, 11    /*  Divide                    */
+"%"\  OP_MOD,     INFIX,   LTR, 11    /*  Modulo                    */
++\    OP_ADD,     INFIX,   LTR, 10    /*  Add                       */
+-\    OP_SUB,     INFIX,   LTR, 10    /*  Subtract                  */
+<\    OP_LET,     INFIX,   LTR, 9    /*  Less Than                 */
+<=\   OP_LEQ,     INFIX,   LTR, 9    /*  Less than or equal to     */
+>\    OP_GRT,     INFIX,   LTR, 9    /*  Greater than              */
+>=\   OP_GEQ,     INFIX,   LTR, 9    /*  Greater than or equal to  */
+==\   OP_EQU,     INFIX,   LTR, 8     /*  Equals                    */
+!=\   OP_NEQU,    INFIX,   LTR, 8     /*  Not Equals                */
+&\    OP_BAND,    INFIX,   LTR, 7     /*  Bitwise AND               */
+^\    OP_BXOR,    INFIX,   LTR, 6     /*  Bitwise XOR               */
+|\    OP_BOR,     INFIX,   LTR, 5     /*  Bitwise OR                */
+&&\   OP_LAND,    INFIX,   LTR, 4     /*  Logical AND               */
+||\   OP_LOR,     INFIX,   LTR, 3     /*  Logical OR                */
+=\    OP_ASS,     INFIX,   RTL, 2     /*  Assign                    */
+^=\   OP_BXORASS, INFIX,   RTL, 2     /*  Bitwise XOR Assignment    */
+~=\   OP_BNOTASS, INFIX,   RTL, 2     /*  Bitwise NOT Assignment    */
+&=\   OP_BANDASS, INFIX,   RTL, 2     /*  Bitwise AND Assignment    */
+|=\   OP_BORASS,  INFIX,   RTL, 2     /*  Bitwise OR Assignment     */
++=\   OP_ADDASS,  INFIX,   RTL, 2     /*  Addition Assignment       */
+-=\   OP_SUBASS,  INFIX,   RTL, 2     /*  Subtraction Assignment    */
+*=\   OP_MULASS,  INFIX,   RTL, 2     /*  Multiplication Assignment */
+/=\   OP_DIVASS,  INFIX,   RTL, 2     /*  Division Assignment       */
+"%="\ OP_MODASS,  INFIX,   RTL, 2     /*  Modulo Assignment         */
+:\    OP_DEFAULT, INFIX,   RTL, 2     /*  Default Assignment        */
+->\   OP_LAMBDA,  INFIX,   RTL, 2     /*  Lambda declaration        */
+,\    OP_LIST,    INFIX,   RTL, 1     /*  List                      */
 %%
 
 operator *mapop(char *expr) {
@@ -56,29 +66,29 @@ operator *mappreop(char *expr) {
     operator *ret = lookup(expr, strlen(expr));
     if(ret != 0) {
         switch(ret->opcode) {
-            case INC:
-                ret->opcode = PIN;
+            case OP_INCR:
+                ret->opcode = OP_PREINCR;
                 ret->associativity = RTL;
                 ret->position = PREFIX;
-                ret->precedence = 2;
+                ret->precedence = 9;
                 break;
-            case DEC:
-                ret->opcode = PDE;
+            case OP_DECR:
+                ret->opcode = OP_PREDECR;
                 ret->associativity = RTL;
                 ret->position = PREFIX;
-                ret->precedence = 2;
+                ret->precedence = 9;
                 break;
-            case ADD:
-                ret->opcode = POS;
+            case OP_ADD:
+                ret->opcode = OP_POS;
                 ret->associativity = RTL;
                 ret->position = PREFIX;
-                ret->precedence = 2;
+                ret->precedence = 9;
                 break;
-            case SUB:
-                ret->opcode = NEG;
+            case OP_SUB:
+                ret->opcode = OP_NEG;
                 ret->associativity = RTL;
                 ret->position = PREFIX;
-                ret->precedence = 2;
+                ret->precedence = 9;
             default: break;
         }
     }
