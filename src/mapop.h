@@ -13,7 +13,7 @@ struct s_op {
         OP_LAMBDA, OP_ASS, OP_BXORASS, OP_BNOTASS, 
         OP_BANDASS, OP_BORASS, OP_ADDASS, OP_SUBASS, 
         OP_MULASS, OP_DIVASS, OP_MODASS, OP_DEFAULT, 
-        OP_LIST,
+        OP_LIST, OP_END,
 
         // Special prefix operators
         OP_PREINCR, OP_PREDECR, OP_POS, OP_NEG,

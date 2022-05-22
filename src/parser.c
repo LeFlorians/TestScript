@@ -178,8 +178,14 @@ stnode *expr(parsercache *cache, unsigned char rbp) {
 
                     new->data.parent.right = subroot;
 
-                } else
+                } else {
                     new->data.parent.right = NULL;
+                
+                    // Return on semicolon
+                    if(op->opcode == OP_END){
+                        return left;
+                    }
+                }
 
                 // set left to new
                 left = new;
@@ -210,6 +216,8 @@ stnode *expr(parsercache *cache, unsigned char rbp) {
                 // expect closing bracket now
                 if(cache->cur->type == BRACKET && cache->cur->content[0] == ')') {
                     advance(cache);
+
+                    // move on, parse next symbol
                 } else {
                     // errorrr
                     printf("Expected closing bracket!!");
