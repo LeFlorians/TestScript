@@ -144,6 +144,8 @@ stnode *expr(parsercache *cache, unsigned char rbp) {
                         // left child is expression or BLOCK_END
                         // right child is member pointer or NULL
 
+                        char flag = 0;
+
                         while(1) {
                             left = parse(cache);
 
@@ -154,16 +156,20 @@ stnode *expr(parsercache *cache, unsigned char rbp) {
                             // keep track of level
                             else if(left->type == BLOCK)
                                 level++;
-                            else if(left->type == BLOCK_END)
+                            else if(left->type == BLOCK_END){
                                 level--;
-
-                            if(level == 0) {
-                                break;
-                            } else {
-                                member = member->data.parent.right = allocate_typed(MEMBER);
+                                if(level == 0) 
+                                    break;
                             }
+
+                            // skip this once
+                            if(flag) {                            
+                                member = member->data.parent.right = allocate_typed(MEMBER);
+                            } else
+                                flag = 1;
                             
                             member->data.parent.left = left;
+                            
                         }
 
                         // Set left pointer to NULL
