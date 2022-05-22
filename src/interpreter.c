@@ -17,7 +17,7 @@ void f_interpret(environment *memory, FILE *stream) {
 
         printst(root);
 
-    } while (root->type != ERROR);
+    } while (root->type != ERROR && root->type != FILE_END);
 
     printf("Reached end of file!\n");
 

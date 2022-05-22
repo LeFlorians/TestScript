@@ -6,9 +6,11 @@
 
 typedef enum {      // n_children   represents
     ERROR,          //              parser error, message in data.leaf.value
+    FILE_END,       //              EOF, stop parsing
     BLOCK, 
     BLOCK_END,      // 0            }
     CALL,           //              function
+    CLOSE,          //              a closing bracket
     INDEX,          //              array index
     EXPR,           // 1-2 & op     any expression
     VALUE,

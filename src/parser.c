@@ -18,7 +18,6 @@ void advance(parsercache *cache) {
         readtkn(cache->input, cache->peek);
     } while(cache->peek->type == COMMENT);
 
-
     // Match closing brackets
     static char closing[] = {'}', ']', ')'};
     if(cache->cur->type == BRACKET) {
@@ -84,46 +83,7 @@ stnode *allocate_error(token *tkn, char *msg) {
 }
 
 // Private declaration of some of the functions
-stnode *expr(parsercache *cache, unsigned char op);
 stnode *secondary(parsercache *cache);
-
-/*
-    Parse function
-    expect: 
-        next token in cur
-*/
-stnode *parse(parsercache *cache) {
-
-    switch (cache->cur->type) {
-        case BRACKET: {
-            if(cache->cur->content[0] == '{') {
-                // load member chain and return
-                advance(cache);
-                return allocate_typed(BLOCK);
-            }
-            
-            if(cache->cur->content[0] == '}') {
-                // TODO: maybe return NULL
-                advance(cache);
-                return allocate_typed(BLOCK_END);
-            }
-        }
-
-        // End on EOF
-        case NULLTKN:
-            return allocate_typed(BLOCK_END);
-
-        // Throw error when encountering invalid token
-        case INVALID:
-            stnode* ret = allocate_error(cache->cur, "Encountered invalid token");
-            advance(cache);
-            return ret;
-
-    }
-
-    // return an expression
-    return expr(cache, DEFAULT_RBP);
-}
 
 /*
     Decodes any expression
@@ -234,13 +194,16 @@ stnode *secondary(parsercache *cache) {
                 return expr(cache, DEFAULT_RBP);
             } else if(cache->cur->content[0] == '{') {
                 advance(cache);
-
-                // BLOCK_END signals an in-expression block / function definition
-                // TODO: maybe use another type name
+                return allocate_typed(BLOCK);
+            } else if(cache->cur->content[0] == '}') {
+                advance(cache);
                 return allocate_typed(BLOCK_END);
             }
+            
+            // ignore other brackets
+            advance(cache);
+            return allocate_typed(CLOSE);
 
-            break;
         }
 
         case SYMBOL: {
@@ -276,10 +239,6 @@ stnode *secondary(parsercache *cache) {
             break;
         }
 
-    }
-
-    // TODO: handle other cases
-    switch(cache->cur->type){
         case FIELD:
         case NUMBER:
 
@@ -300,12 +259,30 @@ stnode *secondary(parsercache *cache) {
             return ret;
 
         break;
-    }
-    
-    return allocate_typed(BLOCK_END);
 
+        // End on EOF
+        case NULLTKN:
+            return allocate_typed(FILE_END);
+
+        // Throw error when encountering invalid token
+        case INVALID:
+            stnode* ret = allocate_error(cache->cur, "Encountered invalid token");
+            advance(cache);
+            return ret;
+
+    }
+
+    return allocate_error(cache->cur, "Token not matched");
 }
 
+/*
+    Parse function
+    @param cache Cache generated with provided 'gencache' function
+*/
+stnode *parse(parsercache *cache) {
+    // return an expression
+    return expr(cache, DEFAULT_RBP);
+}
 
 // Function to generate a cache (reads one token from input already)
 parsercache *gencache(FILE* input) {
@@ -333,7 +310,7 @@ void _printst(stnode *root, int depth) {
     // _printside(out, depth);
 
     static const char* typeNames[] = {
-        "Error", "Block", "BlockEnd", "Call", "Index", "Expr", "Value",
+        "Error", "FileEnd", "Block", "BlockEnd", "Call", "Close", "Index", "Expr", "Value",
     };
 
     printf(". %s", typeNames[root->type]);
