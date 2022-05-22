@@ -14,7 +14,7 @@ void f_interpret(environment *memory, FILE *stream) {
     int level = 1;
 
     do {
-        printf("New Parse tree:\n");
+        printf("\nNew Parse tree:\n");
         root = parse(cache);
 
         printst(root);

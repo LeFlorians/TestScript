@@ -273,12 +273,6 @@ tkncache *gencache(FILE* input) {
 
 /* Functions to print out syntaxtree */
 
-void _printside(int depth) {
-    // Print lines on the side
-    for(int i = 0; i < depth; i++)
-        printf("|");
-}
-
 void _printst(stnode *root, int depth) {
     // _printside(out, depth);
 
@@ -295,30 +289,28 @@ void _printst(stnode *root, int depth) {
     if(root->type == VALUE) {
         printf(" (%s)", root->data.leaf.value);
     } else {
-        putchar('\n');
 
         if(root->data.parent.left != NULL){
-            _printside(depth);
+            putchar('\n');
+            for(int i = 0; i < depth; i++)
+                printf("|");
 
             putchar('L');
 
             _printst(root->data.parent.left, depth+1);
-
-            putchar('\n');
         }
 
         if(root->data.parent.right != NULL){
-            _printside(depth);
+            putchar('\n');
+            for(int i = 0; i < depth; i++)
+                printf("|");
 
             putchar('R');
 
             _printst(root->data.parent.right, depth+1);
         }
-        
 
-    }
-
-    
+    }    
 } 
 
 void printst(stnode *root) {
