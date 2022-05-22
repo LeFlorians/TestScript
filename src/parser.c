@@ -13,6 +13,8 @@ void advance(tkncache *cache) {
     cache->cur = cache->peek;
     cache->peek = temp;
     // Read next token, skip comments
+
+    // TODO: Match closing brackets
     do {
         readtkn(cache->input, cache->peek);
     } while(cache->peek->type == COMMENT);
