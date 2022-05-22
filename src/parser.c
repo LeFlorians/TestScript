@@ -242,7 +242,7 @@ stnode *expr(parsercache *cache, unsigned char rbp) {
                 left = index;
 
                 // Set list of arguments to be expression
-                index->data.parent.right = expr(cache, DEFAULT_RBP);
+                index->data.parent.right = inlineexpr(cache, DEFAULT_RBP);
 
                 break;
             }
