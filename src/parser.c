@@ -7,17 +7,55 @@
     Read a new token
     @param peek The token variable to overwrite
 */
-void advance(tkncache *cache) {
+void advance(parsercache *cache) {
     // Switch the two tokens and read a new one
     token *temp = cache->cur;
     cache->cur = cache->peek;
     cache->peek = temp;
     // Read next token, skip comments
 
-    // TODO: Match closing brackets
     do {
         readtkn(cache->input, cache->peek);
     } while(cache->peek->type == COMMENT);
+
+
+    // Match closing brackets
+    static char closing[] = {'}', ']', ')'};
+    if(cache->cur->type == BRACKET) {
+        switch (cache->cur->content[0]) {
+            case '{':
+                push(cache->bracketstack, &closing[0]);
+                break;
+            case '[':
+                push(cache->bracketstack, &closing[1]);
+                break;
+            case '(':
+                push(cache->bracketstack, &closing[2]);
+                break;
+
+            default:
+                char *popped;
+
+                if((popped = (char *)pop(cache->bracketstack)) == NULL) {
+                    cache->cur->type = INVALID;
+                    static char* error = "Didn't expect closing bracket %c";
+
+                    snprintf(cache->cur->content, MAX_CONTENT, error, cache->cur->content[0]);
+                    break;
+                }
+
+                if(*popped != cache->cur->content[0] ){
+                    // Throw error, wrong bracket
+                    cache->cur->type = INVALID;
+                    static char* error = "Expected another bracket %c, got %c";
+
+                    // Write error
+                    snprintf(cache->cur->content, MAX_CONTENT, error, *popped, cache->cur->content[0]);
+                    break;
+                }
+            break;
+        }
+    }
 }
 
 // Function to allocate stnode
@@ -46,32 +84,29 @@ stnode *allocate_error(token *tkn, char *msg) {
 }
 
 // Private declaration of some of the functions
-stnode *expr(tkncache *cache, unsigned char op);
-stnode *secondary(tkncache *cache);
+stnode *expr(parsercache *cache, unsigned char op);
+stnode *secondary(parsercache *cache);
 
 /*
     Parse function
     expect: 
         next token in cur
 */
-stnode *parse(tkncache *cache) {
+stnode *parse(parsercache *cache) {
+
     switch (cache->cur->type) {
         case BRACKET: {
-            stnode *ret;
             if(cache->cur->content[0] == '{') {
                 // load member chain and return
-                ret = allocate_typed(BLOCK);
-            } else if(cache->cur->content[0] == '}') {
-                // TODO: maybe return NULL
-                ret = allocate_typed(BLOCK_END);
-            } else {
-                ret = allocate_error(cache->cur, "Unexpected bracket");
+                advance(cache);
+                return allocate_typed(BLOCK);
             }
-
-            advance(cache);
-            // TODO: handle other brackets
-
-            return ret;
+            
+            if(cache->cur->content[0] == '}') {
+                // TODO: maybe return NULL
+                advance(cache);
+                return allocate_typed(BLOCK_END);
+            }
         }
 
         // End on EOF
@@ -94,11 +129,11 @@ stnode *parse(tkncache *cache) {
     Decodes any expression
     Returns an EXPR/VALUE node
 
-    @param rbp Right binding power (default=OP_NONE)
+    @param rbp Right binding power
     @param infeed Use this token instead of reading a new one
     @param pushback Used internally to return unused tokens to caller function
 */
-stnode *expr(tkncache *cache, unsigned char rbp) {
+stnode *expr(parsercache *cache, unsigned char rbp) {
     stnode *left = secondary(cache);
 
     if(left == NULL)
@@ -158,14 +193,8 @@ stnode *expr(tkncache *cache, unsigned char rbp) {
             // Set list of arguments to be expression
             call->data.parent.right = expr(cache, DEFAULT_RBP);
 
-            // expect bracket
-            if(cache->cur->type == BRACKET && cache->cur->content[0] == ')' ) {
-                advance(cache);
-            } else {
-                return allocate_error(cache->cur, "Expected closing bracket");
-            }
         } else if (cache->cur->content[0] == '[') {
-                        advance(cache);
+            advance(cache);
 
             stnode *index = allocate_typed(INDEX);
 
@@ -174,13 +203,6 @@ stnode *expr(tkncache *cache, unsigned char rbp) {
 
             // Set list of arguments to be expression
             index->data.parent.right = expr(cache, DEFAULT_RBP);
-
-            // expect bracket
-            if(cache->cur->type == BRACKET && cache->cur->content[0] == ']' ) {
-                advance(cache);
-            } else {
-                return allocate_error(cache->cur, "Expected closing square bracket");
-            }
         }
 
     }
@@ -192,7 +214,7 @@ stnode *expr(tkncache *cache, unsigned char rbp) {
     Decodes Fields/Values/Prefixes
     Returns a VALUE or one-handed EXPR or NULL
 */
-stnode *secondary(tkncache *cache) {
+stnode *secondary(parsercache *cache) {
     stnode *ret, *val;
 
     // advance(cache);
@@ -209,15 +231,7 @@ stnode *secondary(tkncache *cache) {
                 advance(cache);
 
                 // Return a newly parsed expression
-                ret = expr(cache, DEFAULT_RBP);
-
-                if(cache->cur->type == BRACKET && cache->cur->content[0] == ')') {
-                    advance(cache);
-                } else {
-                    return allocate_error(cache->cur, "Expected closing bracket");
-                }
-
-                return ret;
+                return expr(cache, DEFAULT_RBP);
             } else if(cache->cur->content[0] == '{') {
                 advance(cache);
 
@@ -294,13 +308,16 @@ stnode *secondary(tkncache *cache) {
 
 
 // Function to generate a cache (reads one token from input already)
-tkncache *gencache(FILE* input) {
+parsercache *gencache(FILE* input) {
     // create a token cache
-    tkncache *cache = (tkncache *) malloc(sizeof(tkncache));
+    parsercache *cache = (parsercache *) malloc(sizeof(parsercache));
 
     cache->cur = (token *) malloc(sizeof(token));
     cache->peek = (token *) malloc(sizeof(token));
     cache->input = input;
+
+    // allocate stack for pattern matching
+    cache->bracketstack = create_stack(1, 16);
 
     // advance once to load token into peek slot
     advance(cache);

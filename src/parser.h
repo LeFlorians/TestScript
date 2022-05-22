@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+#include "memory/stack.h"
 #include "tokenizer.h"
 #include "mapop.h"
 
@@ -7,7 +8,7 @@ typedef enum {      // n_children   represents
     ERROR,          //              parser error, message in data.leaf.value
     BLOCK, 
     BLOCK_END,      // 0            }
-    CALL,           //              function call
+    CALL,           //              function
     INDEX,          //              array index
     EXPR,           // 1-2 & op     any expression
     VALUE,
@@ -40,14 +41,20 @@ struct stnode {
 typedef struct {
     token *cur, *peek;
     FILE *input;
-} tkncache;
+
+    /*
+        Stack for bracket matching
+        ! This stack will not deal with/contain any curly brackets, the interpreter has to count those.
+    */
+    stack *bracketstack;
+} parsercache;
 
 // Generate a cache for parser
-tkncache *gencache(FILE *input);
+parsercache *gencache(FILE *input);
 
 // Function to parse a stream and save resulting tree in dst
 // @param cache Cache created by gencache()
-stnode *parse(tkncache *cache);
+stnode *parse(parsercache *cache);
 
 // Function to print a tree to a stream
 void printst(stnode *root);

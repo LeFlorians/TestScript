@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+#define MAX_CONTENT 256
+#define MAX_CONTENTSTR "256"
+
 /*
 * The Tokenizer takes a string and converts it to easy-to-understand tokens
 */
@@ -20,7 +23,7 @@ typedef enum {
 // Define a token
 typedef struct {
     tkntype type;
-    char content[256];
+    char content[MAX_CONTENT];
     struct {
         unsigned long character, line;
     } info;

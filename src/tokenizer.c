@@ -49,8 +49,9 @@ void readtkn(FILE *input, token *dst) {
             dst->info.line = _line;
         }
 
-        if(con - dst->content >= 255){
-            strcpy(dst->content, "Token exceeded maximum length of 256");
+        if(con - dst->content >= MAX_CONTENT - 1){
+            static char *error = "Token exceeded maximum length of "MAX_CONTENTSTR;
+            strncpy(dst->content, error, MAX_CONTENT);
             dst->type = INVALID;
             break;
         }
@@ -232,7 +233,8 @@ void readtkn(FILE *input, token *dst) {
 
     // Set error message on invalid token
     if(dst->type == INVALID) {
-        strcpy(dst->content, "Encountered invalid token.");
+        static char *error = "Encountered invalid token";
+        strncpy(dst->content, error, MAX_CONTENT);
         return;
     }
 

@@ -65,7 +65,7 @@ void *push(stack *st, void *val) {
     if (val == NULL)
         return NULL;
 
-    char * charpointer = (char *) val;
+    char *charpointer = (char *) val;
 
     if(st->current + st->element_size >= st->end){
         // reached the end, reallocate
@@ -103,8 +103,11 @@ void *push(stack *st, void *val) {
 // Returns the element on top of the stack (or NULL if empty) and removes it
 void *pop(stack *st) {
     // check if not empty
-    if(st->current >= st->start)
-        return st->current -= st->element_size;
+    if(st->current >= st->start){
+        void *ret = st->current;
+        st->current -= st->element_size;
+        return ret;
+    }
     return NULL;
 }
 
