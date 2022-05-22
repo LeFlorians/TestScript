@@ -18,6 +18,7 @@ all: $(OBJS)
 
 test: all
 	clear
+	$(file >> $(TEST_INPUT))
 	./$(TARGET) $(TEST_INPUT)
 
 %.o: %.c
