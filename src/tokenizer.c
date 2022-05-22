@@ -143,7 +143,7 @@ void readtkn(FILE *input, token *dst) {
                 continue;
             }
 
-            if(isalpha(cur))
+            if(isalpha(cur) || cur == '_')
                 dst->type = FIELD;
             else if(isdigit(cur))
                 dst->type = NUMBER;
@@ -160,7 +160,7 @@ void readtkn(FILE *input, token *dst) {
         if(isspace(cur))
             break;
         
-        if(dst->type == FIELD && ispunct(cur)) {
+        if(dst->type == FIELD && ispunct(cur) && cur != '_') {
             // End field upon any punctuation character
             ungetc(cur, input);
             break;
