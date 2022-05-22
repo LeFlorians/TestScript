@@ -83,8 +83,65 @@ stnode *allocate_error(token *tkn, char *msg) {
 }
 
 // Private declaration of some of the functions
+stnode *expr(parsercache *cache, unsigned char rbp);
 stnode *secondary(parsercache *cache);
 stnode *parse(parsercache *cache);
+
+/*
+    Similara to expr(...), but continues reading when encountering a BLOCK token
+*/
+stnode *inlineexpr(parsercache *cache, unsigned char rbp) {
+    stnode *subroot, *member;
+    
+    subroot = member = expr(cache, rbp);
+
+    // Parse in-expression code blocks
+    if(member->type == BLOCK){
+        // loop variable
+        stnode *left;
+        
+        // change type from block to member
+        member->type = MEMBER;
+
+        // keep track of level
+        unsigned int level = 1;
+
+        // left child is expression or BLOCK_END
+        // right child is member pointer or NULL
+
+        char flag = 0;
+
+        while(1) {
+            left = parse(cache);
+
+            // pass on errors and ignore sub-scope
+            if(left->type == ERROR)
+                return left;
+
+            // keep track of level
+            else if(left->type == BLOCK)
+                level++;
+            else if(left->type == BLOCK_END){
+                level--;
+                if(level == 0) 
+                    break;
+            }
+
+            // skip this once
+            if(flag) {                            
+                member = member->data.parent.right = allocate_typed(MEMBER);
+            } else
+                flag = 1;
+            
+            member->data.parent.left = left;
+            
+        }
+
+        // Set left pointer to NULL
+        member->data.parent.right = NULL;
+    }
+    return subroot;
+}
 
 /*
     Decodes any expression
@@ -101,6 +158,8 @@ stnode *expr(parsercache *cache, unsigned char rbp) {
     if(left == NULL || left->type == ERROR)
         return left;
 
+    // make repeatable
+    repeat:
     // act depending on peek's type
     switch(cache->cur->type) {
 
@@ -126,57 +185,8 @@ stnode *expr(parsercache *cache, unsigned char rbp) {
                 // the right hand side will be a newly parsed expression,
                 // taking associativity into consideration
                 if(op->position == INFIX){
-                    stnode *subroot, *member;
-                    
-                    subroot = member = expr(cache, op->precedence - op->associativity);
 
-                    // Parse in-expression code blocks
-                    if(member->type == BLOCK){
-                        // loop variable
-                        stnode *left;
-                        
-                        // change type from block to member
-                        member->type = MEMBER;
-
-                        // keep track of level
-                        unsigned int level = 1;
-
-                        // left child is expression or BLOCK_END
-                        // right child is member pointer or NULL
-
-                        char flag = 0;
-
-                        while(1) {
-                            left = parse(cache);
-
-                            // pass on errors and ignore sub-scope
-                            if(left->type == ERROR)
-                                return left;
-
-                            // keep track of level
-                            else if(left->type == BLOCK)
-                                level++;
-                            else if(left->type == BLOCK_END){
-                                level--;
-                                if(level == 0) 
-                                    break;
-                            }
-
-                            // skip this once
-                            if(flag) {                            
-                                member = member->data.parent.right = allocate_typed(MEMBER);
-                            } else
-                                flag = 1;
-                            
-                            member->data.parent.left = left;
-                            
-                        }
-
-                        // Set left pointer to NULL
-                        member->data.parent.right = NULL;
-                    }
-
-                    new->data.parent.right = subroot;
+                    new->data.parent.right = inlineexpr(cache, op->precedence - op->associativity);
 
                 } else {
                     new->data.parent.right = NULL;
@@ -211,19 +221,15 @@ stnode *expr(parsercache *cache, unsigned char rbp) {
                 left = call;
 
                 // Set list of arguments to be expression
-                call->data.parent.right = expr(cache, DEFAULT_RBP);
+                call->data.parent.right = inlineexpr(cache, DEFAULT_RBP);
 
                 // expect closing bracket now
-                if(cache->cur->type == BRACKET && cache->cur->content[0] == ')') {
+                if(cache->cur->type == BRACKET && cache->cur->content[0] == ')')
                     advance(cache);
+                else
+                    return allocate_error(cache->cur, "Expected closing bracket (function call)");
 
-                    // move on, parse next symbol
-                } else {
-                    // errorrr
-                    printf("Expected closing bracket!!");
-                }
-
-                break;
+                goto repeat;
             }
 
             case '[': {
@@ -261,6 +267,7 @@ stnode *secondary(parsercache *cache) {
     ret = allocate_stnode();
     val = ret;
 
+    retry: 
     switch(cache->cur->type) {
 
         case BRACKET: {
@@ -270,7 +277,17 @@ stnode *secondary(parsercache *cache) {
                 advance(cache);
 
                 // Return a newly parsed expression
-                return expr(cache, DEFAULT_RBP);
+                stnode *ret = inlineexpr(cache, DEFAULT_RBP);
+
+                // TODO: free on error
+
+                // expect closing bracket
+                if(cache->cur->type == BRACKET && cache->cur->content[0] == ')')
+                    advance(cache);
+                else
+                    return allocate_error(cache->cur, "Expected closing bracket (enclosure)");
+
+                return ret;
             } else if(cache->cur->content[0] == '{') {
                 advance(cache);
                 return allocate_typed(BLOCK);
@@ -281,7 +298,8 @@ stnode *secondary(parsercache *cache) {
             
             // ignore other brackets
             advance(cache);
-            return allocate_typed(EMPTY);
+            goto retry;
+            // return allocate_typed(EMPTY);
 
         }
 
