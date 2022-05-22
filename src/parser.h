@@ -10,7 +10,7 @@ typedef enum {      // n_children   represents
     BLOCK, 
     BLOCK_END,      // 0            }
     CALL,           //              function
-    CLOSE,          //              a closing bracket
+    EMPTY,          //              when indexing/function call has no arg(s)
     INDEX,          //              array index
     EXPR,           // 1-2 & op     any expression
     VALUE,

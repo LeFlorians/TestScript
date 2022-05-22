@@ -202,7 +202,7 @@ stnode *secondary(parsercache *cache) {
             
             // ignore other brackets
             advance(cache);
-            return allocate_typed(CLOSE);
+            return allocate_typed(EMPTY);
 
         }
 
@@ -281,7 +281,14 @@ stnode *secondary(parsercache *cache) {
 */
 stnode *parse(parsercache *cache) {
     // return an expression
-    return expr(cache, DEFAULT_RBP);
+    stnode *ret;
+
+    // also, don't return standalone EMPTY tokens
+    do {
+        ret = expr(cache, DEFAULT_RBP);
+    } while(ret->type == EMPTY);
+
+    return ret;
 }
 
 // Function to generate a cache (reads one token from input already)
@@ -310,7 +317,7 @@ void _printst(stnode *root, int depth) {
     // _printside(out, depth);
 
     static const char* typeNames[] = {
-        "Error", "FileEnd", "Block", "BlockEnd", "Call", "Close", "Index", "Expr", "Value",
+        "Error", "FileEnd", "Block", "BlockEnd", "Call", "Empty", "Index", "Expr", "Value",
     };
 
     printf(". %s", typeNames[root->type]);
