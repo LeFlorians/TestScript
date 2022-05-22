@@ -22,7 +22,7 @@ typedef struct {
     tkntype type;
     char content[256];
     struct {
-        long character, line;
+        unsigned long character, line;
     } info;
 } token;
 

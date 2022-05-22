@@ -1,6 +1,7 @@
 #include "parser.h"
 
 #define DEFAULT_RBP 0
+#define MAX_ERROR_LENGTH 512
 
 /*
     Read a new token
@@ -30,10 +31,21 @@ stnode  *allocate_typed(nodetype type) {
     return node;
 }
 
+// Function to create an error node
+stnode *allocate_error(token *tkn, char *msg) {
+    stnode *typed = allocate_typed(ERROR);
+    typed->data.leaf.value = malloc(MAX_ERROR_LENGTH * sizeof(char));
+
+    snprintf(typed->data.leaf.value, MAX_ERROR_LENGTH, 
+        "[%li:%li] Parser error: %s '%s'", tkn->info.line, tkn->info.character, msg, tkn->content
+    );
+    
+    return typed;
+}
+
 // Private declaration of some of the functions
-stnode *phase1(tkncache *cache);
-stnode *phase2(tkncache *cache);
 stnode *expr(tkncache *cache, unsigned char op);
+stnode *secondary(tkncache *cache);
 
 /*
     Parse function
@@ -47,10 +59,11 @@ stnode *parse(tkncache *cache) {
             if(cache->cur->content[0] == '{') {
                 // load member chain and return
                 ret = allocate_typed(BLOCK);
-            }
-            if(cache->cur->content[0] == '}') {
+            } else if(cache->cur->content[0] == '}') {
                 // TODO: maybe return NULL
                 ret = allocate_typed(BLOCK_END);
+            } else {
+                ret = allocate_error(cache->cur, "Unexpected bracket");
             }
 
             advance(cache);
@@ -59,18 +72,15 @@ stnode *parse(tkncache *cache) {
             return ret;
         }
 
-        // End on invalid tokens
-        case INVALID:
+        // End on EOF
         case NULLTKN:
-            advance(cache);
+            return allocate_typed(BLOCK_END);
 
-            stnode *end = allocate_stnode();
-            end->data.parent.left = NULL;
-            end->data.parent.right = NULL;
-            // TODO: return error if invalid
-            end->type = BLOCK_END;
-            return end;
-        break;
+        // Throw error when encountering invalid token
+        case INVALID:
+            stnode* ret = allocate_error(cache->cur, "Encountered invalid token");
+            advance(cache);
+            return ret;
 
     }
 
@@ -87,7 +97,7 @@ stnode *parse(tkncache *cache) {
     @param pushback Used internally to return unused tokens to caller function
 */
 stnode *expr(tkncache *cache, unsigned char rbp) {
-    stnode *left = phase2(cache);
+    stnode *left = secondary(cache);
 
     if(left == NULL)
         return NULL;
@@ -125,29 +135,50 @@ stnode *expr(tkncache *cache, unsigned char rbp) {
                 left = new;
             }
             if(op == 0) {
-                // TODO: Throw error, invalid operator in cache->cur->content
+                return allocate_error(cache->cur, "Invalid operator");
             }
         }
 
     }
 
-    // handle function calls
-    if(cache->cur->type == BRACKET && cache->cur->content[0] == '(') {
-        advance(cache);
+    // handle brackets
+    if(cache->cur->type == BRACKET){
 
-        stnode *call = allocate_typed(CALL);
-
-        call->data.parent.left = left;
-        left = call;
-
-        // Set list of arguments to be expression
-        call->data.parent.right = expr(cache, DEFAULT_RBP);
-
-        // expect bracket
-        if(cache->cur->type == BRACKET && cache->cur->content[0] == ')' ) {
+        // handle function calls
+        if(cache->cur->content[0] == '(') {
             advance(cache);
-        } else {
-            // TODO: throw error, expected closing bracket
+
+            stnode *call = allocate_typed(CALL);
+
+            call->data.parent.left = left;
+            left = call;
+
+            // Set list of arguments to be expression
+            call->data.parent.right = expr(cache, DEFAULT_RBP);
+
+            // expect bracket
+            if(cache->cur->type == BRACKET && cache->cur->content[0] == ')' ) {
+                advance(cache);
+            } else {
+                return allocate_error(cache->cur, "Expected closing bracket");
+            }
+        } else if (cache->cur->content[0] == '[') {
+                        advance(cache);
+
+            stnode *index = allocate_typed(INDEX);
+
+            index->data.parent.left = left;
+            left = index;
+
+            // Set list of arguments to be expression
+            index->data.parent.right = expr(cache, DEFAULT_RBP);
+
+            // expect bracket
+            if(cache->cur->type == BRACKET && cache->cur->content[0] == ']' ) {
+                advance(cache);
+            } else {
+                return allocate_error(cache->cur, "Expected closing square bracket");
+            }
         }
 
     }
@@ -159,7 +190,7 @@ stnode *expr(tkncache *cache, unsigned char rbp) {
     Decodes Fields/Values/Prefixes
     Returns a VALUE or one-handed EXPR or NULL
 */
-stnode *phase2(tkncache *cache) {
+stnode *secondary(tkncache *cache) {
     stnode *ret, *val;
 
     // advance(cache);
@@ -181,10 +212,16 @@ stnode *phase2(tkncache *cache) {
                 if(cache->cur->type == BRACKET && cache->cur->content[0] == ')') {
                     advance(cache);
                 } else {
-                    // TODO: throw error, expected closing bracket
+                    return allocate_error(cache->cur, "Expected closing bracket");
                 }
 
                 return ret;
+            } else if(cache->cur->content[0] == '{') {
+                advance(cache);
+
+                // BLOCK_END signals an in-expression block / function definition
+                // TODO: maybe use another type name
+                return allocate_typed(BLOCK_END);
             }
 
             break;
@@ -200,12 +237,12 @@ stnode *phase2(tkncache *cache) {
             ret->data.parent.op = mappreop(cache->cur->content);
 
             if(ret->data.parent.op == 0) {
-                // TODO: throw error, invalid operator in cache->cur->content
+                return allocate_error(cache->cur, "Invalid prefix operator");
             }
             
             // Throw an error if its not a prefix operator
             if(ret->data.parent.op->position != PREFIX) {
-                // TODO: throw error
+                return allocate_error(cache->cur, "Expected prefix operator");
             }
 
             // set the node type
@@ -277,7 +314,7 @@ void _printst(stnode *root, int depth) {
     // _printside(out, depth);
 
     static const char* typeNames[] = {
-        "Block", "BlockEnd", "Call", "Expr", "Value",
+        "Error", "Block", "BlockEnd", "Call", "Index", "Expr", "Value",
     };
 
     printf(". %s", typeNames[root->type]);
@@ -286,7 +323,7 @@ void _printst(stnode *root, int depth) {
     if(root->type == EXPR)
         printf(" [%s]", root->data.parent.op->name);
     
-    if(root->type == VALUE) {
+    if(root->type == VALUE || root->type == ERROR) {
         printf(" (%s)", root->data.leaf.value);
     } else {
 

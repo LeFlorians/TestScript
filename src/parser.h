@@ -4,9 +4,11 @@
 #include "mapop.h"
 
 typedef enum {      // n_children   represents
+    ERROR,          //              parser error, message in data.leaf.value
     BLOCK, 
     BLOCK_END,      // 0            }
-    CALL,
+    CALL,           //              function call
+    INDEX,          //              array index
     EXPR,           // 1-2 & op     any expression
     VALUE,
 } nodetype;
@@ -40,6 +42,7 @@ typedef struct {
     FILE *input;
 } tkncache;
 
+// Generate a cache for parser
 tkncache *gencache(FILE *input);
 
 // Function to parse a stream and save resulting tree in dst

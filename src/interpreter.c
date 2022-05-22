@@ -24,7 +24,7 @@ void f_interpret(environment *memory, FILE *stream) {
         else if(root->type == BLOCK_END)
             level--;
 
-    } while (level != 0);
+    } while (level != 0 && root->type != ERROR);
 
     printf("Reached end of file!\n");
 }

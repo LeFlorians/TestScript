@@ -226,6 +226,7 @@ void readtkn(FILE *input, token *dst) {
     // End of stream
     if((flags & 8) == 0) {
         dst->type = NULLTKN;
+        dst->content[0] = '\0';
         return;
     }
 
