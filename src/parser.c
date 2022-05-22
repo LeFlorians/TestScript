@@ -84,6 +84,7 @@ stnode *allocate_error(token *tkn, char *msg) {
 
 // Private declaration of some of the functions
 stnode *secondary(parsercache *cache);
+stnode *parse(parsercache *cache);
 
 /*
     Decodes any expression
@@ -96,8 +97,9 @@ stnode *secondary(parsercache *cache);
 stnode *expr(parsercache *cache, unsigned char rbp) {
     stnode *left = secondary(cache);
 
-    if(left == NULL)
-        return NULL;
+    // If secondary returned error, pass it on
+    if(left == NULL || left->type == ERROR)
+        return left;
 
     // act depending on peek's type
     switch(cache->cur->type) {
@@ -123,9 +125,54 @@ stnode *expr(parsercache *cache, unsigned char rbp) {
                 
                 // the right hand side will be a newly parsed expression,
                 // taking associativity into consideration
-                if(op->position == INFIX)
-                    new->data.parent.right = expr(cache, op->precedence - op->associativity);
-                else
+                if(op->position == INFIX){
+                    stnode *subroot, *member;
+                    
+                    subroot = member = expr(cache, op->precedence - op->associativity);
+
+                    // Parse in-expression code blocks
+                    if(member->type == BLOCK){
+                        // loop variable
+                        stnode *left;
+                        
+                        // change type from block to member
+                        member->type = MEMBER;
+
+                        // keep track of level
+                        unsigned int level = 1;
+
+                        // left child is expression or BLOCK_END
+                        // right child is member pointer or NULL
+
+                        while(1) {
+                            left = parse(cache);
+
+                            // pass on errors and ignore sub-scope
+                            if(left->type == ERROR)
+                                return left;
+
+                            // keep track of level
+                            else if(left->type == BLOCK)
+                                level++;
+                            else if(left->type == BLOCK_END)
+                                level--;
+
+                            if(level == 0) {
+                                break;
+                            } else {
+                                member = member->data.parent.right = allocate_typed(MEMBER);
+                            }
+                            
+                            member->data.parent.left = left;
+                        }
+
+                        // Set left pointer to NULL
+                        member->data.parent.right = NULL;
+                    }
+
+                    new->data.parent.right = subroot;
+
+                } else
                     new->data.parent.right = NULL;
 
                 // set left to new
@@ -141,29 +188,47 @@ stnode *expr(parsercache *cache, unsigned char rbp) {
     // handle brackets
     if(cache->cur->type == BRACKET){
 
-        // handle function calls
-        if(cache->cur->content[0] == '(') {
-            advance(cache);
+        switch(cache->cur->content[0]) {
 
-            stnode *call = allocate_typed(CALL);
+            case '(': {
+                advance(cache);
 
-            call->data.parent.left = left;
-            left = call;
+                stnode *call = allocate_typed(CALL);
 
-            // Set list of arguments to be expression
-            call->data.parent.right = expr(cache, DEFAULT_RBP);
+                call->data.parent.left = left;
+                left = call;
 
-        } else if (cache->cur->content[0] == '[') {
-            advance(cache);
+                // Set list of arguments to be expression
+                call->data.parent.right = expr(cache, DEFAULT_RBP);
 
-            stnode *index = allocate_typed(INDEX);
+                // expect closing bracket now
+                if(cache->cur->type == BRACKET && cache->cur->content[0] == ')') {
+                    advance(cache);
+                } else {
+                    // errorrr
+                    printf("Expected closing bracket!!");
+                }
 
-            index->data.parent.left = left;
-            left = index;
+                break;
+            }
 
-            // Set list of arguments to be expression
-            index->data.parent.right = expr(cache, DEFAULT_RBP);
+            case '[': {
+
+                advance(cache);
+
+                stnode *index = allocate_typed(INDEX);
+
+                index->data.parent.left = left;
+                left = index;
+
+                // Set list of arguments to be expression
+                index->data.parent.right = expr(cache, DEFAULT_RBP);
+
+                break;
+            }
+
         }
+
 
     }
 
@@ -239,6 +304,19 @@ stnode *secondary(parsercache *cache) {
             break;
         }
 
+        // End on EOF
+        case NULLTKN:
+            return allocate_typed(FILE_END);
+
+        // Throw error when encountering invalid token
+        case INVALID:
+            stnode* ret = allocate_error(cache->cur, "Encountered invalid token");
+            advance(cache);
+            return ret;
+
+    }
+
+    switch (cache->cur->type){
         case FIELD:
         case NUMBER:
 
@@ -259,17 +337,6 @@ stnode *secondary(parsercache *cache) {
             return ret;
 
         break;
-
-        // End on EOF
-        case NULLTKN:
-            return allocate_typed(FILE_END);
-
-        // Throw error when encountering invalid token
-        case INVALID:
-            stnode* ret = allocate_error(cache->cur, "Encountered invalid token");
-            advance(cache);
-            return ret;
-
     }
 
     return allocate_error(cache->cur, "Token not matched");
@@ -317,7 +384,7 @@ void _printst(stnode *root, int depth) {
     // _printside(out, depth);
 
     static const char* typeNames[] = {
-        "Error", "FileEnd", "Block", "BlockEnd", "Call", "Empty", "Index", "Expr", "Value",
+        "Error", "FileEnd", "Block", "BlockEnd", "Member", "Call", "Empty", "Index", "Expr", "Value",
     };
 
     printf(". %s", typeNames[root->type]);

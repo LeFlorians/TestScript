@@ -49,9 +49,9 @@ void readtkn(FILE *input, token *dst) {
             dst->info.line = _line;
         }
 
-        if(con - dst->content >= MAX_CONTENT - 1){
-            static char *error = "Token exceeded maximum length of "MAX_CONTENTSTR;
-            strncpy(dst->content, error, MAX_CONTENT);
+        if((con - dst->content) >= (MAX_CONTENT - 1)){
+            static char *err_maxlen = "Token exceeded maximum length of "MAX_CONTENTSTR;
+            strncpy(dst->content, err_maxlen, MAX_CONTENT);
             dst->type = INVALID;
             break;
         }

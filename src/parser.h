@@ -4,15 +4,16 @@
 #include "tokenizer.h"
 #include "mapop.h"
 
-typedef enum {      // n_children   represents
-    ERROR,          //              parser error, message in data.leaf.value
-    FILE_END,       //              EOF, stop parsing
+typedef enum {
+    ERROR,
+    FILE_END,
     BLOCK, 
-    BLOCK_END,      // 0            }
-    CALL,           //              function
-    EMPTY,          //              when indexing/function call has no arg(s)
-    INDEX,          //              array index
-    EXPR,           // 1-2 & op     any expression
+    BLOCK_END,
+    MEMBER, 
+    CALL,
+    EMPTY, 
+    INDEX,
+    EXPR,   
     VALUE,
 } nodetype;
 

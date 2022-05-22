@@ -1,6 +1,8 @@
 CC := gcc
 CFLAGS := -Wall -g
 
+TEST_INPUT = test.txt
+
 TARGET := lang
 
 # Define recursive wildcard function
@@ -15,7 +17,8 @@ all: $(OBJS)
 	$(CC) $(OBJS) -o $(TARGET)
 
 test: all
-	./$(TARGET)
+	clear
+	./$(TARGET) $(TEST_INPUT)
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
