@@ -5,245 +5,206 @@
 
 #include "tokenizer.h"
 
-int _line = 0, _char;
+// TODO: optimize
+char next(tokencache *cache) {
+    int c = getc(cache->input);
+    if(c == '\n') {
+        cache->info.line++;
+        cache->info.character = 1;
+    } else
+        cache->info.character++;
+    // Return null character if EOF, since \0 is not valid source code anyway
+    return c == EOF ? 0 : c;
+}
 
-// Reads the next token from stream
-void readtkn(FILE *input, token *dst) {
+// Reads a new token from cache->input into cache->dst, also updating debug info
+// TODO: implement max length
+void readtkn(tokencache *cache) {
+    token *dst = cache->cur; 
 
-    // Character variable (ints for non-ASCII  charsets)
-    int cur;
+    // retry label to jump back if unnecessary comment was encountered
+    retry:
+
+    // content pointer to write text to
     char *con = dst->content;
 
-    /*
-        Bitflags:
-        0 | Escape next character in string
-        1 | 1 if string is "", 0 if ''
-        2 | First character matches any of + -
-        3 | 1 if Actual token has begun
-        4 | unused
-        5 | 0=line comment, 1=block comment
-        6 | unused
-        7 | unused
-    */
-    char flags = 0;
+    // get first character
+    char cur = next(cache);
 
-    // Set type to invalid by default
-    dst->type = INVALID;
+    // remove leading spaces
+    while(cur && isspace(cur))
+        cur = next(cache);
 
-    while((cur = getc(input)) != EOF) {
-
-        if(cur == '\n'){
-            _line++;
-            _char = 0;
-        }
-
-        _char++;
-
-        if((flags & 8) == 0) {
-            if(isspace(cur))
-                continue;
-            flags |= 8;
-
-            // set debug info
-            dst->info.character = _char;
-            dst->info.line = _line;
-        }
-
-        if((con - dst->content) >= (MAX_CONTENT - 1)){
-            static char *err_maxlen = "Token exceeded maximum length of "MAX_CONTENTSTR;
-            strncpy(dst->content, err_maxlen, MAX_CONTENT);
-            dst->type = INVALID;
-            break;
-        }
-
-        // --- Tokenize ---
-
-        // Check if in string
-        if(dst->type == STRING) {
-            // check if character is escaped
-            if((flags & 1) != 0) {
-                // Match escape sequence (Java-like)
-                con--;
-                switch (cur) {
-                    case 't':
-                        *con = '\t';
-                        break;
-                    case 'b':
-                        *con = '\b';
-                        break;
-                    case 'n':
-                        *con = '\n';
-                        break;
-                    case 'r':
-                        *con = '\r';
-                        break;
-                    case 'f':
-                        *con = '\f';
-                        break;
-                    default:
-                        // Nothing is printed if escape sequence is invalid
-                        if(cur == '\'' || cur == '"' || cur == '\\')
-                            *con = cur;
-                        break;
-                }
-
-                // Unset escape flag
-                flags &= ~1;
-                con++;
-                continue;
-            } else {
-                if( ((flags & 2) != 0 && cur == '"') 
-                 || ((flags & 2) == 0 && cur == '\'') ){
-                    // Done with string, quit loop
-                    break;
-                }
-                // Set escape flag
-                if(cur == '\\'){
-                    flags |= 1;
-                }
-            }
-
-            // append character
-            *(con++) = cur;
-
-            continue;
-        }
-
-        if(dst->type == COMMENT) {
-             
-             // If block comment
-             if((flags & 32) != 0) {
-                // Check if block comment ends 
-                if(cur == '/' && con - dst->content >= 1 && *(con - 1) == '*') {
-                    con--;
-                    break;
-                }
-             } else if(cur == '\n') {
-                // Line comment is over
-                break;
-             }
-
-            *(con++) = cur;
-            continue;
-        }
-
-        // Check if type is yet undefined
-        if(dst->type == INVALID) {
-            
-            // String with '
-            if(cur == '\'') {
-                dst->type = STRING;
-                continue;
-            }
-
-            // String with "
-            if(cur == '"'){
-                dst->type = STRING;
-                flags |= 2;
-                continue;
-            }
-
-            if(isalpha(cur) || cur == '_')
-                dst->type = FIELD;
-            else if(isdigit(cur))
-                dst->type = NUMBER;
-            else if(cur == '(' || cur == ')' || cur == '{' || cur == '}' || cur == '[' || cur == ']'){
-                dst->type = BRACKET;
-                *(con++) = cur;
-                break;
-            } 
-            else if (ispunct(cur))
-                dst->type = SYMBOL;
-        
-        }
-
-        if(isspace(cur))
-            break;
-        
-        if(dst->type == FIELD && ispunct(cur) && cur != '_') {
-            // End field upon any punctuation character
-            ungetc(cur, input);
-            break;
-        }
-
-
-        if(dst->type == NUMBER) {
-            // Check for non-number characters 
-            if(!isalnum(cur)){
-
-                if(cur == '.') {
-                    if(*(con-1) == '.') {
-                        ungetc(cur, input);
-                        ungetc('.', input);
-                        con--;
-                        flags &= ~16; // Unset floating-point flag
-                        break;
-                    }
-                } else if(!((cur == '+' || cur == '-') && *(con-1) == 'e')) {
-                    ungetc(cur, input);
-                    break;
-                }
-
-            }
-
-        }
-
-        // Check for comment
-        if(dst->type == SYMBOL){
-
-            // Check for comment in this token
-            if(con - dst->content == 1 && dst->content[0] == '/'){
-                switch (cur) {
-                    case '*':
-                        flags |= 32; // set block comment flag
-                    case '/':
-                        dst->type = COMMENT;
-                        con = dst->content; // reset content pointer
-                        continue;
-                }
-            }
-
-            // Check for symbol ending
-            if(!ispunct(cur) || cur == '\'' || cur == '"' ||
-                cur == '(' || cur == ')' || cur == '{' || cur == '}' || cur == '[' || cur == ']') {
-                // End symbol if string or not puncuation character
-                ungetc(cur, input);
-                break;
-            }
-
-            // Check for following comment
-            if((cur == '*' || cur == '/') && con - dst->content >= 2 && *(con-1) == '/'){
-                // End symbol because of comment
-                ungetc(cur, input);
-                ungetc('/', input);
-                con--;
-                break;
-            }
-        }
-
-        *(con++) = cur;
-    }
-
-    // End of stream
-    if((flags & 8) == 0) {
+    // If EOF, return
+    if(!cur){
         dst->type = NULLTKN;
-        dst->content[0] = '\0';
         return;
     }
 
-    // Set error message on invalid token
-    if(dst->type == INVALID) {
-        static char *error = "Encountered invalid token";
-        strncpy(dst->content, error, MAX_CONTENT);
-        return;
+    // TODO: reorder
+    if(isdigit(cur)){
+        // set type
+        dst->type = NUMBER;
+
+        // read number until no alphanumeric or .
+        do {
+            // append character
+            *con++ = cur;
+            cur = next(cache);
+        } while (isalnum(cur) || cur == '.');
+
+        // push back last character if not space
+        if(!isspace(cur)){
+            putc(cur, cache->input);
+            cache->info.character--;
+        }
+
+    } else if(isalpha(cur) || cur == '_') {
+        // set type
+        dst->type = FIELD;
+
+        // read field until not alphanumeric or _
+        do {
+            *con++ = cur;
+            cur = next(cache);
+        } while (isalnum(cur) || cur == '_');
+
+        // push back last character if not space
+        if(!isspace(cur)){
+            putc(cur, cache->input);
+            cache->info.character--;
+        }
+
+    } else {
+
+        char quotation = '"';
+
+        // Determine type if unknown
+        switch(cur) {
+            // Match strings
+            case '\'':
+                // set to single quotation
+                quotation = '\'';
+            case '"':
+                dst->type = STRING;
+
+                cur = next(cache);
+                // ? maybe also disallow newlines
+                while(cur != quotation) {
+
+                    // Match escape sequence
+                    if(cur == '\\'){
+                        // read next character
+                        cur = next(cache);
+                        // TODO: throw error if quotes not closed
+                        if(!cur || cur == quotation)
+                            break;
+
+                        switch (cur) {
+                            case 't':
+                                *con++ = '\t';
+                                break;
+                            case 'b':
+                                *con++ = '\b';
+                                break;
+                            case 'n':
+                                *con++ = '\n';
+                                break;
+                            case 'r':
+                                *con++ = '\r';
+                                break;
+                            case 'f':
+                                *con++ = '\f';
+                                break;
+                            default:
+                                // Nothing is printed if escape sequence is invalid
+                                if(cur == '\'' || cur == '"' || cur == '\\')
+                                    *con++ = cur;
+                                break;
+                        }
+                    }
+                    
+                    *con++ = cur;
+                    cur = next(cache);
+                };
+
+                break;
+            
+            // Match brackets
+            case '(':
+            case ')':
+            case '{':
+            case '}':
+            case '[':
+            case ']':
+                dst->type = BRACKET;
+                *con++ = cur;
+                break;
+
+            // check for comments
+            case '/':
+                cur = next(cache);
+
+                // ? might want to write comment to con if necessary
+
+                switch(cur) {
+                    case '/':
+                        // skip all comment characters
+                        do {
+                            cur = next(cache);
+                        } while(cur && cur != '\n');
+
+                        // discard this token and retry
+                        goto retry;
+                        break;
+
+                    // handle block comment
+                    case '*':
+                        // skip all block comment characters
+                        unsigned char last;
+                        do {
+                            last = cur == '*';
+                            cur = next(cache);
+                        } while(cur && last && cur == '/');
+
+                        // discard this token and retry
+                        goto retry;
+                        break;
+                    
+                    case 0:
+                        // ignore
+                        break;
+
+                    default:
+                        // just write the two read signs
+                        *con++ = '/';
+                        break;
+                }
+            // Fallthrough
+
+            // Must be any other symbol
+            default:
+                // set type
+                dst->type = SYMBOL;
+
+                // read all following punctuation characters
+                while (ispunct(cur)) {
+                    *con++ = cur;
+                    cur = next(cache);
+                };
+
+                // push back last read character if not space
+                if(cur && !isspace(cur)){
+                    putc(cur, cache->input);
+                    cache->info.character--;
+                }
+
+                break;
+        }
     }
 
-    // Make sure last character is a 0
-    *con = '\0';
-
-    if(dst->type == NUMBER) {
-        // TODO: Check if pattern matches
-
-    }
+    // append \0 character
+    *con = 0;
+    return;
 
 }

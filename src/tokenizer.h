@@ -10,9 +10,8 @@
 // Define token types
 
 typedef enum {
-    INVALID, // content always carries error message
     NULLTKN, // Empty token
-    COMMENT,
+    INVALID, // content always carries error message
     BRACKET,
     FIELD,
     SYMBOL,
@@ -20,14 +19,23 @@ typedef enum {
     NUMBER,
 } tkntype;
 
+// Debug info struct
+typedef struct {
+    unsigned int line, character;
+} debuginfo;
+
 // Define a token
 typedef struct {
     tkntype type;
     char content[MAX_CONTENT];
-    struct {
-        unsigned long character, line;
-    } info;
 } token;
 
+typedef struct {
+    FILE* input;
+    token *cur;
+    debuginfo info;
+} tokencache;
+
+
 // Read next token from stream and place it in dst
-void readtkn(FILE *input, token *dst);
+void readtkn(tokencache *cache);
