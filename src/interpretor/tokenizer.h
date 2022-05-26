@@ -35,7 +35,7 @@ typedef struct {
     errorinfo info;
 
     // to keep track of how many characters were read
-    size_t tokenpos;
+    unsigned int tokenpos;
 
     // bracket stack for parser
     stack *bracketstack;

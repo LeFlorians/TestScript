@@ -16,7 +16,7 @@ static const char *errformats[] = {
     "Expected prefix operator",
     "Expected closing bracket",
     "Expected closing square bracket",
-    "Token could not be matched",
+    "Token unmatched",
     
     #else
     // Not nice error messages
