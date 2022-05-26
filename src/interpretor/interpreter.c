@@ -6,23 +6,30 @@
 */
 
 // interpret from a stream
-void f_interpret(environment *memory, FILE *stream) {
+void interpret(FILE *stream, char* filename) {
     token tkn;
+    cache cac;
 
-    tokencache cac;
-    cac.input = stream;
-    cac.cur = &tkn;
+    // setup the cache
+    {
+        cac.input = stream;
+        cac.cur = &tkn;
 
-    cac.info.line = 1;
-    cac.info.character = 0;
+        // enable error messages
+        cac.info.throwable = 1;
 
-    static char* typenames[] = {"Nulltkn", "Invalid", "Bracket", "Field", "Symbol", "String", "Number"};
+        // set defaults for errors
+        cac.info.fileinfo.filename = filename;
+        cac.info.fileinfo.character = 0;
+        cac.info.fileinfo.line = 1;
+    }
+
+    static char* typenames[] = {"Nulltkn", "Bracket", "Field", "Symbol", "String", "Number"};
 
     do {
         readtkn(&cac);
         printf("Type: %s Value: (%s)\n", typenames[tkn.type], tkn.content);
     } while(tkn.type != 0);
-
 
     return;
 

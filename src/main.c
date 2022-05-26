@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "interpreter.h"
+#include "interpretor/interpreter.h"
 
 int main(int argc, char** argv){
 
@@ -16,11 +16,7 @@ int main(int argc, char** argv){
         input = stdin;
     }
 
-    
-    // create interpreter environment
-    environment memory;
-
     // interpret input
-    f_interpret(&memory, input);
+    interpret(input, NULL);
 
 }

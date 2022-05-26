@@ -6,7 +6,7 @@ TEST_INPUT = test.txt
 TARGET := lang
 
 # Define recursive wildcard function
-rwildcard=$(wildcard $1$2)$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
+rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
 .PHONY: all clean
 
@@ -27,7 +27,7 @@ test: all
 # target to generate mapop.c
 # requires gperf to be installed
 mapop:
-	gperf --output-file=src/mapop.c mapop.gperf
+	gperf --output-file=src/interpreter/mapop.c mapop.gperf
 
 # set windows compiler and define target
 # do not use this target on windows

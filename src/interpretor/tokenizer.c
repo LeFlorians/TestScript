@@ -5,21 +5,23 @@
 
 #include "tokenizer.h"
 
+// local filepos struct
+
 // TODO: optimize
-char next(tokencache *cache) {
+char next(cache *cache) {
     int c = getc(cache->input);
     if(c == '\n') {
-        cache->info.line++;
-        cache->info.character = 1;
+        cache->info.fileinfo.line++;
+        cache->info.fileinfo.character = 1;
     } else
-        cache->info.character++;
+        cache->info.fileinfo.character++;
     // Return null character if EOF, since \0 is not valid source code anyway
     return c == EOF ? 0 : c;
 }
 
 // Reads a new token from cache->input into cache->dst, also updating debug info
 // TODO: implement max length
-void readtkn(tokencache *cache) {
+void readtkn(cache *cache) {
     token *dst = cache->cur; 
 
     // retry label to jump back if unnecessary comment was encountered
@@ -37,6 +39,9 @@ void readtkn(tokencache *cache) {
 
     // If EOF, return
     if(!cur){
+        error:
+
+        dst->content[0] = '\0';
         dst->type = NULLTKN;
         return;
     }
@@ -55,8 +60,8 @@ void readtkn(tokencache *cache) {
 
         // push back last character if not space
         if(!isspace(cur)){
-            putc(cur, cache->input);
-            cache->info.character--;
+            ungetc(cur, cache->input);
+            cache->info.fileinfo.character--;
         }
 
     } else if(isalpha(cur) || cur == '_') {
@@ -71,8 +76,8 @@ void readtkn(tokencache *cache) {
 
         // push back last character if not space
         if(!isspace(cur)){
-            putc(cur, cache->input);
-            cache->info.character--;
+            ungetc(cur, cache->input);
+            cache->info.fileinfo.character--;
         }
 
     } else {
@@ -89,14 +94,12 @@ void readtkn(tokencache *cache) {
                 dst->type = STRING;
 
                 cur = next(cache);
-                // ? maybe also disallow newlines
                 while(cur != quotation) {
 
                     // Match escape sequence
                     if(cur == '\\'){
                         // read next character
                         cur = next(cache);
-                        // TODO: throw error if quotes not closed
                         if(!cur || cur == quotation)
                             break;
 
@@ -117,11 +120,23 @@ void readtkn(tokencache *cache) {
                                 *con++ = '\f';
                                 break;
                             default:
-                                // Nothing is printed if escape sequence is invalid
+                                // Error is thrown if escape sequence is invalid
                                 if(cur == '\'' || cur == '"' || cur == '\\')
                                     *con++ = cur;
+                                else {
+                                    throw(ET_ESCAPE_SEQUENCE_INVALID, &cache->info);
+                                    goto error;
+                                }
                                 break;
                         }
+
+                        cur = next(cache);  
+                        continue;
+                    
+                    } else if(!cur || cur == '\n') {
+                        // throw error because quotation marks not closed (on EOF or newline)
+                        throw(ET_QUOTEMARK_UNMATCHED, &cache->info);
+                        goto error;
                     }
                     
                     *con++ = cur;
@@ -160,12 +175,19 @@ void readtkn(tokencache *cache) {
 
                     // handle block comment
                     case '*':
+                        cur = next(cache);
+                        
                         // skip all block comment characters
-                        unsigned char last;
-                        do {
+                        unsigned char last = 0;
+                        while(cur && !(last && cur == '/')) {
                             last = cur == '*';
                             cur = next(cache);
-                        } while(cur && last && cur == '/');
+                        };
+
+                        if(!cur) {
+                            throw(ET_BLOCK_COMMENT_UNCLOSED, &cache->info);
+                            goto error;
+                        }
 
                         // discard this token and retry
                         goto retry;
@@ -195,8 +217,8 @@ void readtkn(tokencache *cache) {
 
                 // push back last read character if not space
                 if(cur && !isspace(cur)){
-                    putc(cur, cache->input);
-                    cache->info.character--;
+                    ungetc(cur, cache->input);
+                    cache->info.fileinfo.character--;
                 }
 
                 break;
