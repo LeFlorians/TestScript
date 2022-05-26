@@ -1,9 +1,12 @@
 #include "interpreter.h"
-#include "tokenizer.h"
+#include "parser.h"
 
 /*
 * The interpreter provides an environment for code to run
 */
+
+// function to print syntaxtree
+void printst(stnode *root);
 
 // interpret from a stream
 void interpret(FILE *stream, char* filename) {
@@ -22,38 +25,85 @@ void interpret(FILE *stream, char* filename) {
         cac.info.fileinfo.filename = filename;
         cac.info.fileinfo.character = 0;
         cac.info.fileinfo.line = 1;
+
+        // allocate bracket stack for parser
+        cac.bracketstack = create_stack(1, 16);        
     }
 
-    static char* typenames[] = {"Nulltkn", "Bracket", "Field", "Symbol", "String", "Number"};
-
-    do {
-        readtkn(&cac);
-        printf("Type: %s Value: (%s)\n", typenames[tkn.type], tkn.content);
-    } while(tkn.type != 0);
-
-    return;
-
-    // stnode *root;
-
-    // parsercache *cache = gencache(stream);
+    // static char* typenames[] = {"Nulltkn", "Bracket", "Field", "Symbol", "String", "Number"};
 
     // do {
-    //     printf("\nNew Parse tree:\n");
-    //     root = parse(cache);
+    //     readtkn(&cac);
+    //     printf("Type: %s Value: (%s)\n", typenames[tkn.type], tkn.content);
+    // } while(tkn.type != 0);
 
-    //     printst(root);
+    // return;
 
-    // } while (root->type != ERROR && root->type != FILE_END);
+    stnode *root;
 
-    // printf("Reached end of file!\n");
+    // advance once
+    advance(&cac);
 
-    // // Print unmatched brackets
-    // size_t size;
-    // if((size = get_size(cache->bracketstack)) != 0) {
-    //     printf("\nNot all brackets matched, %li left!\n", size);
-    //     printf("Assuming: ");
-    //     for(size_t index = size; index > 0; index--)
-    //         putchar(cache->bracketstack->start[index - 1]);
-    //     putchar('\n');
-    // }
+    do {
+        printf("\nNew Parse tree:\n");
+        root = parse(&cac);
+
+        printst(root);
+
+    } while (root->type != FILE_END);
+
+    printf("Reached end of file!\n");
+
+    // Print unmatched brackets
+    size_t size;
+    if((size = get_size(cac.bracketstack)) != 0) {
+        printf("\nNot all brackets matched, %li left!\n", size);
+        printf("Assuming: ");
+        for(size_t index = size; index > 0; index--)
+            putchar(cac.bracketstack->start[index - 1]);
+        putchar('\n');
+    }
+}
+
+
+
+/* Functions to print out syntaxtree */
+
+void _printst(stnode *root, int depth) {
+    // _printside(out, depth);
+
+    static const char* typeNames[] = {
+        "FileEnd", "Block", "BlockEnd", "Member", "Call", "Empty", "Index", "Expr", "Value",
+    };
+
+    printf(". %s", typeNames[root->type]);
+    // printf(". %i", root->type);
+
+    if(root->type == EXPR)
+        printf(" [%s]", root->data.parent.op->name);
+    
+    if(root->data.parent.left != NULL){
+        putchar('\n');
+        for(int i = 0; i < depth; i++)
+            printf("|");
+
+        putchar('L');
+
+        _printst(root->data.parent.left, depth+1);
+    }
+
+    if(root->data.parent.right != NULL){
+        putchar('\n');
+        for(int i = 0; i < depth; i++)
+            printf("|");
+
+        putchar('R');
+
+        _printst(root->data.parent.right, depth+1);
+    }   
+} 
+
+void printst(stnode *root) {
+    _printst(root, 0);
+    putchar('\n');
 }

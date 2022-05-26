@@ -1,17 +1,16 @@
 #include <stdlib.h>
 
-#include "memory/stack.h"
 #include "tokenizer.h"
 #include "mapop.h"
 
+// TODO: replace the most used non-kids node with NULL
 typedef enum {
-    ERROR,
-    FILE_END,
-    BLOCK, 
-    BLOCK_END,
+    FILE_END,   // no kids
+    BLOCK,  // no kids
+    BLOCK_END, // no kids
     MEMBER, 
     CALL,
-    EMPTY, 
+    EMPTY,  // no kids
     INDEX,
     EXPR,   
     VALUE,
@@ -30,7 +29,6 @@ struct stnode {
             operator *op;
         } parent;
 
-        // only for VALUE type
         struct {
             char *value;
 
@@ -40,24 +38,8 @@ struct stnode {
 
 };
 
-// For simplification
-typedef struct {
-    token *cur, *peek;
-    FILE *input;
+// Parse a stream and save resulting tree in dst
+stnode *parse(cache *cache);
 
-    /*
-        Stack for bracket matching
-        ! This stack will not deal with/contain any curly brackets, the interpreter has to count those.
-    */
-    stack *bracketstack;
-} parsercache;
-
-// Generate a cache for parser
-parsercache *gencache(FILE *input);
-
-// Function to parse a stream and save resulting tree in dst
-// @param cache Cache created by gencache()
-stnode *parse(parsercache *cache);
-
-// Function to print a tree to a stream
-void printst(stnode *root);
+// Read a new token and keep track of read brackets
+void advance(cache *cache);

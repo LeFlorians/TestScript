@@ -17,6 +17,6 @@ int main(int argc, char** argv){
     }
 
     // interpret input
-    interpret(input, NULL);
+    interpret(input, argc >= 2 ? argv[1] : NULL);
 
 }
