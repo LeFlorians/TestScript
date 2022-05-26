@@ -5,6 +5,7 @@
 static const char *errformats[] = {
     #ifndef MEAN
     // Nice error messages
+    "Max token length exceeded",
     "Quotation marks not closed",
     "Block comment not closed",
     "Invalid escape sequence",

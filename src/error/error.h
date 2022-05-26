@@ -1,6 +1,7 @@
 // Enum of all messages
 enum errorformat {
     // Tokenizer errors
+    ET_TOKEN_LENGTH_EXCEEDED,
     ET_QUOTEMARK_UNMATCHED,
     ET_BLOCK_COMMENT_UNCLOSED,
     ET_ESCAPE_SEQUENCE_INVALID,

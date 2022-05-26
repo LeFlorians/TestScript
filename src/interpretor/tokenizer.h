@@ -34,6 +34,9 @@ typedef struct {
     // for errors to be thrown by the tokenizer
     errorinfo info;
 
+    // to keep track of how many characters were read
+    size_t tokenpos;
+
     // bracket stack for parser
     stack *bracketstack;
 } cache;

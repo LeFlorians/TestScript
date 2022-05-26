@@ -9,6 +9,14 @@
 
 // TODO: optimize
 char next(cache *cache) {
+    // enforce max length
+    if(cache->tokenpos == MAX_CONTENT) {
+        throw(ET_TOKEN_LENGTH_EXCEEDED, &cache->info);
+        return 0;
+    }
+
+    cache->tokenpos++;
+
     int c = getc(cache->input);
     if(c == '\n') {
         cache->info.fileinfo.line++;
@@ -20,12 +28,14 @@ char next(cache *cache) {
 }
 
 // Reads a new token from cache->input into cache->dst, also updating debug info
-// TODO: implement max length
 void readtkn(cache *cache) {
     token *dst = cache->cur; 
 
     // retry label to jump back if unnecessary comment was encountered
     retry:
+
+    // reset token position
+    cache->tokenpos = 0;
 
     // content pointer to write text to
     char *con = dst->content;
