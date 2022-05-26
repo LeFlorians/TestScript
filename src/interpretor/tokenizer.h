@@ -23,7 +23,7 @@ typedef enum {
 // Define a token
 typedef struct {
     tkntype type;
-    char content[MAX_CONTENT];
+    char *content;
 } token;
 
 // The cache contains everyting 'input' known to tokenizer & parser

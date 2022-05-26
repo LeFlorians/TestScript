@@ -13,6 +13,11 @@ void interpret(FILE *stream, char* filename) {
     token tkn;
     cache cac;
 
+    // setup the token
+    {
+        tkn.content = malloc(MAX_CONTENT * sizeof(char));
+    }
+
     // setup the cache
     {
         cac.input = stream;
@@ -82,25 +87,30 @@ void _printst(stnode *root, int depth) {
     if(root->type == EXPR)
         printf(" [%s]", root->data.parent.op->name);
     
-    if(root->data.parent.left != NULL){
-        putchar('\n');
-        for(int i = 0; i < depth; i++)
-            printf("|");
+    if(root->type == VALUE) {
+        printf(" (%s)", root->data.leaf.value);
+    } else {
 
-        putchar('L');
+        if(root->data.parent.left != NULL){
+            putchar('\n');
+            for(int i = 0; i < depth; i++)
+                printf("|");
 
-        _printst(root->data.parent.left, depth+1);
-    }
+            putchar('L');
 
-    if(root->data.parent.right != NULL){
-        putchar('\n');
-        for(int i = 0; i < depth; i++)
-            printf("|");
+            _printst(root->data.parent.left, depth+1);
+        }
 
-        putchar('R');
+        if(root->data.parent.right != NULL){
+            putchar('\n');
+            for(int i = 0; i < depth; i++)
+                printf("|");
 
-        _printst(root->data.parent.right, depth+1);
-    }   
+            putchar('R');
+
+            _printst(root->data.parent.right, depth+1);
+        }
+    } 
 } 
 
 void printst(stnode *root) {

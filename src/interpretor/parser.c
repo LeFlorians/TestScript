@@ -287,12 +287,18 @@ stnode *secondary(cache *cache){
         // TODO: handle actual values & return
         stnode *val;
         if(ret == NULL) {
-            val = ret = allocate_typed(VALUE);
+            val = (ret = allocate_typed(VALUE));
         } else {
-            ret->data.parent.left = val = allocate_typed(VALUE);
+            ret->data.parent.left = (val = allocate_typed(VALUE));
         }
 
-        // TODO: copy content
+        // copy and resize content
+        size_t len = strlen(val->data.leaf.value = cache->cur->content);
+        if(len < MAX_CONTENT)
+            val->data.leaf.value = realloc(val->data.leaf.value, len + 1);
+
+        // allocate new space for another token to be read
+        cache->cur->content = malloc(MAX_CONTENT);
 
         advance(cache);
 

@@ -31,7 +31,6 @@ struct stnode {
 
         struct {
             char *value;
-
         } leaf;
     } data;
 
