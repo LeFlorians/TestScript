@@ -12,12 +12,14 @@
 // Define token types
 
 typedef enum {
+    FIELD,
+    NUMBER,
+    STRING,
+    
     NULLTKN, // Empty token (EOF, error)
     BRACKET,
-    FIELD,
     SYMBOL,
-    STRING,
-    NUMBER,
+
 } tkntype;
 
 // Define a token

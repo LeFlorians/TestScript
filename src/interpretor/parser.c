@@ -283,13 +283,14 @@ stnode *secondary(cache *cache){
 
     // ? match strings too
 
-    if(cache->cur->type == FIELD || cache->cur->type == NUMBER){
-        // TODO: handle actual values & return
+    if(cache->cur->type == FIELD || cache->cur->type == NUMBER || cache->cur->type == STRING){
         stnode *val;
+
+        // TODO: safe the type of the value as well
         if(ret == NULL) {
-            val = (ret = allocate_typed(VALUE));
+            val = (ret = allocate_typed(cache->cur->type));
         } else {
-            ret->data.parent.left = (val = allocate_typed(VALUE));
+            ret->data.parent.left = (val = allocate_typed(cache->cur->type));
         }
 
         // copy and resize content

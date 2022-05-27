@@ -5,15 +5,18 @@
 
 // TODO: replace the most used non-kids node with NULL
 typedef enum {
+    // these are the same as with the tokenizer
+    __VFIELD = FIELD, 
+    __VNUMBER = NUMBER, 
+    __VSTRING = STRING,
+
     FILE_END,   // no kids
     BLOCK,  // no kids
     BLOCK_END, // no kids
     MEMBER, 
     CALL,
-    EMPTY,  // no kids
     INDEX,
     EXPR,   
-    VALUE,
 } nodetype;
 
 // Defines a tree node

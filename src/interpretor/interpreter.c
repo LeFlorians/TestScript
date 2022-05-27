@@ -78,7 +78,7 @@ void _printst(stnode *root, int depth) {
     // _printside(out, depth);
 
     static const char* typeNames[] = {
-        "FileEnd", "Block", "BlockEnd", "Member", "Call", "Empty", "Index", "Expr", "Value",
+        "FileEnd", "Block", "BlockEnd", "Member", "Call", "Index", "Expr", "Value",
     };
 
     printf(". %s", typeNames[root->type]);
@@ -87,7 +87,7 @@ void _printst(stnode *root, int depth) {
     if(root->type == EXPR)
         printf(" [%s]", root->data.parent.op->name);
     
-    if(root->type == VALUE) {
+    if(root->type == FIELD || root->type == NUMBER || root->type == STRING) {
         printf(" (%s)", root->data.leaf.value);
     } else {
 
