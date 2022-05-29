@@ -10,14 +10,14 @@
 
     The control byte looks as follows:
     0b 00000000
-       | Target register (either left or right)
-        | set for operation, unset for load/store
-            if set:
-         |||||| the opcode as defined in mapop.h
-            if unset:
-         | set for save, unset for load
-          || the datatype to be read // TODO: specify datatypes
-            ||| how many bites to read, any of: 2,4,8,16,32,64,128,256
+       || 00=A value follows, 01=This is an operation, 10=BLOCK/Scope down, 11=BLOCK_END/Scope up
+       if value:
+         || datatype: 00=Number, 01=String, 10=Field
+           |||| The size of the value
+            if number:          doesn't matter, always 64bit
+            if string/field:    n * 16 = amount of bytes that follow
+       if operation:
+         |||||| opcode
     
     If a load/store operation is performed, additional value/addres bytes have to be set
     Their type is defines as any of: field descriptor, number value, string(number array) value
@@ -27,7 +27,7 @@
     Type definitions
 
     Numbers:
-    A number is always a 64bit double (big endian)
+    A number is always a 64bit double (little endian)
 
     Objects:
     Internally handled as hash tables with keys and values of any type
@@ -39,6 +39,12 @@
     Internally handled as array of characters
 
 */
+
+// A number's datatype
+typedef union {
+    double value;
+    long binary;
+} number;
 
 
 // Definition of bytecode

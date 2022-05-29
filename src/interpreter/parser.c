@@ -114,6 +114,13 @@ stnode *subexpr(cache *cache, unsigned char rbp) {
 
 // Parses a single expression
 stnode *expr(cache *cache, unsigned char rbp) {
+
+    // parser-defined operators
+    static operator virtualops[] = {
+        {"(...)", OP_CALL, 0, 0, 0},     // virtual call operator
+        {"[...]", OP_INDEX, 0, 0, 0},    // virtual index operator
+    };
+
     stnode *left = secondary(cache);
 
     // If secondary is done, just return
@@ -166,7 +173,8 @@ stnode *expr(cache *cache, unsigned char rbp) {
             case '(': {
                 advance(cache);
 
-                stnode *call = allocate_typed(CALL);
+                stnode *call = allocate_typed(EXPR);
+                call->data.parent.op = &virtualops[0];
 
                 call->data.parent.left = left;
                 left = call;
@@ -190,7 +198,8 @@ stnode *expr(cache *cache, unsigned char rbp) {
             case '[': {
                 advance(cache);
 
-                stnode *index = allocate_typed(INDEX);
+                stnode *index = allocate_typed(EXPR);
+                index->data.parent.op = &virtualops[1];
 
                 index->data.parent.left = left;
                 left = index;

@@ -3,7 +3,7 @@
 typedef struct s_op operator;
 
 struct s_op {
-    char *name;
+    char *name; // ! Not mandatory
     
     enum {
         OP_INCR, OP_DECR, OP_LNOT, OP_BNOT, OP_MUL, 
@@ -17,6 +17,10 @@ struct s_op {
 
         // Special prefix operators
         OP_PREINCR, OP_PREDECR, OP_POS, OP_NEG,
+
+        // Internal operators
+        OP_CALL, OP_INDEX
+
     } opcode;
 
     enum {

@@ -10,7 +10,7 @@
 // TODO: optimize
 char next(cache *cache) {
     // enforce max length
-    if(cache->tokenpos == MAX_CONTENT) {
+    if(cache->tokenpos == MAX_CONTENT - 1) {
         throw(ET_TOKEN_LENGTH_EXCEEDED, &cache->info);
         return 0;
     }

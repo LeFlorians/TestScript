@@ -78,7 +78,7 @@ void _printst(stnode *root, int depth) {
     // _printside(out, depth);
 
     static const char* typeNames[] = {
-        "FileEnd", "Block", "BlockEnd", "Member", "Call", "Index", "Expr", "Value",
+        "Field", "Number", "String", "FileEnd", "Block", "BlockEnd", "Member", "Expr"
     };
 
     printf(". %s", typeNames[root->type]);

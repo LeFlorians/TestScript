@@ -64,32 +64,28 @@ operator *mapop(char *expr) {
 }
 
 operator *mappreop(char *expr) {
+    static operator virt[] = {
+        {"++",      OP_PREINCR, PREFIX, RTL, 9},
+        {"--",      OP_PREDECR, PREFIX, RTL, 9},
+        {"+",       OP_POS,     PREFIX, RTL, 9},
+        {"-",       OP_NEG,     PREFIX, RTL, 9},
+    };
+
     operator *ret = lookup(expr, strlen(expr));
+
     if(ret != 0) {
         switch(ret->opcode) {
             case OP_INCR:
-                ret->opcode = OP_PREINCR;
-                ret->associativity = RTL;
-                ret->position = PREFIX;
-                ret->precedence = 9;
+                ret = &virt[0];
                 break;
             case OP_DECR:
-                ret->opcode = OP_PREDECR;
-                ret->associativity = RTL;
-                ret->position = PREFIX;
-                ret->precedence = 9;
+                ret = &virt[1];
                 break;
             case OP_ADD:
-                ret->opcode = OP_POS;
-                ret->associativity = RTL;
-                ret->position = PREFIX;
-                ret->precedence = 9;
+                ret = &virt[2];
                 break;
             case OP_SUB:
-                ret->opcode = OP_NEG;
-                ret->associativity = RTL;
-                ret->position = PREFIX;
-                ret->precedence = 9;
+                ret = &virt[3];
             default: break;
         }
     }

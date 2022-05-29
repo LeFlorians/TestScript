@@ -14,8 +14,6 @@ typedef enum {
     BLOCK,  // no kids
     BLOCK_END, // no kids
     MEMBER, 
-    CALL,
-    INDEX,
     EXPR,   
 } nodetype;
 
