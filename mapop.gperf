@@ -65,10 +65,10 @@ operator *mapop(char *expr) {
 
 operator *mappreop(char *expr) {
     static operator virt[] = {
-        {"++",      OP_PREINCR, PREFIX, RTL, 9},
-        {"--",      OP_PREDECR, PREFIX, RTL, 9},
-        {"+",       OP_POS,     PREFIX, RTL, 9},
-        {"-",       OP_NEG,     PREFIX, RTL, 9},
+        {"++_",      OP_PREINCR, PREFIX, RTL, 9},
+        {"--_",      OP_PREDECR, PREFIX, RTL, 9},
+        {"+_",       OP_POS,     PREFIX, RTL, 9},
+        {"-_",       OP_NEG,     PREFIX, RTL, 9},
     };
 
     operator *ret = lookup(expr, strlen(expr));

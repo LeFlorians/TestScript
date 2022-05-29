@@ -65,7 +65,7 @@ stnode *subexpr(cache *cache, unsigned char rbp) {
     subroot = member = expr(cache, rbp);
 
     // Parse in-expression code blocks
-    if(member->type == BLOCK){
+    if(member != NULL && member->type == BLOCK){
         // loop variable
         stnode *left;
         
@@ -117,14 +117,14 @@ stnode *expr(cache *cache, unsigned char rbp) {
 
     // parser-defined operators
     static operator virtualops[] = {
-        {"(...)", OP_CALL, 0, 0, 0},     // virtual call operator
-        {"[...]", OP_INDEX, 0, 0, 0},    // virtual index operator
+        {"(_)", OP_CALL, 0, 0, 0},     // virtual call operator
+        {"[_]", OP_INDEX, 0, 0, 0},    // virtual index operator
     };
 
     stnode *left = secondary(cache);
 
     // If secondary is done, just return
-    if(left->type == FILE_END)
+    if(left == NULL || left->type == FILE_END)
         return left;
 
     // label to jump to after function call / indexing
@@ -259,6 +259,11 @@ stnode *secondary(cache *cache){
                 case '}':
                     advance(cache);
                     return allocate_typed(BLOCK_END);
+
+                // End function calls / indexing
+                case ')':
+                case ']':
+                    return NULL;
             }
             break;
 
@@ -282,6 +287,9 @@ stnode *secondary(cache *cache){
                 ret->type = FILE_END;
                 return ret;
             }
+            
+            // advance to unload operator
+            advance(cache);
 
             break;
 
