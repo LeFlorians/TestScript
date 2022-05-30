@@ -27,7 +27,25 @@ void _recursiveconsume(stack *dst, stnode *subtree) {
             // push the value
             _push(dst, 0);   // this is a number
             for(char i = 0; i < sizeof(num) * 8; i += 8)
-                _push(dst, (num.binary >> i) & 0xFF );
+                _push(dst, (num.binary >> i) & 0xFF );  // the value (little endian)
+            break;
+
+        case FIELD:
+            _push(dst, 32); // this is a field
+
+            // Fallthrough
+        case STRING:
+            if(subtree->type != FIELD)
+                _push(dst, 16); // this is a string
+            
+            // write the buffer contents
+            for(char* ch = subtree->data.leaf.value; *ch != '\0'; ch++){
+                // TODO: can be optimized, currently: (pointer -> value -> pointer -> value) = inefficient
+                _push(dst, *ch);
+            }  
+            _push(dst, '\0');
+
+
             break;
 
         case BLOCK:

@@ -12,10 +12,8 @@
     0b 00000000
        || 00=A value follows, 01=This is an operation, 10=BLOCK/Scope down, 11=BLOCK_END/Scope up
        if value:
-         || datatype: 00=Number, 01=String, 10=Field
-           |||| The size of the value
-            if number:          doesn't matter, always 64bit
-            if string/field:    n * 16 = amount of bytes that follow
+         || datatype: 00=Number (64bit float), 01=String (null-terminated), 10=Field (null-terminated)
+           |||| unused 
        if operation:
          |||||| opcode
     
