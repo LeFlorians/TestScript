@@ -55,7 +55,7 @@ void interpret(FILE *stream, char* filename) {
 
         printst(root);
 
-    } while (root->type != FILE_END);
+    } while (root != NULL && root->type != FILE_END);
 
     printf("Reached end of file!\n");
 
@@ -80,6 +80,11 @@ void _printst(stnode *root, int depth) {
     static const char* typeNames[] = {
         "Field", "Number", "String", "FileEnd", "Block", "BlockEnd", "Member", "Expr"
     };
+
+    if(root == NULL) {
+        printf("(null)\n");
+        return;
+    }
 
     printf(". %s", typeNames[root->type]);
     // printf(". %i", root->type);
