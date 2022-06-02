@@ -25,18 +25,18 @@ void _recursiveconsume(stack *dst, stnode *subtree) {
             free(subtree->data.leaf.value);
 
             // push the value
-            _push(dst, 0);   // this is a number
+            _push(dst, 64);   // this is a number
             for(char i = 0; i < sizeof(num) * 8; i += 8)
                 _push(dst, (num.binary >> i) & 0xFF );  // the value (little endian)
             break;
 
         case FIELD:
-            _push(dst, 32); // this is a field
+            _push(dst, 96); // this is a field
 
             // Fallthrough
         case STRING:
             if(subtree->type != FIELD)
-                _push(dst, 16); // this is a string
+                _push(dst, 80); // this is a string
             
             // write the buffer contents
             for(char* ch = subtree->data.leaf.value; *ch != '\0'; ch++){
@@ -65,7 +65,7 @@ void _recursiveconsume(stack *dst, stnode *subtree) {
                 _recursiveconsume(dst, subtree->data.parent.right);
 
             // then push operator onto the stack
-            _push(dst, 64 | subtree->data.parent.op->opcode);
+            _push(dst, subtree->data.parent.op->opcode);
             break;
 
         case MEMBER:

@@ -15,10 +15,7 @@
      Bytecode compiler  (-> Save to File)
             |
             V
-      Local compiler    -> Cache (-> Save to File)
-            |                |
-            V                |
-         Runtime      <------/
+         Runtime
 */
 
 // define interpreter methods

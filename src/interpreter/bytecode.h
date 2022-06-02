@@ -10,7 +10,7 @@
 
     The control byte looks as follows:
     0b 00000000
-       || 00=A value follows, 01=This is an operation, 10=BLOCK/Scope down, 11=BLOCK_END/Scope up
+       || 00=This is an operation, 01=A value follows, 10=BLOCK/Scope down, 11=BLOCK_END/Scope up
        if value:
          || datatype: 00=Number (64bit float), 01=String (null-terminated), 10=Field (null-terminated)
            |||| unused 
