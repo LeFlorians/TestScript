@@ -18,22 +18,21 @@ void advance(cache *cache) {
 
     if(cache->cur->type == BRACKET){
 
-        static char closing[] = {'}', ')', ']'};
         switch(cache->cur->content[0]) {
             case '{':
-                push(cache->bracketstack, &closing[0]);
+                *((char *) push(cache->bracketstack, 1)) = '}';
                 break;
             case '(':
-                push(cache->bracketstack, &closing[1]);
+                *((char *) push(cache->bracketstack, 1)) = ')';
                 break;
             case '[':
-                push(cache->bracketstack, &closing[2]);
+                *((char *) push(cache->bracketstack, 1)) = ']';
                 break;
 
             default:
                 char *popped;
 
-                if((popped = (char *)pop(cache->bracketstack)) == NULL) {
+                if((popped = (char *)pop(cache->bracketstack, 1)) == NULL) {
                     // Throw error, no closing bracket expected
                     throw(EP_INVALID_CLOSING_BRACKET, &cache->info);
 

@@ -2,12 +2,6 @@
 
 #define INITIAL_STACK_SIZE 32
 
-// Pushes the next byte of information
-// TODO: write to a file as well
-void _push(stack *dst, unsigned char byte) {
-    push(dst, &byte);
-}
-
 // see protocol specifications in header file
 void _recursiveconsume(stack *dst, stnode *subtree) {
 
@@ -18,42 +12,37 @@ void _recursiveconsume(stack *dst, stnode *subtree) {
             char *endprtr;
 
             // ? might check for errors like overflow/underflow
-            number num;
-            num.value = strtold(subtree->data.leaf.value, &endprtr);
+            *((number *) push(dst, sizeof(number))) = strtold(subtree->data.leaf.value, &endprtr);
             
-            // Free the text, since all the required data is now in num
+            // free the text, since all the required data is now stored in number format
             free(subtree->data.leaf.value);
 
-            // push the value
-            _push(dst, 64);   // this is a number
-            for(char i = 0; i < sizeof(num) * 8; i += 8)
-                _push(dst, (num.binary >> i) & 0xFF );  // the value (little endian)
+            // Push datatype
+            *((char *)push(dst, 1)) = 64; // this is a number
+
             break;
 
         case FIELD:
-            _push(dst, 96); // this is a field
-
-            // Fallthrough
         case STRING:
-            if(subtree->type != FIELD)
-                _push(dst, 80); // this is a string
-            
-            // write the buffer contents
-            for(char* ch = subtree->data.leaf.value; *ch != '\0'; ch++){
-                // TODO: can be optimized, currently: (pointer -> value -> pointer -> value) = inefficient
-                _push(dst, *ch);
-            }  
-            _push(dst, '\0');
+            // push pointer and don't free that memory
+            *((char **) push(dst, sizeof(char **))) = subtree->data.leaf.value;
 
+            // Push Type
+            if(subtree->type == FIELD)
+                *((char *)push(dst, 1)) = 96; // this is a field
+            else
+                *((char *)push(dst, 1)) = 80; // this is a string
+            
+            // TODO: may reallocate space for string
 
             break;
 
         case BLOCK:
-            _push(dst, 128);
+            *((char *)push(dst, 1)) = 128; // this is a block
             break;
 
         case BLOCK_END:
-            _push(dst, 192);
+            *((char *)push(dst, 1)) = 192; // this is a block end
             break;;
 
         case EXPR:
@@ -65,7 +54,7 @@ void _recursiveconsume(stack *dst, stnode *subtree) {
                 _recursiveconsume(dst, subtree->data.parent.right);
 
             // then push operator onto the stack
-            _push(dst, subtree->data.parent.op->opcode);
+            *((char *) push(dst, 1)) = subtree->data.parent.op->opcode;
             break;
 
         case MEMBER:
@@ -93,24 +82,14 @@ void _recursiveconsume(stack *dst, stnode *subtree) {
     free(subtree);
 }
 
-bytecode *consume(stnode *root) {
+bytecode consume(stnode *root) {
     
     // allocate a stack to write the bytecode to
-    // TODO: could be optimized using another stack type
-    stack *stk = create_stack(1, INITIAL_STACK_SIZE);
+    stack *stk = create_stack(INITIAL_STACK_SIZE);
 
     // Post order traversal
     _recursiveconsume(stk, root);
 
-    // bytecode to be returned
-    bytecode *dst;
-
-    // copy the data and size
-    dst->ptr = stk->start;
-    dst->size = get_size(stk);
-
-    // free the stack itsself
-    free(stk);
-
-    return dst;
+    // return stk as 'bytecode'
+    return stk;
 }

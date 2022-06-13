@@ -9,22 +9,30 @@
 * The Tokenizer takes a string and converts it to easy-to-understand tokens
 */
 
-// Define token types
-
+// Define all types
 typedef enum {
+    // shared
     FIELD,
     NUMBER,
     STRING,
     
+    // token types
     NULLTKN, // Empty token (EOF, error)
     BRACKET,
     SYMBOL,
 
-} tkntype;
+    // parser node types
+    // TODO: replace most used with null
+    FILE_END,   // no kids
+    BLOCK,  // no kids
+    BLOCK_END, // no kids
+    MEMBER, 
+    EXPR,   
+} typing;
 
 // Define a token
 typedef struct {
-    tkntype type;
+    typing type;
     char *content;
 } token;
 

@@ -32,13 +32,12 @@ void _resize_stack(stack *st, size_t newsize) {
         st->current = st->end - 1;
 }
 
-stack *create_stack(size_t element_size, size_t size){
+stack *create_stack(size_t size){
     stack* ret = malloc(sizeof(stack));
-    ret->start = malloc(element_size * size);
-    ret->end = ret->start + size * element_size;
-    ret->current = ret->start - element_size;
+    ret->start = malloc(size);
+    ret->end = ret->start + size;
+    ret->current = ret->start;
 
-    ret->element_size = element_size;
     ret->alloc_size = DEFAULT_ALLOC_SIZE;
 
     // initialize with 0s
@@ -57,20 +56,25 @@ void free_stack(stack *st) {
 }
 
 // Pushing NULL will be ignored
-// Returns val if push was successful, NULL otherwise
-// @param val Should be at least of size st->element_size
-void *push(stack *st, void *val) {
+// Returns pointer to allocated space if push was successful, NULL otherwise
+void *push(stack *st, elementsize size) {
 
-    // ignore NULL as stated
-    if (val == NULL)
-        return NULL;
-
-    char *charpointer = (char *) val;
-
-    if(st->current + st->element_size >= st->end){
+    // Resize stack if size is not sufficient
+    if(st->current + size > st->end){
         // reached the end, reallocate
 
-        size_t new_size = st->end - st->start + st->alloc_size * st->element_size;
+        size_t size = st->end - st->start;
+        size_t new_size = size + st->alloc_size;
+
+        // Just use total size if too small
+        if(st->current + new_size > st->end)
+            new_size = st->end - st->current;
+        
+        // check if reallocation was successful
+        if(st->end - st->start == size){
+            // Reallocation failed
+            return NULL;
+        }
 
         // new_size is too large
         if(new_size < st->alloc_size){
@@ -79,42 +83,34 @@ void *push(stack *st, void *val) {
 
         _resize_stack(st, new_size);
 
-        if(st->current + 1 >= st->end) {
-            // reallocation failed
-            return NULL;
-        }
-
         // next time, automatically allocate more
         // TODO: better new_size prediction
         if(st->alloc_size < MAX_ALLOC_SIZE)
             st->alloc_size <<= 1;
     }
 
-    // move current
-    st->current += st->element_size;
+    // pointer to return
+    char *ret = st->current;
 
-    // push value onto stack
-    for(size_t index = 0; index < st->element_size; index++)
-        st->current[index] = charpointer[index];
+    // shift current
+    st->current += size;
         
-    return val;
+    return ret;
 }
 
 // Returns the element on top of the stack (or NULL if empty) and removes it
-void *pop(stack *st) {
+void *pop(stack *st, elementsize size) {
     // check if not empty
-    if(st->current >= st->start){
-        void *ret = st->current;
-        st->current -= st->element_size;
-        return ret;
+    if(st->current - size >= st->start){
+        return (st->current -= size);
     }
     return NULL;
 }
 
 // Returns element on top of the stack or NULL if empty
-void *peek(stack *st) {
-    if(st->current >= st->start)
-        return st->current;
+void *peek(stack *st, elementsize size) {
+    if(st->current - size >= st->start)
+        return (st->current - size);
     return NULL;
 }
 
@@ -123,7 +119,7 @@ bool is_empty(stack *st) {
     return st->current < st->start;
 }
 
-// Returns the current amount of items on the stack
+// Returns the current size used by elements on the stack
 size_t get_size(stack *st) {
-    return (st->current - st->start) / st->element_size + 1;
+    return (st->current - st->start);
 }

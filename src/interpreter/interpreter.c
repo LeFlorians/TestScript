@@ -32,7 +32,7 @@ void interpret(FILE *stream, char* filename) {
         cac.info.fileinfo.line = 1;
 
         // allocate bracket stack for parser
-        cac.bracketstack = create_stack(1, 16);        
+        cac.bracketstack = create_stack(16);        
     }
 
     // static char* typenames[] = {"Nulltkn", "Bracket", "Field", "Symbol", "String", "Number"};
@@ -62,7 +62,7 @@ void interpret(FILE *stream, char* filename) {
     // Print unmatched brackets
     size_t size;
     if((size = get_size(cac.bracketstack)) != 0) {
-        printf("\nNot all brackets matched, %li left!\n", size);
+        printf("\nNot all brackets matched, %lli left!\n", size);
         printf("Assuming: ");
         for(size_t index = size; index > 0; index--)
             putchar(cac.bracketstack->start[index - 1]);
@@ -78,7 +78,8 @@ void _printst(stnode *root, int depth) {
     // _printside(out, depth);
 
     static const char* typeNames[] = {
-        "Field", "Number", "String", "FileEnd", "Block", "BlockEnd", "Member", "Expr"
+        "Field", "Number", "String", "Nulltkn", "Bracket", "Symbol",
+        "FileEnd", "Block", "BlockEnd", "Member", "Expr"
     };
 
     if(root == NULL) {

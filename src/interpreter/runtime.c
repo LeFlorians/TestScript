@@ -1,19 +1,22 @@
 #include "runtime.h"
 
-void process(bytecode code, runtime *rt) {
+void process(bytecode code) {
     char byte;
 
     // Iterate through all bytes of bytecode
-    for(char *ptr = code.ptr; ptr < code.ptr + code.size; ptr++) {
-        switch(byte & 192) {
+    while(1) {
+        byte = *((char *)pop(code, 1));
+
+        // switch by first two bytes (type)
+        switch(byte & 0b11000000) {
 
             // A value
             case 64:
                 // switch by value type
-                switch(byte & 48) {
+                switch(byte & 0b110000) {
                     // Number
                     case 0:
-
+                        
                         break;
 
                     // String

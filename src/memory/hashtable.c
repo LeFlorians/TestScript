@@ -1,5 +1,6 @@
 #include "hashtable.h"
 
+// TODO: implement
 // TODO: add cache
 
 // create hash table
@@ -13,6 +14,7 @@ hashtable *create_hashtable(size_t size){
     // set default keys    
     for(hashelement *cur = ret->array; cur < ret->array + size; cur++)
         cur->key = NULL;
+
 }
 
 // find an element in the hash table

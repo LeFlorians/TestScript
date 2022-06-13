@@ -3,22 +3,11 @@
 #include "tokenizer.h"
 #include "mapop.h"
 
-// TODO: replace the most used non-kids node with NULL
-typedef enum {
-    // these are the same as with the tokenizer
-    __VFIELD = FIELD, 
-    __VNUMBER = NUMBER, 
-    __VSTRING = STRING,
-
-    FILE_END,   // no kids
-    BLOCK,  // no kids
-    BLOCK_END, // no kids
-    MEMBER, 
-    EXPR,   
-} nodetype;
-
 // Defines a tree node
 typedef struct stnode stnode;
+
+// Define stnode types
+typedef typing nodetype;
 
 struct stnode {
     nodetype type;

@@ -11,7 +11,7 @@
     The control byte looks as follows:
     0b 00000000
        || 00=This is an operation, 01=A value follows, 10=BLOCK/Scope down, 11=BLOCK_END/Scope up
-       if value:
+       if value: (a pointer sizeof(void *) to the data follows)
          || datatype: 00=Number (64bit float), 01=String (null-terminated), 10=Field (null-terminated)
            |||| unused 
        if operation:
@@ -39,17 +39,10 @@
 */
 
 // A number's datatype
-typedef union {
-    double value;
-    long binary;
-} number;
+typedef long double number;
 
-
-// Definition of bytecode
-typedef struct {
-    void* ptr; // where the bytecode is
-    size_t size; // size of the bytecode in bytes
-} bytecode;
+// bytecode is just a stack-pointer
+typedef stack *bytecode;
 
 // Consumes a syntax tree (freeing it) and returns the corresponding bytecode 
-bytecode *consume(stnode *root);
+bytecode consume(stnode *root);
