@@ -29,5 +29,8 @@ typedef struct {
 
 } hashtable;
 
+// function to create a hashtable
+hashtable *create_hashtable(size_t width);
+
 // Function to return pointer to address of value given by key (never NULL)
 hashelement *find(hashtable *table, char* key);

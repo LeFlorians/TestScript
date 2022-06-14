@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../../memory/stack.h"
 #include "../../memory/hashtable.h"
 #include "../mapop.h"
@@ -5,21 +7,24 @@
 
 // Define some space to be allocated for the implementation functions
 typedef struct {
-    typing type; // Any of NUMBER, FIELD, STRING ARRAY, OBJECT
+    typing type; // Any of NUMBER, FIELD, STRING, ARRAY, OBJECT, EMPTY
     union {
-        char* content;
-        number num;
+        char *string;
+        number *number;
+        hashelement *field;
     } value;
 } slot;
 
 // Define struct for operation function arguments
 typedef struct {
-    stack *stack;
     slot slot1, slot2;
-    
+
     hashtable* hashtable;
 
     errorinfo *info; // This information will not be exact, but better than nothing
+
+    // the bytecode to be recursively processed
+    bytecode *code;
 } opargs;
 
 // Define return type and arguments of operation functions

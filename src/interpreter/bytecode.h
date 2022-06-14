@@ -16,8 +16,8 @@
             ARRAY: internal array
             OBJECT: internal object
       - one for Expressions, with zero, one or two arguments
-        - if expression; only its opcode
-        - if block: 
+        - if expression; -(its opcode) - 1
+        - if block: -OP_BLOCK, if block_end: -OP_BLOCK_END
     
     If a load/store operation is performed, additional value/addres bytes have to be set
     Their type is defines as any of: field descriptor, number value, string(number array) value
@@ -44,11 +44,7 @@
 // A number's datatype
 typedef long double number;
 
-// bytecode is just two sturct pointers
-typedef struct {
-  stack* expr;  // one for instructions / expressions
-  stack* data;  // one for data
-} bytecode;
+typedef stack bytecode;
 
 // Consumes a syntax tree (freeing it) and returns the corresponding bytecode 
-bytecode consume(stnode *root);
+bytecode *consume(stnode *root);

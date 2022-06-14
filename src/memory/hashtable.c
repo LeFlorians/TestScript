@@ -2,7 +2,6 @@
 
 #include "hashtable.h"
 
-#define DEFAULT_TYPE EMPTY
 
 // TODO: implement
 // TODO: add cache
@@ -52,8 +51,9 @@ hashelement *find(hashtable *table, char* key) {
 
             // modify the value to return
             current->key = key;
-            current->type = DEFAULT_TYPE;
 
+            // set default type and value
+            current->type = EMPTY;
             current->value = NULL;
 
             break;

@@ -1,5 +1,9 @@
 #include "operations.h"
 
+// Define a function to process the output of some code into destination slot
+// to be used by operator implementations and runtime.c
+void _recursiveprocess(opargs *args, slot *dst);
+
 // ----- Definitions -----
 void _incr(opargs *args);
 void _decr(opargs *args);

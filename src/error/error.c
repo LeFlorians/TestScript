@@ -19,6 +19,7 @@ static const char *errformats[] = {
     "Token unmatched",
 
     "Missing argument(s) for given operator"
+    "The specified operator cannot be applied to given operand(s)"
     
     #else
     // Not nice error messages

@@ -4,7 +4,7 @@
 #define INITIAL_EXPR_SIZE 4
 
 // see protocol specifications in header file
-void _recursiveconsume(bytecode dst, stnode *subtree) {
+void _recursiveconsume(bytecode *dst, stnode *subtree) {
 
     switch(subtree->type){
 
@@ -13,37 +13,37 @@ void _recursiveconsume(bytecode dst, stnode *subtree) {
             char *endprtr;
 
             // ? might check for errors like overflow/underflow
-            *((number *) push(dst.data, sizeof(number))) = strtold(subtree->data.leaf.value, &endprtr);
+            *((number *) push(dst, sizeof(number))) = strtold(subtree->data.leaf.value, &endprtr);
             
             // free the text, since all the required data is now stored in number format
             free(subtree->data.leaf.value);
 
             // Push datatype
-            *((char *)push(dst.data, 1)) = NUMBER; // this is a number
+            *((char *)push(dst, 1)) = NUMBER; // this is a number
 
             break;
 
         case FIELD:
         case STRING:
             // push pointer and don't free that memory
-            *((char **) push(dst.data, sizeof(char **))) = subtree->data.leaf.value;
+            *((char **) push(dst, sizeof(char **))) = subtree->data.leaf.value;
 
             // Push Type
             if(subtree->type == FIELD)
-                *((char *)push(dst.data, 1)) = FIELD; // this is a field
+                *((char *)push(dst, 1)) = FIELD; // this is a field
             else
-                *((char *)push(dst.data, 1)) = STRING; // this is a string
+                *((char *)push(dst, 1)) = STRING; // this is a string
             
             // TODO: may reallocate space for string
 
             break;
 
         case BLOCK:
-            *((char *) push(dst.expr, 1)) = OP_BLOCK;
+            *((char *) push(dst, 1)) = -OP_BLOCK-1;
             break;
 
         case BLOCK_END:
-            *((char *) push(dst.expr, 1)) = OP_BLOCK_END;
+            *((char *) push(dst, 1)) = -OP_BLOCK_END-1;
             break;
 
         case EXPR:
@@ -55,7 +55,7 @@ void _recursiveconsume(bytecode dst, stnode *subtree) {
                 _recursiveconsume(dst, subtree->data.parent.right);
 
             // then push operator onto the stack
-            *((char *) push(dst.expr, 1)) = subtree->data.parent.op->opcode;
+            *((char *) push(dst, 1)) = -subtree->data.parent.op->opcode-1;
             break;
 
         case MEMBER:
@@ -83,12 +83,10 @@ void _recursiveconsume(bytecode dst, stnode *subtree) {
     free(subtree);
 }
 
-bytecode consume(stnode *root) {
+bytecode *consume(stnode *root) {
     
     // allocate the bytecode
-    bytecode code;
-    code.data = create_stack(INITIAL_DATA_SIZE);
-    code.expr = create_stack(INITIAL_EXPR_SIZE);
+    bytecode *code = create_stack(INITIAL_DATA_SIZE);
 
     // post order traversal
     _recursiveconsume(code, root);

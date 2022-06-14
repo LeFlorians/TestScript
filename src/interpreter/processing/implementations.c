@@ -2,34 +2,67 @@
 
 // ----- Helper functions -----
 
-// makro to easily get the next type
-#define TYPE assertExistance(pop(args->stack, 1), args)
+void _recursiveprocess(opargs *args, slot *dst) {
 
+    opcode *opcodeptr = (opcode *)pop(args->code, 1);
 
-// returns the address of the data according to the stack, given by it's type (and therefore size on stack)
-// fetches field pointers
-// types: NUMBER=(number *) STRING=(char *) FIELD (hashelement *)
-void *resolve(char type, opargs *args) {
+    // check if NULL
+    if(opcodeptr == NULL){
+        // clear the dst type
+        dst->type = EMPTY;
+        return;
+    }
 
-    switch(type) {
-        case FIELD:
-            // resolve key, find value in hashtable
-            return find(args->hashtable, *((char **) pop(args->stack, sizeof(char**))));
+    opcode opcode = *opcodeptr;
 
-        case STRING:
-            return *((char **) pop(args->stack, sizeof(char**)));
+    // check if its an opcode
+    if(opcode < 0) {
+        // apply this operator
+        opcode = -opcode-1; // convert opcode back to true opcode (see bytecode.h)
 
-        case NUMBER:
-            return (number *) pop(args->stack, sizeof(number));
+        // perform the found operation
+        implementationof(opcode)(args);
+
+    } else {
+        // typing can be cast, as the used values are equal
+        dst->type = (typing) opcode;
+
+        // TODO: handle other cases
+        switch (opcode) {
+            case NUMBER:
+                dst->value.number = (number *) pop(args->code, sizeof(number));
+                break;
+
+            case STRING:
+                dst->value.string = *((char **) pop(args->code, sizeof(char**)));
+                break;
+
+            case FIELD:
+                hashelement *ret = find(args->hashtable, *((char **) pop(args->code, sizeof(char**))));
+
+                // set default value
+                if(ret->type == EMPTY) {
+                    // TODO: search for predefined default value here
+                    ret->type = NUMBER;
+                    //allocate number and set default value
+                    ret->value = malloc(sizeof(number));
+                    *((number *) ret->value) = (number) 0;
+
+                }
+                dst->value.field = ret;
+                break;
+        }
     }
 }
 
-// assert that a type is not null, throw an error otherwise
-// still returns NULL!
-char *assertExistance(void *typename, opargs *args) {
-    if(typename == NULL)
+// assert that a type is not null
+// if type is null, returns -1
+typing assertExistance(void *typename, opargs *args) {
+    if(typename == NULL) {
         throw(EI_MISSING_ARGS, args->info);
-    return (char *)typename;
+        return -1;
+    }
+    return *((typing *)typename);
 }
 
 
@@ -41,14 +74,6 @@ char *assertExistance(void *typename, opargs *args) {
 
 // ----- Operator implementations -----
 void _incr(opargs *args) {
-    // pop one value from the stack, increment it and push it back
-    char *type = TYPE;
-    
-    if(type == NUMBER){
-        // get number address from stack, dereference it, then increment
-        (*((number *)resolve(type, args->stack)))++;
-    }
-
 
 }
 
