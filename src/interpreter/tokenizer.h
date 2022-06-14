@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 
 #include "../error/error.h"
@@ -12,9 +14,13 @@
 // Define all types
 typedef enum {
     // shared
-    FIELD,
     NUMBER,
+    FIELD,
     STRING,
+
+    // runtime types
+    ARRAY,
+    OBJECT,
     
     // token types
     NULLTKN, // Empty token (EOF, error)

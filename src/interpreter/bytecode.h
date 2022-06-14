@@ -5,21 +5,24 @@
 /* 
     Bytecode format specification
 
-    Each bytecode instruction is composed as follows
-    (one control byte) (additional value bytes)
-
-    The control byte looks as follows:
-    0b 00000000
-       || 00=This is an operation, 01=A value follows, 10=BLOCK/Scope down, 11=BLOCK_END/Scope up
-       if value: (a pointer sizeof(void *) to the data follows)
-         || datatype: 00=Number (64bit float), 01=String (null-terminated), 10=Field (null-terminated)
-           |||| unused 
-       if operation:
-         |||||| opcode
+    Bytecode is made up of two data blobs:
+      - one for Data
+        => After a -value- there follows always a control byte
+          - value can be: number for number, char* for string, char* for field
+          - control byte can be (see tokenizer.h)
+            NUMBER: number
+            STRING: string
+            FIELD: field
+            ARRAY: internal array
+            OBJECT: internal object
+      - one for Expressions, with zero, one or two arguments
+        - if expression; only its opcode
+        - if block: 
     
     If a load/store operation is performed, additional value/addres bytes have to be set
     Their type is defines as any of: field descriptor, number value, string(number array) value
     These will be in the appropriate internal format already
+
 
 
     Type definitions
@@ -41,8 +44,11 @@
 // A number's datatype
 typedef long double number;
 
-// bytecode is just a stack-pointer
-typedef stack *bytecode;
+// bytecode is just two sturct pointers
+typedef struct {
+  stack* expr;  // one for instructions / expressions
+  stack* data;  // one for data
+} bytecode;
 
 // Consumes a syntax tree (freeing it) and returns the corresponding bytecode 
 bytecode consume(stnode *root);

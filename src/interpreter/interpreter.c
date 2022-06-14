@@ -78,7 +78,7 @@ void _printst(stnode *root, int depth) {
     // _printside(out, depth);
 
     static const char* typeNames[] = {
-        "Field", "Number", "String", "Nulltkn", "Bracket", "Symbol",
+        "Number", "Field", "String", "Array", "Object", "Nulltkn", "Bracket", "Symbol",
         "FileEnd", "Block", "BlockEnd", "Member", "Expr"
     };
 
