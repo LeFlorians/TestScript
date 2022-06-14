@@ -1,11 +1,14 @@
 #include <stdlib.h>
+#include "../interpreter/tokenizer.h"
 
 // n element of a hash table
 typedef struct hashelement hashelement;
 
 struct hashelement {
-    // TODO: decide if void * or char * as key
-    void *key;
+    // type (one of runtime/shared types)
+    typing type;
+
+    char *key;
 
     // a pointer to the value of the element
     // value should not contain the key, as that would not make sense memory-wise
@@ -18,9 +21,13 @@ struct hashelement {
 
 // a hash table struct
 typedef struct {
-    // array of data pointers
+    // size of base array
+    size_t width;
+
+    // array of data pointers size 'width'
     hashelement *array;
 
-    // size of currently allcoated space
-    size_t size;
 } hashtable;
+
+// Function to return pointer to address of value given by key (never NULL)
+hashelement *find(hashtable *table, char* key);

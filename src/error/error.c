@@ -17,6 +17,8 @@ static const char *errformats[] = {
     "Expected closing bracket",
     "Expected closing square bracket",
     "Token unmatched",
+
+    "Missing argument(s) for given operator"
     
     #else
     // Not nice error messages

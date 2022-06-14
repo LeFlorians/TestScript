@@ -2,27 +2,53 @@
 
 // ----- Helper functions -----
 
-/*
-upcasting = making two values the same (higher of the two) datatypes
-order being: object > array > string > number
+// makro to easily get the next type
+#define TYPE assertExistance(pop(args->stack, 1), args)
 
-! when an operation cannot be performed on given value, 
-! it is automatically upcasted to the next capable tier
-*/
 
-// get the next two values, but upcast
-void get_upcasat(opargs *args) {
+// returns the address of the data according to the stack, given by it's type (and therefore size on stack)
+// fetches field pointers
+// types: NUMBER=(number *) STRING=(char *) FIELD (hashelement *)
+void *resolve(char type, opargs *args) {
 
+    switch(type) {
+        case FIELD:
+            // resolve key, find value in hashtable
+            return find(args->hashtable, *((char **) pop(args->stack, sizeof(char**))));
+
+        case STRING:
+            return *((char **) pop(args->stack, sizeof(char**)));
+
+        case NUMBER:
+            return (number *) pop(args->stack, sizeof(number));
+    }
 }
 
-// assert the next value on the data stack has a given type
-void assert(stack *st, typing type) {
-    char *next = ((char *)peek(st, 1));
+// assert that a type is not null, throw an error otherwise
+// still returns NULL!
+char *assertExistance(void *typename, opargs *args) {
+    if(typename == NULL)
+        throw(EI_MISSING_ARGS, args->info);
+    return (char *)typename;
 }
+
+
+
+
+
+
+
 
 // ----- Operator implementations -----
 void _incr(opargs *args) {
     // pop one value from the stack, increment it and push it back
+    char *type = TYPE;
+    
+    if(type == NUMBER){
+        // get number address from stack, dereference it, then increment
+        (*((number *)resolve(type, args->stack)))++;
+    }
+
 
 }
 

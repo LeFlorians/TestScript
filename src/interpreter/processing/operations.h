@@ -1,6 +1,6 @@
 #include "../../memory/stack.h"
+#include "../../memory/hashtable.h"
 #include "../mapop.h"
-#include "../tokenizer.h"
 #include "../bytecode.h"
 
 // Define some space to be allocated for the implementation functions
@@ -16,6 +16,10 @@ typedef struct {
 typedef struct {
     stack *stack;
     slot slot1, slot2;
+    
+    hashtable* hashtable;
+
+    errorinfo *info; // This information will not be exact, but better than nothing
 } opargs;
 
 // Define return type and arguments of operation functions

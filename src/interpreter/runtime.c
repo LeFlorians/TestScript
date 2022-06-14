@@ -1,10 +1,13 @@
 #include "runtime.h"
+#include "../error/error.h"
 
-void process(bytecode code) {
+void process(bytecode code, errorinfo *info) {
     opcode *opcodeptr;
     number num;
     // allocate space for operation functions
     opargs args;
+
+    args.info = info;
     
 
     // Iterate through all bytes of expressions

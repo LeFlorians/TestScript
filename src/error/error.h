@@ -1,3 +1,5 @@
+#pragma once
+
 // Enum of all messages
 enum errorformat {
     // Tokenizer errors
@@ -14,6 +16,9 @@ enum errorformat {
     EP_EXPECTED_CLOSING_BRACKET,
     EP_EXPECTED_CLOSING_SQUARE_BRACKET,
     EP_TOKEN_UNMATCHED,
+
+    // Implementation error
+    EI_MISSING_ARGS,
 
 };
 
