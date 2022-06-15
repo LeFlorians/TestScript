@@ -13,12 +13,13 @@ void _recursiveprocess(opargs *args, slot *dst) {
         return;
     }
 
-    opcode opcode = *opcodeptr;
+    // use unsigned char, as opcode iw in range
+    unsigned char opcode = *opcodeptr;
 
     // check if its an opcode
-    if(opcode < 0) {
+    if((opcode & (char)128) != 0) {
         // apply this operator
-        opcode = -opcode-1; // convert opcode back to true opcode (see bytecode.h)
+        opcode = (opcode & (char)127); // convert opcode back to true opcode (see bytecode.h)
 
         // perform the found operation
         implementationof(opcode)(args);
@@ -74,7 +75,17 @@ typing assertExistance(void *typename, opargs *args) {
 
 // ----- Operator implementations -----
 void _incr(opargs *args) {
+    slot slt;
+    _recursiveprocess(args, &slt); // Load only operand into slot
 
+    if(slt.type == NUMBER){
+        (*slt.value.number)++; // Increment if number
+    } else if(slt.type == FIELD && slt.value.field->type == NUMBER){
+        (*((number *)slt.value.field->value))++; // Increment if it's field containing a number
+    } else {
+        slt.type == EMPTY;
+        throw(EI_INVALID_COMBINATION, args->info);
+    }
 }
 
 void _decr(opargs *args) {

@@ -39,11 +39,11 @@ void _recursiveconsume(bytecode *dst, stnode *subtree) {
             break;
 
         case BLOCK:
-            *((char *) push(dst, 1)) = -OP_BLOCK-1;
+            *((char *) push(dst, 1)) = OP_BLOCK | (char)128; // set 8th bit
             break;
 
         case BLOCK_END:
-            *((char *) push(dst, 1)) = -OP_BLOCK_END-1;
+            *((char *) push(dst, 1)) = -OP_BLOCK_END | (char)128;
             break;
 
         case EXPR:
@@ -55,7 +55,7 @@ void _recursiveconsume(bytecode *dst, stnode *subtree) {
                 _recursiveconsume(dst, subtree->data.parent.right);
 
             // then push operator onto the stack
-            *((char *) push(dst, 1)) = -subtree->data.parent.op->opcode-1;
+            *((char *) push(dst, 1)) = subtree->data.parent.op->opcode | (char)128;
             break;
 
         case MEMBER:

@@ -1,5 +1,5 @@
 #include "interpreter.h"
-#include "parser.h"
+#include "runtime.h" // only need runtime.h because parser.h, tokenizer.h, etc. are included
 
 /*
 * The interpreter provides an environment for code to run
@@ -35,27 +35,34 @@ void interpret(FILE *stream, char* filename) {
         cac.bracketstack = create_stack(16);        
     }
 
-    // static char* typenames[] = {"Nulltkn", "Bracket", "Field", "Symbol", "String", "Number"};
-
-    // do {
-    //     readtkn(&cac);
-    //     printf("Type: %s Value: (%s)\n", typenames[tkn.type], tkn.content);
-    // } while(tkn.type != 0);
-
-    // return;
-
     stnode *root;
+    bytecode *code;
+
+    // TODO: choose better table size
+    hashtable *memory = create_hashtable(32);
 
     // advance once
     advance(&cac);
 
-    do {
-        printf("\nNew Parse tree:\n");
+    while(1) {
+        // parse tree
         root = parse(&cac);
 
+        // print out tree
+        printf("\nNew Parse tree:\n");
         printst(root);
 
-    } while (root != NULL && root->type != FILE_END);
+        // break if null or FILE_END
+        if(root == NULL || root->type == FILE_END)
+            break;
+
+        // create bytecode from tree
+        code = consume(root);
+
+        // process bytecode, also passing debug information from parser
+        process(code, &cac.info, memory);
+
+    };
 
     printf("Reached end of file!\n");
 

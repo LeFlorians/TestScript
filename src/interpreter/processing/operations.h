@@ -17,8 +17,6 @@ typedef struct {
 
 // Define struct for operation function arguments
 typedef struct {
-    slot slot1, slot2;
-
     hashtable* hashtable;
 
     errorinfo *info; // This information will not be exact, but better than nothing

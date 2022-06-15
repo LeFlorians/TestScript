@@ -8,7 +8,8 @@ typedef struct s_op operator;
 typedef enum {
     // see mapop.gperf for symbols
     // see operations.c for operation-function mappings
-    // see implementations.c for implementations
+    // see implementations.h for declarations
+    // see implementations.c for definitions
 
     OP_INCR, OP_DECR, OP_LNOT, OP_BNOT, OP_MUL, 
     OP_DIV, OP_MOD, OP_ADD, OP_SUB, OP_LET, 
@@ -31,7 +32,7 @@ typedef enum {
 struct s_op {
     char *name;
     
-    opcode opcode;
+    unsigned char opcode;
 
     enum {
         INFIX=0b00, POSTFIX=0b01, PREFIX=0b10,

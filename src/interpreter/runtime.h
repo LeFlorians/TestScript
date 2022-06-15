@@ -4,4 +4,4 @@
     The runtime type provides a complete environment for code to be run in
 */
 
-void process(bytecode *code, errorinfo *info);
+void process(bytecode *code, errorinfo *info, hashtable *memory);

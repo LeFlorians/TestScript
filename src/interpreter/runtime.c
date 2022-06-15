@@ -5,7 +5,7 @@
 
 
 
-void process(bytecode *code, errorinfo *info) {
+void process(bytecode *code, errorinfo *info, hashtable *memory) {
     number num;
     // allocate space for operation functions
     opargs args;
@@ -13,12 +13,14 @@ void process(bytecode *code, errorinfo *info) {
     args.info = info;
     args.code = code;
 
-    // TODO: choose better hashtable width
-    args.hashtable = create_hashtable(32);
+    args.hashtable = memory;
+
+    // slot to put the result in
+    slot dst;
 
     // process load the result into arbitrary slot 1
     // this function is defined in implementations.c
-    _recursiveprocess(&args, &args.slot1);
+    _recursiveprocess(&args, &dst);
     
 
 }

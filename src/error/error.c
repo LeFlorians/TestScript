@@ -3,7 +3,7 @@
 #include "error.h"
 
 static const char *errformats[] = {
-    #ifndef MEAN
+
     // Nice error messages
     "Max token length exceeded",
     "Quotation marks not closed",
@@ -18,14 +18,9 @@ static const char *errformats[] = {
     "Expected closing square bracket",
     "Token unmatched",
 
-    "Missing argument(s) for given operator"
-    "The specified operator cannot be applied to given operand(s)"
-    
-    #else
-    // Not nice error messages
-    "",
+    "Missing argument(s) for given operator",
+    "The specified operator cannot be applied to given operand(s)",
 
-    #endif
 };
 
 void throw(enum errorformat format, errorinfo *info) {

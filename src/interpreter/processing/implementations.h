@@ -4,7 +4,7 @@
 // to be used by operator implementations and runtime.c
 void _recursiveprocess(opargs *args, slot *dst);
 
-// ----- Definitions -----
+// ----- Declarations -----
 void _incr(opargs *args);
 void _decr(opargs *args);
 void _lnot(opargs *args);

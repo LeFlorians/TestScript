@@ -20,13 +20,17 @@ hashtable *create_hashtable(size_t width){
         cur->alternative = NULL;
     }
 
+    return ret;
 }
+
+// Define internally used hash type
+typedef unsigned long long int hash;
 
 // hash function
 // TODO: optimize, ensure uniqueness
-size_t _hash(char* key) {
+hash _hash(char* key) {
     char ch;
-    size_t ret = 0;
+    hash ret = 0;
     while( (ch = *(key++)) != '\0')
         ret = (ret + ch) * ch;
     return ret;
@@ -34,7 +38,7 @@ size_t _hash(char* key) {
 
 // find an element in the hash table
 hashelement *find(hashtable *table, char* key) {
-    size_t pos = _hash(key) % table->width;
+    size_t pos = (_hash(key) % table->width);
 
     // go through elements at that index ( avg. O(n/width * strsize) )
     hashelement *first = &table->array[pos];
