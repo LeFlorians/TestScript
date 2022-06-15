@@ -22,7 +22,7 @@ void _recursiveprocess(opargs *args, slot *dst) {
         opcode = (opcode & (char)127); // convert opcode back to true opcode (see bytecode.h)
 
         // perform the found operation
-        implementationof(opcode)(args);
+        implementationof(opcode)(args, dst);
 
     } else {
         // typing can be cast, as the used values are equal
@@ -44,13 +44,16 @@ void _recursiveprocess(opargs *args, slot *dst) {
                 // set default value
                 if(ret->type == EMPTY) {
                     // TODO: search for predefined default value here
-                    ret->type = NUMBER;
-                    //allocate number and set default value
-                    ret->value = malloc(sizeof(number));
-                    *((number *) ret->value) = (number) 0;
 
+                    dst->type = NUMBER;
+                    //allocate number and set default value
+                    dst->value.number = (number *) malloc(sizeof(number));
+                    *((number *) dst->value.number) = (number) 0;
+                } else {
+                    dst->type = ret->type;
+                    // set one of the value pointers
+                    dst->value.number = ret->value;
                 }
-                dst->value.field = ret;
                 break;
         }
     }
@@ -58,7 +61,7 @@ void _recursiveprocess(opargs *args, slot *dst) {
 
 // assert that a type is not null
 // if type is null, returns -1
-typing assertExistance(void *typename, opargs *args) {
+typing assertExistance(void *typename, opargs *args, slot *dst) {
     if(typename == NULL) {
         throw(EI_MISSING_ARGS, args->info);
         return -1;
@@ -74,149 +77,151 @@ typing assertExistance(void *typename, opargs *args) {
 
 
 // ----- Operator implementations -----
-void _incr(opargs *args) {
-    slot slt;
-    _recursiveprocess(args, &slt); // Load only operand into slot
+void _incr(opargs *args, slot *dst) {
+    _recursiveprocess(args, dst); // Load only operand into slot
 
-    if(slt.type == NUMBER){
-        (*slt.value.number)++; // Increment if number
-    } else if(slt.type == FIELD && slt.value.field->type == NUMBER){
-        (*((number *)slt.value.field->value))++; // Increment if it's field containing a number
-    } else {
-        slt.type == EMPTY;
-        throw(EI_INVALID_COMBINATION, args->info);
+    switch (dst->type) {
+        case NUMBER:
+            (*(dst->value.number))++; // Increment if number
+            return;
+
+        default: break;
     }
+
+    dst->type == EMPTY;
+    throw(EI_INVALID_COMBINATION, args->info);
+    
 }
 
-void _decr(opargs *args) {
-
-}
-
-void _lnot(opargs *args) {
-
-}
-
-void _bnot(opargs *args){
+void _decr(opargs *args, slot *dst) {
 
 }
 
-void _mul(opargs *args){
+void _lnot(opargs *args, slot *dst) {
 
 }
 
-void _div(opargs *args) {
+void _bnot(opargs *args, slot *dst){
 
 }
 
-void _mod(opargs *args){
+void _mul(opargs *args, slot *dst){
 
 }
 
-void _add(opargs *args){
+void _div(opargs *args, slot *dst) {
+
+}
+
+void _mod(opargs *args, slot *dst){
+
+}
+
+void _add(opargs *args, slot *dst){
 
 }
 
 
-void _sub(opargs *args){
+void _sub(opargs *args, slot *dst){
 }
 
-void _let(opargs *args){
+void _let(opargs *args, slot *dst){
 }
 
-void _leq(opargs *args){
+void _leq(opargs *args, slot *dst){
 }
 
-void _grt(opargs *args){
+void _grt(opargs *args, slot *dst){
 }
 
-void _geq(opargs *args){
+void _geq(opargs *args, slot *dst){
 }
 
-void _equ(opargs *args){
+void _equ(opargs *args, slot *dst){
 }
 
-void _nequ(opargs *args){
+void _nequ(opargs *args, slot *dst){
 }
 
-void _band(opargs *args){
+void _band(opargs *args, slot *dst){
 }
 
-void _bxor(opargs *args){
+void _bxor(opargs *args, slot *dst){
 }
 
-void _bor(opargs *args){
+void _bor(opargs *args, slot *dst){
 }
 
-void _land(opargs *args){
+void _land(opargs *args, slot *dst){
 }
 
-void _lor(opargs *args){
+void _lor(opargs *args, slot *dst){
 }
 
-void _lambda(opargs *args){
+void _lambda(opargs *args, slot *dst){
 }
 
-void _ass(opargs *args){
+void _ass(opargs *args, slot *dst){
 }
 
-void _bxorass(opargs *args){
+void _bxorass(opargs *args, slot *dst){
 }
 
-void _bnotass(opargs *args){
+void _bnotass(opargs *args, slot *dst){
 }
 
-void _bandass(opargs *args){
+void _bandass(opargs *args, slot *dst){
 }
 
-void _borass(opargs *args){
+void _borass(opargs *args, slot *dst){
 }
 
-void _addass(opargs *args){
+void _addass(opargs *args, slot *dst){
 }
 
-void _subass(opargs *args){
+void _subass(opargs *args, slot *dst){
 }
 
-void _mulass(opargs *args){
+void _mulass(opargs *args, slot *dst){
 }
 
-void _divass(opargs *args){
+void _divass(opargs *args, slot *dst){
 }
 
-void _modass(opargs *args){
+void _modass(opargs *args, slot *dst){
 }
 
-void _default(opargs *args){
+void _default(opargs *args, slot *dst){
 }
 
-void _list(opargs *args){
+void _list(opargs *args, slot *dst){
 }
 
-void _end(opargs *args){
-}
-
-
-void _preincr(opargs *args){
-}
-
-void _predecr(opargs *args){
-}
-
-void _pos(opargs *args){
-}
-
-void _neg(opargs *args){
+void _end(opargs *args, slot *dst){
 }
 
 
-void _call(opargs *args){
+void _preincr(opargs *args, slot *dst){
 }
 
-void _index(opargs *args){
+void _predecr(opargs *args, slot *dst){
 }
 
-void _block(opargs *args){
+void _pos(opargs *args, slot *dst){
 }
 
-void _block_end(opargs *args){
+void _neg(opargs *args, slot *dst){
+}
+
+
+void _call(opargs *args, slot *dst){
+}
+
+void _index(opargs *args, slot *dst){
+}
+
+void _block(opargs *args, slot *dst){
+}
+
+void _block_end(opargs *args, slot *dst){
 }

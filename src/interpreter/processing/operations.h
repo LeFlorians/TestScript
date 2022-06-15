@@ -7,11 +7,10 @@
 
 // Define some space to be allocated for the implementation functions
 typedef struct {
-    typing type; // Any of NUMBER, FIELD, STRING, ARRAY, OBJECT, EMPTY
+    typing type; // Any of NUMBER, STRING, ARRAY, OBJECT, EMPTY
     union {
         char *string;
         number *number;
-        hashelement *field;
     } value;
 } slot;
 
@@ -26,7 +25,7 @@ typedef struct {
 } opargs;
 
 // Define return type and arguments of operation functions
-typedef void (*operation)(opargs *);
+typedef void (*operation)(opargs *, slot *dst);
 
 // an array of operations that can be directly indexed by the opcode from mapop.h
 // mapped in operations.c
