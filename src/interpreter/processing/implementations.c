@@ -65,7 +65,7 @@ mementry *_recursiveprocess(opargs *args, char return_reference) {
                 // allocate and return default value
                 if(res == NULL){
                     // return a default value
-                    mementry *ret = malloc(sizeof(mementry));
+                    ret = malloc(sizeof(mementry));
                     ret->type = NUMBER;
                     ret->value = malloc(sizeof(number));
                     *(number *)ret->value = (number) 0;
