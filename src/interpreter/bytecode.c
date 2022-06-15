@@ -26,7 +26,16 @@ void _recursiveconsume(bytecode *dst, stnode *subtree) {
         case FIELD:
         case STRING:
             // push pointer and don't free that memory
-            *((char **) push(dst, sizeof(char **))) = subtree->data.leaf.value;
+            char** keyptr = ((char **) push(dst, sizeof(char **)));
+
+            if(keyptr == NULL){
+                // TODO: throw another error
+                printf("Memory could not be reallocated on stack.\n");
+                return;
+            }
+
+            *keyptr = subtree->data.leaf.value;
+
 
             // Push Type
             if(subtree->type == FIELD)
@@ -34,7 +43,7 @@ void _recursiveconsume(bytecode *dst, stnode *subtree) {
             else
                 *((char *)push(dst, 1)) = STRING; // this is a string
             
-            // TODO: may reallocate space for string
+            // ? may reallocate space for string
 
             break;
 

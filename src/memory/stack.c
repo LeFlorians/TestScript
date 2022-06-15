@@ -67,14 +67,8 @@ void *push(stack *st, elementsize size) {
         size_t new_size = size + st->alloc_size;
 
         // Just use total size if too small
-        if(st->current + new_size > st->end)
-            new_size = st->end - st->current;
-        
-        // check if reallocation was successful
-        if(st->end - st->start == size){
-            // Reallocation failed
-            return NULL;
-        }
+        if(st->current + new_size > st->end + size)
+            new_size = st->end + size - st->current;
 
         // new_size is too large
         if(new_size < st->alloc_size){
@@ -82,6 +76,12 @@ void *push(stack *st, elementsize size) {
         }
 
         _resize_stack(st, new_size);
+
+        // check if reallocation was successful
+        if(st->end - st->start == size){
+            // Reallocation failed
+            return NULL;
+        }
 
         // next time, automatically allocate more
         // TODO: better new_size prediction
