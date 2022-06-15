@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -Wall -g
+CFLAGS := -Wall -g -Wno-switch
 
 TEST_INPUT = test.txt
 

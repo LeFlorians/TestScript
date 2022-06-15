@@ -39,6 +39,9 @@ void _recursiveprocess(opargs *args, slot *dst) {
                 break;
 
             case FIELD:
+                // If a field is returned, really just put its value into dst
+                // pretending the field is an actual value node, for simplicity
+
                 hashelement *ret = find(args->hashtable, *((char **) pop(args->code, sizeof(char**))));
 
                 // set default value
@@ -84,21 +87,36 @@ void _incr(opargs *args, slot *dst) {
         case NUMBER:
             (*(dst->value.number))++; // Increment if number
             return;
-
-        default: break;
     }
 
-    dst->type == EMPTY;
+    dst->type = EMPTY;
     throw(EI_INVALID_COMBINATION, args->info);
-    
 }
 
 void _decr(opargs *args, slot *dst) {
+    _recursiveprocess(args, dst); // Load only operand into slot
 
+    switch (dst->type) {
+        case NUMBER:
+            (*(dst->value.number))--; // Decrement if number
+            return;
+    }
+
+    dst->type = EMPTY;
+    throw(EI_INVALID_COMBINATION, args->info);
 }
 
 void _lnot(opargs *args, slot *dst) {
+    _recursiveprocess(args, dst); // Load only operand into slot
 
+    switch (dst->type) {
+        case NUMBER:
+            (*(dst->value.number)) = !(*(dst->value.number)); // Locigal NOT if number
+            return;
+    }
+
+    dst->type = EMPTY;
+    throw(EI_INVALID_COMBINATION, args->info);
 }
 
 void _bnot(opargs *args, slot *dst){
