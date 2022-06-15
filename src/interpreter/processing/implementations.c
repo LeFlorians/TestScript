@@ -29,33 +29,40 @@ void _recursiveprocess(opargs *args, slot *dst) {
         dst->type = (typing) opcode;
 
         // TODO: handle other cases
+        // ! because the bytecode is static and may be cached, values from here must be copied, not referenced
         switch (opcode) {
             case NUMBER:
-                dst->value.number = (number *) pop(args->code, sizeof(number));
+                // copy value instead of pointing to it
+                dst->value.number = (number *) malloc(sizeof(number));
+                *dst->value.number = *((number *)pop(args->code, sizeof(number)));
                 break;
 
             case STRING:
-                dst->value.string = *((char **) pop(args->code, sizeof(char**)));
+                // copy the entire string
+                dst->value.string = strdup(*((char **) pop(args->code, sizeof(char**))));
                 break;
 
             case FIELD:
                 // If a field is returned, really just put its value into dst
                 // pretending the field is an actual value node, for simplicity
 
-                hashelement *ret = find(args->hashtable, *((char **) pop(args->code, sizeof(char**))));
+                hashelement *res = find(args->hashtable, *((char **) pop(args->code, sizeof(char**))));
 
                 // set default value
-                if(ret->type == EMPTY) {
+                if(res->type == EMPTY) {
                     // TODO: search for predefined default value here
 
-                    dst->type = NUMBER;
-                    //allocate number and set default value
-                    dst->value.number = (number *) malloc(sizeof(number));
-                    *((number *) dst->value.number) = (number) 0;
+                    // set both types
+                    dst->type = res->type = NUMBER;
+
+                    // allocate number and set default value
+                    // this is a reference, not a copy, because it exists in the hashtable!
+                    dst->value.number = res->value = malloc(sizeof(number));
+                    *(dst->value.number) = (number) 0;
                 } else {
-                    dst->type = ret->type;
+                    dst->type = res->type;
                     // set one of the value pointers
-                    dst->value.number = ret->value;
+                    dst->value.number = res->value;
                 }
                 break;
         }
@@ -120,15 +127,51 @@ void _lnot(opargs *args, slot *dst) {
 }
 
 void _bnot(opargs *args, slot *dst){
+    _recursiveprocess(args, dst); // Load only operand into slot
 
+    switch (dst->type) {
+        case NUMBER:
+            // ? may round value like JS
+            (*(dst->value.number)) = -(*(dst->value.number)) - 1; // Locigal NOT if number
+            return;
+    }
+
+    dst->type = EMPTY;
+    throw(EI_INVALID_COMBINATION, args->info);
 }
 
 void _mul(opargs *args, slot *dst){
+    slot tmp; // temporary slot
+    _recursiveprocess(args, dst); // Load left operand into dst slot
+    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
 
+    switch (dst->type) {
+        case NUMBER:
+            if(tmp.type == NUMBER){
+                (*(dst->value.number)) *= *tmp.value.number; // Multiply two numbers
+                return;
+            }
+    }
+
+    dst->type = EMPTY;
+    throw(EI_INVALID_COMBINATION, args->info);
 }
 
 void _div(opargs *args, slot *dst) {
+    slot tmp; // temporary slot
+    _recursiveprocess(args, dst); // Load left operand into dst slot
+    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
 
+    switch (dst->type) {
+        case NUMBER:
+            if(tmp.type == NUMBER){
+                (*(dst->value.number)) /= *tmp.value.number;
+                return;
+            }
+    }
+
+    dst->type = EMPTY;
+    throw(EI_INVALID_COMBINATION, args->info);
 }
 
 void _mod(opargs *args, slot *dst){
@@ -136,26 +179,96 @@ void _mod(opargs *args, slot *dst){
 }
 
 void _add(opargs *args, slot *dst){
+    slot tmp; // temporary slot
+    _recursiveprocess(args, dst); // Load left operand into dst slot
+    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
 
+    switch (dst->type) {
+        case NUMBER:
+            if(tmp.type == NUMBER){
+                (*(dst->value.number)) += *tmp.value.number;
+                return;
+            }
+    }
+
+    dst->type = EMPTY;
+    throw(EI_INVALID_COMBINATION, args->info);
 }
 
-
 void _sub(opargs *args, slot *dst){
+        slot tmp; // temporary slot
+    _recursiveprocess(args, dst); // Load left operand into dst slot
+    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
+
+    switch (dst->type) {
+        case NUMBER:
+            if(tmp.type == NUMBER){
+                (*(dst->value.number)) += *tmp.value.number;
+                return;
+            }
+    }
+
+    dst->type = EMPTY;
+    throw(EI_INVALID_COMBINATION, args->info);
 }
 
 void _let(opargs *args, slot *dst){
+    slot tmp; // temporary slot
+    _recursiveprocess(args, dst); // Load left operand into dst slot
+    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
+
+    switch (dst->type) {
+        case NUMBER:
+            if(tmp.type == NUMBER){
+                (*(dst->value.number)) = (*(dst->value.number)) < *tmp.value.number;
+                return;
+            }
+    }
+
+    dst->type = EMPTY;
+    throw(EI_INVALID_COMBINATION, args->info);
 }
 
 void _leq(opargs *args, slot *dst){
+    slot tmp; // temporary slot
+    _recursiveprocess(args, dst); // Load left operand into dst slot
+    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
+
+    switch (dst->type) {
+        case NUMBER:
+            if(tmp.type == NUMBER){
+                (*(dst->value.number)) = (*(dst->value.number)) <= *tmp.value.number;
+                return;
+            }
+    }
+
+    dst->type = EMPTY;
+    throw(EI_INVALID_COMBINATION, args->info);
 }
 
 void _grt(opargs *args, slot *dst){
+    slot tmp; // temporary slot
+    _recursiveprocess(args, dst); // Load left operand into dst slot
+    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
+
+    switch (dst->type) {
+        case NUMBER:
+            if(tmp.type == NUMBER){
+                (*(dst->value.number)) = (*(dst->value.number)) > *tmp.value.number;
+                return;
+            }
+    }
+
+    dst->type = EMPTY;
+    throw(EI_INVALID_COMBINATION, args->info);
 }
 
 void _geq(opargs *args, slot *dst){
+
 }
 
 void _equ(opargs *args, slot *dst){
+
 }
 
 void _nequ(opargs *args, slot *dst){
@@ -180,6 +293,21 @@ void _lambda(opargs *args, slot *dst){
 }
 
 void _ass(opargs *args, slot *dst){
+    slot tmp; // temporary slot
+    _recursiveprocess(args, dst); // Load left operand into dst slot
+    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
+
+    switch (dst->type) {
+        case NUMBER:
+            if(tmp.type == NUMBER){
+                // Copy the result from the stack
+                *dst->value.number = *tmp.value.number;
+                return;
+            }
+    }
+
+    dst->type = EMPTY;
+    throw(EI_INVALID_COMBINATION, args->info);
 }
 
 void _bxorass(opargs *args, slot *dst){

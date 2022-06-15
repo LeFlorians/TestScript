@@ -58,7 +58,7 @@ hashelement *find(hashtable *table, char* key) {
 
             // set default type and value
             current->type = EMPTY;
-            current->value = NULL;
+            current->value = NULL; // if wanted, allocate manually
 
             break;
         }
