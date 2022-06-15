@@ -15,26 +15,19 @@ void process(bytecode *code, errorinfo *info, hashtable *memory) {
 
     args.hashtable = memory;
 
-    // slot to put the result in
-    slot dst;
-    dst.type = EMPTY; // TODO: remove later if possible
-
-    // process load the result into arbitrary slot 1
+    // process the given bytecode
     // this function is defined in implementations.c
-    _recursiveprocess(&args, &dst);
+    mementry *dst = _recursiveprocess(&args, 0); // just return a copy here
     
     // TODO: remove
     // DEBUG print result
     printf("Result: ");
-    switch(dst.type) {
-        case EMPTY:
-            printf("Empty\n");
-            break;
+    switch(dst->type) {
         case NUMBER:
-            printf("Number (%.15llf)\n", *dst.value.number);
+            printf("Number (%llg)\n", *(number *)dst->value);
             break;
         case STRING:
-            printf("String (%s)\n", dst.value.string);
+            printf("String (%s)\n", (char *)dst->value);
             break;
         default:
             break;

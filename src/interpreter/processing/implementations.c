@@ -2,16 +2,19 @@
 
 // ----- Helper functions -----
 
-void _recursiveprocess(opargs *args, slot *dst) {
+#define COPY 0
+#define REFERENCE 1
 
+mementry *_recursiveprocess(opargs *args, char return_reference) {
     opcode *opcodeptr = (opcode *)pop(args->code, 1);
 
     // check if NULL
     if(opcodeptr == NULL){
-        // clear the dst type
-        dst->type = EMPTY;
-        return;
+        // return NULL
+        return NULL;
     }
+
+    mementry *ret;
 
     // use unsigned char, as opcode iw in range
     unsigned char opcode = *opcodeptr;
@@ -22,56 +25,107 @@ void _recursiveprocess(opargs *args, slot *dst) {
         opcode = (opcode & (char)127); // convert opcode back to true opcode (see bytecode.h)
 
         // perform the found operation
-        implementationof(opcode)(args, dst);
+        return implementationof(opcode)(args);
 
     } else {
-        // typing can be cast, as the used values are equal
-        dst->type = (typing) opcode;
-
         // TODO: handle other cases
         // ! because the bytecode is static and may be cached, values from here must be copied, not referenced
         switch (opcode) {
             case NUMBER:
+                // allocate ret
+                ret = malloc(sizeof(mementry));
+
                 // copy value instead of pointing to it
-                dst->value.number = (number *) malloc(sizeof(number));
-                *dst->value.number = *((number *)pop(args->code, sizeof(number)));
+                ret->value =  malloc(sizeof(number));
+                *(number *)ret->value = *((number *)pop(args->code, sizeof(number)));
+                
+                // set number type
+                // typing can be cast, as the used values are equal
+                ret->type = NUMBER;
+                
                 break;
 
             case STRING:
+                // allocate ret
+                ret = malloc(sizeof(mementry));
+
                 // copy the entire string
-                dst->value.string = strdup(*((char **) pop(args->code, sizeof(char**))));
+                ret->value = strdup(*((char **) pop(args->code, sizeof(char**))));
+
+                // set string type
+                ret->type = STRING;
                 break;
 
             case FIELD:
                 // If a field is returned, really just put its value into dst
                 // pretending the field is an actual value node, for simplicity
 
-                hashelement *res = find(args->hashtable, *((char **) pop(args->code, sizeof(char**))));
+                hashelement *res = find(args->hashtable, return_reference, *((char **) pop(args->code, sizeof(char**))));
+
+                // allocate and return default value
+                if(res == NULL){
+                    // return a default value
+                    mementry *ret = malloc(sizeof(mementry));
+                    ret->type = NUMBER;
+                    ret->value = malloc(sizeof(number));
+                    *(number *)ret->value = (number) 0;
+
+                    // break from switch
+                    break;
+                }
 
                 // set default value
-                if(res->type == EMPTY) {
+                if(res->valueptr == NULL) {
                     // TODO: search for predefined default value here
 
-                    // set both types
-                    dst->type = res->type = NUMBER;
+                    // allocate mementry
+                    ret = malloc(sizeof(mementry));
 
-                    // allocate number and set default value
-                    // this is a reference, not a copy, because it exists in the hashtable!
-                    dst->value.number = res->value = malloc(sizeof(number));
-                    *(dst->value.number) = (number) 0;
+                    // set type
+                    ret->type = NUMBER;
+
+                    // allocate and set default number
+                    ret->value = malloc(sizeof(number));
+                    *(number *)ret->value = (number) 0;
+
+                    // assign to hashelement
+                    res->valueptr = ret;
+
                 } else {
-                    dst->type = res->type;
-                    // set one of the value pointers
-                    dst->value.number = res->value;
+                    if(return_reference) {
+                        // return a reference
+                        ret = res->valueptr;
+
+                    } else {
+                        // return a copy
+                        ret = malloc(sizeof(mementry));
+
+                        // copy type
+                        ret->type = res->valueptr->type;
+
+                        // copy contents
+                        switch(ret->type) {
+                            case NUMBER:
+                                ret->value = malloc(sizeof(number));
+                                *(number *)ret->value = *(number *)res->valueptr->value;
+                                break;
+                            case STRING:
+                                ret->value = strdup((char *) res->valueptr->value);
+                                break;
+                        }
+
+                    }
                 }
+
                 break;
         }
     }
+    return ret;
 }
 
 // assert that a type is not null
 // if type is null, returns -1
-typing assertExistance(void *typename, opargs *args, slot *dst) {
+typing assertExistance(mementry **typename, opargs *args) {
     if(typename == NULL) {
         throw(EI_MISSING_ARGS, args->info);
         return -1;
@@ -84,290 +138,293 @@ typing assertExistance(void *typename, opargs *args, slot *dst) {
 
 
 
-
-
 // ----- Operator implementations -----
-void _incr(opargs *args, slot *dst) {
-    _recursiveprocess(args, dst); // Load only operand into slot
 
-    switch (dst->type) {
-        case NUMBER:
-            (*(dst->value.number))++; // Increment if number
-            return;
-    }
 
-    dst->type = EMPTY;
-    throw(EI_INVALID_COMBINATION, args->info);
+mementry *_incr(opargs *args) {
+    mementry *dst = _recursiveprocess(args, COPY); // Load only operand into mementry
+
+    if(dst->type == NUMBER) {
+        (*(number*)dst->value)++;
+    } else
+        throw(EI_INVALID_COMBINATION, args->info);
+    return dst;
 }
 
-void _decr(opargs *args, slot *dst) {
-    _recursiveprocess(args, dst); // Load only operand into slot
+mementry *_decr(opargs *args) {
+    mementry *dst = _recursiveprocess(args, COPY); // Load only operand into mementry
 
-    switch (dst->type) {
-        case NUMBER:
-            (*(dst->value.number))--; // Decrement if number
-            return;
-    }
-
-    dst->type = EMPTY;
-    throw(EI_INVALID_COMBINATION, args->info);
+    if(dst->type == NUMBER) {
+        (*(number*)dst->value)--;
+    } else
+        throw(EI_INVALID_COMBINATION, args->info);
+    return dst;
 }
 
-void _lnot(opargs *args, slot *dst) {
-    _recursiveprocess(args, dst); // Load only operand into slot
+mementry *_lnot(opargs *args) {
+    mementry *dst = _recursiveprocess(args, COPY); // Load only operand into mementry
 
-    switch (dst->type) {
-        case NUMBER:
-            (*(dst->value.number)) = !(*(dst->value.number)); // Locigal NOT if number
-            return;
-    }
-
-    dst->type = EMPTY;
-    throw(EI_INVALID_COMBINATION, args->info);
+    if(dst->type == NUMBER) {
+        *(number *)dst->value = !*(number *)dst->value;
+    } else
+        throw(EI_INVALID_COMBINATION, args->info);
+    return dst;
 }
 
-void _bnot(opargs *args, slot *dst){
-    _recursiveprocess(args, dst); // Load only operand into slot
+mementry *_bnot(opargs *args) {
+    mementry *dst = _recursiveprocess(args, COPY); // Load only operand into mementry
 
-    switch (dst->type) {
-        case NUMBER:
-            // ? may round value like JS
-            (*(dst->value.number)) = -(*(dst->value.number)) - 1; // Locigal NOT if number
-            return;
-    }
-
-    dst->type = EMPTY;
-    throw(EI_INVALID_COMBINATION, args->info);
+    if(dst->type == NUMBER) {
+        // ? may round
+        *(number *)dst->value = -*(number *)dst->value - 1;
+    } else
+        throw(EI_INVALID_COMBINATION, args->info);
+    return dst;
 }
 
-void _mul(opargs *args, slot *dst){
-    slot tmp; // temporary slot
-    _recursiveprocess(args, dst); // Load left operand into dst slot
-    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
+mementry *_mul(opargs *args){
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
-            if(tmp.type == NUMBER){
-                (*(dst->value.number)) *= *tmp.value.number; // Multiply two numbers
-                return;
+            if(tmp->type == NUMBER){
+                *(number *)dst->value *= *(number *)tmp->value;
             }
+            break;
+        default:
+            throw(EI_INVALID_COMBINATION, args->info);
+            break;
     }
+    free_mementry(tmp);
 
-    dst->type = EMPTY;
-    throw(EI_INVALID_COMBINATION, args->info);
+    return dst;
 }
 
-void _div(opargs *args, slot *dst) {
-    slot tmp; // temporary slot
-    _recursiveprocess(args, dst); // Load left operand into dst slot
-    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
+mementry *_div(opargs *args) {
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
-            if(tmp.type == NUMBER){
-                (*(dst->value.number)) /= *tmp.value.number;
-                return;
+            if(tmp->type == NUMBER){
+                *(number *)dst->value /= *(number *)tmp->value;
             }
+            break;
+        default:
+            throw(EI_INVALID_COMBINATION, args->info);
+            break;
     }
+    free_mementry(tmp);
 
-    dst->type = EMPTY;
-    throw(EI_INVALID_COMBINATION, args->info);
+    return dst;
 }
 
-void _mod(opargs *args, slot *dst){
+mementry *_mod(opargs *args){
 
 }
 
-void _add(opargs *args, slot *dst){
-    slot tmp; // temporary slot
-    _recursiveprocess(args, dst); // Load left operand into dst slot
-    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
+mementry *_add(opargs *args){
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
-            if(tmp.type == NUMBER){
-                (*(dst->value.number)) += *tmp.value.number;
-                return;
+            if(tmp->type == NUMBER){
+                *(number *)dst->value += *(number *)tmp->value;
             }
+            break;
+        default:
+            throw(EI_INVALID_COMBINATION, args->info);
+            break;
     }
+    free_mementry(tmp);
 
-    dst->type = EMPTY;
-    throw(EI_INVALID_COMBINATION, args->info);
+    return dst;
 }
 
-void _sub(opargs *args, slot *dst){
-        slot tmp; // temporary slot
-    _recursiveprocess(args, dst); // Load left operand into dst slot
-    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
+mementry *_sub(opargs *args){
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
-            if(tmp.type == NUMBER){
-                (*(dst->value.number)) += *tmp.value.number;
-                return;
+            if(tmp->type == NUMBER){
+                *(number *)dst->value -= *(number *)tmp->value;
             }
+            break;
+        default:
+            throw(EI_INVALID_COMBINATION, args->info);
+            break;
     }
+    free_mementry(tmp);
 
-    dst->type = EMPTY;
-    throw(EI_INVALID_COMBINATION, args->info);
+    return dst;
 }
 
-void _let(opargs *args, slot *dst){
-    slot tmp; // temporary slot
-    _recursiveprocess(args, dst); // Load left operand into dst slot
-    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
+mementry *_let(opargs *args){
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
-            if(tmp.type == NUMBER){
-                (*(dst->value.number)) = (*(dst->value.number)) < *tmp.value.number;
-                return;
+            if(tmp->type == NUMBER){
+                *(number *)dst->value *= *(number *)tmp->value;
             }
+            break;
+        default:
+            throw(EI_INVALID_COMBINATION, args->info);
+            break;
     }
+    free_mementry(tmp);
 
-    dst->type = EMPTY;
-    throw(EI_INVALID_COMBINATION, args->info);
+    return dst;
 }
 
-void _leq(opargs *args, slot *dst){
-    slot tmp; // temporary slot
-    _recursiveprocess(args, dst); // Load left operand into dst slot
-    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
+mementry *_leq(opargs *args){
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
-            if(tmp.type == NUMBER){
-                (*(dst->value.number)) = (*(dst->value.number)) <= *tmp.value.number;
-                return;
+            if(tmp->type == NUMBER){
+                *(number *)dst->value = *(number *)dst->value  <= *(number *)dst->value;
             }
+            break;
+        default:
+            throw(EI_INVALID_COMBINATION, args->info);
+            break;
     }
+    free_mementry(tmp);
 
-    dst->type = EMPTY;
-    throw(EI_INVALID_COMBINATION, args->info);
+    return dst;
 }
 
-void _grt(opargs *args, slot *dst){
-    slot tmp; // temporary slot
-    _recursiveprocess(args, dst); // Load left operand into dst slot
-    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
+mementry *_grt(opargs *args){
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
-            if(tmp.type == NUMBER){
-                (*(dst->value.number)) = (*(dst->value.number)) > *tmp.value.number;
-                return;
+            if(tmp->type == NUMBER){
+                *(number *)dst->value = *(number *)dst->value > *(number *)dst->value;
             }
+            break;
+        default:
+            throw(EI_INVALID_COMBINATION, args->info);
+            break;
     }
+    free_mementry(tmp);
 
-    dst->type = EMPTY;
-    throw(EI_INVALID_COMBINATION, args->info);
+    return dst;
 }
 
-void _geq(opargs *args, slot *dst){
-
-}
-
-void _equ(opargs *args, slot *dst){
+mementry *_geq(opargs *args){
 
 }
 
-void _nequ(opargs *args, slot *dst){
+mementry *_equ(opargs *args){
+
 }
 
-void _band(opargs *args, slot *dst){
+mementry *_nequ(opargs *args){
 }
 
-void _bxor(opargs *args, slot *dst){
+mementry *_band(opargs *args){
 }
 
-void _bor(opargs *args, slot *dst){
+mementry *_bxor(opargs *args){
 }
 
-void _land(opargs *args, slot *dst){
+mementry *_bor(opargs *args){
 }
 
-void _lor(opargs *args, slot *dst){
+mementry *_land(opargs *args){
 }
 
-void _lambda(opargs *args, slot *dst){
+mementry *_lor(opargs *args){
 }
 
-void _ass(opargs *args, slot *dst){
-    slot tmp; // temporary slot
-    _recursiveprocess(args, dst); // Load left operand into dst slot
-    _recursiveprocess(args, &tmp); // Load right operand into tmp slot
-
-    switch (dst->type) {
-        case NUMBER:
-            if(tmp.type == NUMBER){
-                // Copy the result from the stack
-                *dst->value.number = *tmp.value.number;
-                return;
-            }
-    }
-
-    dst->type = EMPTY;
-    throw(EI_INVALID_COMBINATION, args->info);
+mementry *_lambda(opargs *args){
 }
 
-void _bxorass(opargs *args, slot *dst){
+mementry *_ass(opargs *args){
+    mementry *dst = _recursiveprocess(args, REFERENCE); // Load left operand into dst
+    mementry *src = _recursiveprocess(args, COPY); // Load right operand into src
+
+    // copy type
+    dst->type = src->type;
+
+    // free original dst value
+    free(dst->value);
+
+    // create value reference
+    dst->value = src->value;
+
+    // free src
+    free(src);
+
+    return dst;
 }
 
-void _bnotass(opargs *args, slot *dst){
+mementry *_bxorass(opargs *args){
 }
 
-void _bandass(opargs *args, slot *dst){
+mementry *_bnotass(opargs *args){
 }
 
-void _borass(opargs *args, slot *dst){
+mementry *_bandass(opargs *args){
 }
 
-void _addass(opargs *args, slot *dst){
+mementry *_borass(opargs *args){
 }
 
-void _subass(opargs *args, slot *dst){
+mementry *_addass(opargs *args){
 }
 
-void _mulass(opargs *args, slot *dst){
+mementry *_subass(opargs *args){
 }
 
-void _divass(opargs *args, slot *dst){
+mementry *_mulass(opargs *args){
 }
 
-void _modass(opargs *args, slot *dst){
+mementry *_divass(opargs *args){
 }
 
-void _default(opargs *args, slot *dst){
+mementry *_modass(opargs *args){
 }
 
-void _list(opargs *args, slot *dst){
+mementry *_default(opargs *args){
 }
 
-void _end(opargs *args, slot *dst){
+mementry *_list(opargs *args){
 }
 
-
-void _preincr(opargs *args, slot *dst){
-}
-
-void _predecr(opargs *args, slot *dst){
-}
-
-void _pos(opargs *args, slot *dst){
-}
-
-void _neg(opargs *args, slot *dst){
+mementry *_end(opargs *args){
 }
 
 
-void _call(opargs *args, slot *dst){
+mementry *_preincr(opargs *args){
 }
 
-void _index(opargs *args, slot *dst){
+mementry *_predecr(opargs *args){
 }
 
-void _block(opargs *args, slot *dst){
+mementry *_pos(opargs *args){
 }
 
-void _block_end(opargs *args, slot *dst){
+mementry *_neg(opargs *args){
+}
+
+
+mementry *_call(opargs *args){
+}
+
+mementry *_index(opargs *args){
+}
+
+mementry *_block(opargs *args){
+}
+
+mementry *_block_end(opargs *args){
 }

@@ -37,7 +37,8 @@ hash _hash(char* key) {
 }
 
 // find an element in the hash table
-hashelement *find(hashtable *table, char* key) {
+// @param allocate if set and key was not found, automatically allocate it; return NULL if unset
+hashelement *find(hashtable *table, char allocate, char* key) {
     size_t pos = (_hash(key) % table->width);
 
     // go through elements at that index ( avg. O(n/width * strsize) )
@@ -45,6 +46,11 @@ hashelement *find(hashtable *table, char* key) {
     hashelement *current = first;
     while(current->key == NULL || strcmp(current->key, key) != 0) {
         if(current->key == NULL) {
+
+            // if we should not allocate a new one, just return NULL
+            if(!allocate)
+                return NULL;
+
             // not found, allocate a new element to append
             hashelement *new = malloc(sizeof(hashelement));
             new->key = NULL;
@@ -57,8 +63,7 @@ hashelement *find(hashtable *table, char* key) {
             current->key = key;
 
             // set default type and value
-            current->type = EMPTY;
-            current->value = NULL; // if wanted, allocate manually
+            current->valueptr = NULL; // if wanted, allocate manually
 
             break;
         }
@@ -67,4 +72,13 @@ hashelement *find(hashtable *table, char* key) {
     }
 
     return current;
+}
+
+void free_mementry(mementry *entry) {
+    
+    // free the value
+    free(entry->value);
+
+    // free the entry itsself
+    free(entry);
 }

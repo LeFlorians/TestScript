@@ -21,9 +21,6 @@ typedef enum {
     // runtime types
     ARRAY,
     OBJECT,
-
-    // hash table types
-    EMPTY, // for a new, empty hashelement
     
     // token types
     NULLTKN, // Empty token (EOF, error)
