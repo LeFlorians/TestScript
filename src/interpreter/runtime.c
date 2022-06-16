@@ -24,7 +24,7 @@ void process(bytecode *code, errorinfo *info, hashtable *memory) {
     printf("Result: ");
     switch(dst->type) {
         case NUMBER:
-            printf("Number (%llg)\n", *(number *)dst->value);
+            printf("Number (%g)\n", (double) *(number *)dst->value);
             break;
         case STRING:
             printf("String (%s)\n", (char *)dst->value);
