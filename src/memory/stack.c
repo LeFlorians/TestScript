@@ -26,10 +26,10 @@ void _resize_stack(stack *st, size_t newsize) {
     }
     
     // reset current pointer
-    if(offset < newsize)
+    if(offset <= newsize)
         st->current = st->start + offset;
     else
-        st->current = st->end - 1;
+        st->current = st->end;
 }
 
 stack *create_stack(size_t size){
@@ -113,6 +113,10 @@ void *peek(stack *st, elementsize size) {
     if(st->current - size >= st->start)
         return (st->current - size);
     return NULL;
+}
+
+void fit_stack(stack *st) {
+    _resize_stack(st, st->current - st->start);
 }
 
 // Returns true if empty, false otherwise

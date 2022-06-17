@@ -20,6 +20,7 @@ typedef unsigned char elementsize;
 // define stack functions
 stack *create_stack(size_t initial_size);
 void free_stack(stack *st); // free stack and its allocated memory
+void fit_stack(stack *st); // shrink the stack to the exact space it currently occupies
 
 void *push(stack *st, elementsize size); 
 
