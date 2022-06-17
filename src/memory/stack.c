@@ -72,7 +72,6 @@ void *push(stack *st, elementsize size) {
 
         // new_size is too large
         if(new_size < st->alloc_size){
-            printf("new size too large\n");
             return NULL;
         }
 

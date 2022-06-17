@@ -6,7 +6,6 @@
 
 
 void process(bytecode *code, errorinfo *info, hashtable *memory) {
-    number num;
     // allocate space for operation functions
     opargs args;
 

@@ -69,7 +69,7 @@ void interpret(FILE *stream, char* filename) {
     // Print unmatched brackets
     size_t size;
     if((size = get_size(cac.bracketstack)) != 0) {
-        printf("\nNot all brackets matched, %lli left!\n", size);
+        printf("\nNot all brackets matched, %u left!\n", (unsigned int) size);
         printf("Assuming: ");
         for(size_t index = size; index > 0; index--)
             putchar(cac.bracketstack->start[index - 1]);
