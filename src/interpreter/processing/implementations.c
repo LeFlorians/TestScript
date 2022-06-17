@@ -16,15 +16,15 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
         return NULL;
     }
 
-    mementry *ret;
+    mementry *ret = NULL;
 
     // use unsigned char, as opcode iw in range
     unsigned char opcode = *opcodeptr;
 
     // check if its an opcode
-    if((opcode & (char)128) != 0) {
+    if((opcode & (unsigned char)128) != 0) {
         // apply this operator
-        opcode = (opcode & (char)127); // convert opcode back to true opcode (see bytecode.h)
+        opcode = (opcode & (unsigned char)127); // convert opcode back to true opcode (see bytecode.h)
 
         // perform the found operation
         return implementationof(opcode)(args);
@@ -368,7 +368,7 @@ mementry *_lambda(opargs *args){
 mementry *_ass(opargs *args){
     mementry *dst = _recursiveprocess(args, REFERENCE); // Load left operand into dst
     mementry *src = _recursiveprocess(args, COPY); // Load right operand into src
-
+        
     // copy type
     dst->type = src->type;
 
@@ -436,7 +436,7 @@ mementry *_neg(opargs *args){
 
 mementry *_call(opargs *args){
     mementry *dst = _recursiveprocess(args, COPY); // Load function into left operand
-    mementry *src = _recursiveprocess(args, COPY); // Arguments are passed as 'references'
+    mementry *params = _recursiveprocess(args, COPY);
 
     if(dst->type != FUNCTION) {
         throw(EI_NOT_CALLABLE, args->info);
@@ -444,7 +444,7 @@ mementry *_call(opargs *args){
     }
 
     // clone stack (for thread safety)
-    stack clone = *(bytecode *)dst->value;
+    bytecode clone = *(bytecode *)dst->value;
 
     // create new opargs for virtual environment
     opargs new_args;
@@ -463,11 +463,11 @@ mementry *_call(opargs *args){
 
     // iterate over each functional instruction, as long as the stack is not empty
     while(clone.current != clone.start) {
-        result = _recursiveprocess(&new_args, COPY);
+        result = _recursiveprocess(&new_args, REFERENCE);
     }
 
     // free arguments
-    free(src);
+    free(params);
     free(dst);
 
     // call the function and return the result

@@ -2,7 +2,7 @@
 
 #include "stack.h"
 
-#define DEFAULT_ALLOC_SIZE 8
+#define DEFAULT_ALLOC_SIZE 16
 
 #define MAX_ALLOC_SIZE 0xFFFF
 
@@ -63,12 +63,12 @@ void *push(stack *st, elementsize size) {
     if(st->current + size > st->end){
         // reached the end, reallocate
 
-        size_t size = st->end - st->start;
-        size_t new_size = size + st->alloc_size;
+        size_t cur_size = st->end - st->start;
+        size_t new_size = cur_size + st->alloc_size;
 
         // Just use total size if too small
-        if(st->current + size > st->end + new_size)
-            new_size = (st->current - st->end) + size;
+        if(st->current + size > st->start + new_size)
+            new_size = (st->current + size - st->start);
 
         // new_size is too large
         if(new_size < st->alloc_size){
@@ -79,7 +79,7 @@ void *push(stack *st, elementsize size) {
         _resize_stack(st, new_size);
 
         // check if reallocation was successful
-        if(st->end - st->start == size){
+        if(st->end - st->start == cur_size){
             // Reallocation failed
             return NULL;
         }
