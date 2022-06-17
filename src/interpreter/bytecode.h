@@ -16,8 +16,8 @@
             ARRAY: internal array
             OBJECT: internal object
       - one for Expressions, with zero, one or two arguments
-        - if expression; -(its opcode) - 1
-        - if block: -OP_BLOCK, if block_end: -OP_BLOCK_END
+        - if expression; (its opcode) | 128
+        - if block: OP_BLOCK | 128, if block_end: OP_BLOCK_END | 128
     
     If a load/store operation is performed, additional value/addres bytes have to be set
     Their type is defines as any of: field descriptor, number value, string(number array) value

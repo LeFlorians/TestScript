@@ -68,7 +68,12 @@ void _recursiveconsume(bytecode *dst, stnode *subtree) {
             break;
 
         case MEMBER:
-            // Consume a member chain
+            // TODO: allocate the member lambda function somewhere else and create a link
+
+            // remember the current stack position
+            char *save = dst->current;
+
+            // Consume a member chain into the stack
             stnode *tree;
             while(subtree != NULL && subtree->data.parent.left != NULL) {
                 // Consume the left subtree
@@ -81,6 +86,24 @@ void _recursiveconsume(bytecode *dst, stnode *subtree) {
                 // Free the MEMBER node
                 free(tree);
             }
+
+            // calculate function size and allocate space for it in a new stack
+            size_t funcsize = dst->current - save;
+            bytecode *function = create_stack(funcsize); 
+
+            // copy over the function
+            for(char *funcdst = (char *) push(function, funcsize); save < dst->current; save++)
+                *(funcdst++) = *save;
+
+            // restore stack
+            dst->current = save;
+
+            // push function pointer to stack
+            *((bytecode **) push(dst, sizeof(bytecode *))) = function;
+
+            // Push datatype
+            *((char *)push(dst, 1)) = FUNCTION; // this is a function
+
             break;
 
         case FILE_END:

@@ -59,17 +59,20 @@ stnode *secondary(cache *cache);
 
 // Builds a member tree of multiple expressions
 stnode *subexpr(cache *cache, unsigned char rbp) {
-    stnode *subroot, *member;
+    stnode *member;
     
-    subroot = member = expr(cache, rbp);
+    member = expr(cache, rbp);
 
     // Parse in-expression code blocks
     if(member != NULL && member->type == BLOCK){
         // loop variable
-        stnode *left;
+        stnode *left, *last;
         
         // change type from block to member
         member->type = MEMBER;
+
+        // Set right pointer to NULL
+        member->data.parent.right = NULL;
 
         // keep track of level
         unsigned int level = 1;
@@ -96,8 +99,11 @@ stnode *subexpr(cache *cache, unsigned char rbp) {
             }
 
             // skip this once
-            if(flag) {                            
-                member = member->data.parent.right = allocate_typed(MEMBER);
+            if(flag) {         
+                // reverse direction
+                last = member;
+                member = allocate_typed(MEMBER);
+                member->data.parent.right = last;                  
             } else
                 flag = 1;
             
@@ -105,10 +111,8 @@ stnode *subexpr(cache *cache, unsigned char rbp) {
             
         }
 
-        // Set left pointer to NULL
-        member->data.parent.right = NULL;
     }
-    return subroot;
+    return member;
 }
 
 // Parses a single expression

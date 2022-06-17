@@ -20,6 +20,7 @@ static const char *errformats[] = {
 
     "Missing argument(s) for given operator",
     "The specified operator cannot be applied to given operand(s)",
+    "The specified operand is not a function, therefore it cannot be called",
 
 };
 

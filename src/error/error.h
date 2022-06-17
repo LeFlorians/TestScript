@@ -20,6 +20,7 @@ enum errorformat {
     // Implementation error
     EI_MISSING_ARGS,
     EI_INVALID_COMBINATION,
+    EI_NOT_CALLABLE,
 
 };
 

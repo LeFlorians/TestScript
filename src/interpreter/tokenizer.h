@@ -21,6 +21,7 @@ typedef enum {
     // runtime types
     ARRAY,
     OBJECT,
+    FUNCTION,
     
     // token types
     NULLTKN, // Empty token (EOF, error)
