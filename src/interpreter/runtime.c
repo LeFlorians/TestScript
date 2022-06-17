@@ -17,7 +17,7 @@ void process(bytecode *code, errorinfo *info, hashtable *memory) {
 
     // process the given bytecode
     // this function is defined in implementations.c
-    mementry *dst = _recursiveprocess(&args, 2); // just return a readonly reference here
+    mementry *dst = _recursiveprocess(&args, 0); // just return a copy here
     
     // TODO: remove
     // DEBUG print result

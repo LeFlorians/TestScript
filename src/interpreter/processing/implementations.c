@@ -2,11 +2,10 @@
 
 // ----- Helper functions -----
 
-#define REFERENCE 0
-#define COPY 1
-#define READONLY 2
+#define COPY 0
+#define REFERENCE 1
 
-// @param ret_type one of REFERENCE|COPY|READONLY, defines whether space will be allocated in hashtable
+// @param ret_type one of REFERENCE|COPY, defines whether space will be allocated in hashtable
 //  and if a reference or copy of the value is returned
 mementry *_recursiveprocess(opargs *args, char ret_type) {
     opcode *opcodeptr = (opcode *)pop(args->code, 1);
@@ -68,13 +67,14 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
 
                 // set string type
                 ret->type = FUNCTION;
+
                 break;
 
             case FIELD:
                 // If a field is returned, really just put its value into dst
                 // pretending the field is an actual value node, for simplicity
 
-                hashelement *res = find(args->hashtable, !ret_type, *((char **) pop(args->code, sizeof(char**))));
+                hashelement *res = find(args->hashtable, ret_type, *((char **) pop(args->code, sizeof(char**))));
 
                 // allocate and return default value
                 if(res == NULL){
@@ -106,7 +106,7 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
                     res->valueptr = ret;
 
                 } else {
-                    if(ret_type != COPY) {
+                    if(ret_type == REFERENCE) {
                         // return a reference
                         ret = res->valueptr;
 
@@ -125,6 +125,9 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
                                 break;
                             case STRING:
                                 ret->value = strdup((char *) res->valueptr->value);
+                                break;
+                            case FUNCTION:
+                                ret->value = res->valueptr->value;
                                 break;
                         }
 
@@ -198,7 +201,7 @@ mementry *_bnot(opargs *args) {
 
 mementry *_mul(opargs *args){
     mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
-    mementry *tmp = _recursiveprocess(args, READONLY); // Load right operand into tmp mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -217,7 +220,7 @@ mementry *_mul(opargs *args){
 
 mementry *_div(opargs *args) {
     mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
-    mementry *tmp = _recursiveprocess(args, READONLY); // Load right operand into tmp mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -240,7 +243,7 @@ mementry *_mod(opargs *args){
 
 mementry *_add(opargs *args){
     mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
-    mementry *tmp = _recursiveprocess(args, READONLY); // Load right operand into tmp mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -259,7 +262,7 @@ mementry *_add(opargs *args){
 
 mementry *_sub(opargs *args){
     mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
-    mementry *tmp = _recursiveprocess(args, READONLY); // Load right operand into tmp mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -278,7 +281,7 @@ mementry *_sub(opargs *args){
 
 mementry *_let(opargs *args){
     mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
-    mementry *tmp = _recursiveprocess(args, READONLY); // Load right operand into tmp mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -297,7 +300,7 @@ mementry *_let(opargs *args){
 
 mementry *_leq(opargs *args){
     mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
-    mementry *tmp = _recursiveprocess(args, READONLY); // Load right operand into tmp mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -316,7 +319,7 @@ mementry *_leq(opargs *args){
 
 mementry *_grt(opargs *args){
     mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
-    mementry *tmp = _recursiveprocess(args, READONLY); // Load right operand into tmp mementry
+    mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -364,7 +367,7 @@ mementry *_lambda(opargs *args){
 
 mementry *_ass(opargs *args){
     mementry *dst = _recursiveprocess(args, REFERENCE); // Load left operand into dst
-    mementry *src = _recursiveprocess(args, READONLY); // Load right operand into src
+    mementry *src = _recursiveprocess(args, COPY); // Load right operand into src
 
     // copy type
     dst->type = src->type;
@@ -432,17 +435,20 @@ mementry *_neg(opargs *args){
 
 
 mementry *_call(opargs *args){
-    mementry *dst = _recursiveprocess(args, READONLY); // Load function into left operand
-    mementry *src = _recursiveprocess(args, READONLY); // Arguments are passed as 'references'
+    mementry *dst = _recursiveprocess(args, COPY); // Load function into left operand
+    mementry *src = _recursiveprocess(args, COPY); // Arguments are passed as 'references'
 
     if(dst->type != FUNCTION) {
         throw(EI_NOT_CALLABLE, args->info);
         return dst;
     }
 
+    // clone stack (for thread safety)
+    stack clone = *(bytecode *)dst->value;
+
     // create new opargs for virtual environment
     opargs new_args;
-    new_args.code = (bytecode *) dst->value;
+    new_args.code = &clone;
 
     // create a new, small hashtable for the function to be isolated
     new_args.hashtable = create_hashtable(32);
@@ -452,8 +458,13 @@ mementry *_call(opargs *args){
     // copy debug info
     new_args.info = args->info;
 
-    // get the result
-    mementry *result = _recursiveprocess(&new_args, COPY);
+    // the default return value
+    mementry *result = NULL;
+
+    // iterate over each functional instruction, as long as the stack is not empty
+    while(clone.current != clone.start) {
+        result = _recursiveprocess(&new_args, COPY);
+    }
 
     // free arguments
     free(src);
