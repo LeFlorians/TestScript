@@ -2,8 +2,6 @@
 
 #include "hashtable.h"
 
-
-// TODO: implement
 // TODO: add cache
 
 // create hash table

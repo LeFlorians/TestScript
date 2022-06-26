@@ -1,3 +1,5 @@
+#pragma once
+
 #include "operations.h"
 
 // Define a function to process the output of some code into destination mementry

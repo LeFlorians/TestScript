@@ -19,7 +19,7 @@ typedef enum {
     STRING,
 
     // runtime types
-    ARRAY,
+    ARRAY, TUPLE, // both arrays, but internal differences
     OBJECT,
     FUNCTION,
     

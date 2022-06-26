@@ -3,6 +3,8 @@
 #include "runtime.h"
 #include "../error/error.h"
 
+#include "../memory/array.h"
+
 
 
 void process(bytecode *code, errorinfo *info, hashtable *memory) {
@@ -37,6 +39,8 @@ void process(bytecode *code, errorinfo *info, hashtable *memory) {
         case FUNCTION:
             printf("Function\n");
             break;
+        case TUPLE:
+            printf("Tuple of size %lu\n", ((array *)dst->value)->size);
         default:
             break;
     }

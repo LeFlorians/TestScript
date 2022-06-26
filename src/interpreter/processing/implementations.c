@@ -1,4 +1,5 @@
 #include "implementations.h"
+#include "../../memory/array.h"
 
 // ----- Helper functions -----
 
@@ -415,6 +416,35 @@ mementry *_default(opargs *args){
 }
 
 mementry *_list(opargs *args){
+    mementry *left = _recursiveprocess(args, REFERENCE);
+    mementry *right = _recursiveprocess(args, REFERENCE);
+
+    if(left->type == TUPLE) {
+        if(right->type == TUPLE) {
+            // add values of right to left
+            set(left->value, right->value, ((array *)left->value)->size);
+        } else {
+            // copy right without expanding it as a tuple
+            set_element(left->value, right, ((array *)left->value)->size);
+        }
+        return left;
+    } else if (right->type == TUPLE){
+        set_element(right->value, left, 0);
+        return right;
+    } else {
+        // create new array
+        array *arr = create_array(8);
+
+        // set elements
+        set_element(arr, left, 0);
+        set_element(arr, right, 1);
+    
+        // create new mementry for array
+        mementry *ret = malloc(sizeof(mementry));
+        ret->type = TUPLE;
+        ret->value = arr;
+        return ret;
+    }
 }
 
 mementry *_end(opargs *args){
@@ -451,7 +481,7 @@ mementry *_call(opargs *args){
     new_args.code = &clone;
 
     // create a new, small hashtable for the function to be isolated
-    new_args.hashtable = create_hashtable(32);
+    new_args.hashtable = create_hashtable(8);
 
     // TODO: put arguments into table
 

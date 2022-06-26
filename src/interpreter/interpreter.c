@@ -85,8 +85,8 @@ void _printst(stnode *root, int depth) {
     // _printside(out, depth);
 
     static const char* typeNames[] = {
-        "Number", "Field", "String", "Array", "Object", "Function", "Nulltkn", "Bracket", "Symbol",
-        "FileEnd", "Block", "BlockEnd", "Member", "Expr"
+        "Number", "Field", "String", "Array", "Tuple", "Object", "Function", "Nulltkn",
+        "Bracket", "Symbol", "FileEnd", "Block", "BlockEnd", "Member", "Expr"
     };
 
     if(root == NULL) {
