@@ -190,8 +190,8 @@ mementry *_mul(opargs *args){
         case NUMBER:
             if(tmp->type == NUMBER){
                 *(number *)dst->value *= *(number *)tmp->value;
+                break;
             }
-            break;
         default:
             throw(EI_INVALID_COMBINATION, args->info);
             break;
@@ -209,8 +209,8 @@ mementry *_div(opargs *args) {
         case NUMBER:
             if(tmp->type == NUMBER){
                 *(number *)dst->value /= *(number *)tmp->value;
+                break;
             }
-            break;
         default:
             throw(EI_INVALID_COMBINATION, args->info);
             break;
@@ -232,8 +232,8 @@ mementry *_add(opargs *args){
         case NUMBER:
             if(tmp->type == NUMBER){
                 *(number *)dst->value += *(number *)tmp->value;
+                break;
             }
-            break;
         default:
             throw(EI_INVALID_COMBINATION, args->info);
             break;
@@ -251,8 +251,8 @@ mementry *_sub(opargs *args){
         case NUMBER:
             if(tmp->type == NUMBER){
                 *(number *)dst->value -= *(number *)tmp->value;
+                break;
             }
-            break;
         default:
             throw(EI_INVALID_COMBINATION, args->info);
             break;
@@ -270,8 +270,8 @@ mementry *_let(opargs *args){
         case NUMBER:
             if(tmp->type == NUMBER){
                 *(number *)dst->value *= *(number *)tmp->value;
+                break;
             }
-            break;
         default:
             throw(EI_INVALID_COMBINATION, args->info);
             break;
@@ -289,8 +289,8 @@ mementry *_leq(opargs *args){
         case NUMBER:
             if(tmp->type == NUMBER){
                 *(number *)dst->value = *(number *)dst->value  <= *(number *)dst->value;
+                break;
             }
-            break;
         default:
             throw(EI_INVALID_COMBINATION, args->info);
             break;
@@ -308,8 +308,8 @@ mementry *_grt(opargs *args){
         case NUMBER:
             if(tmp->type == NUMBER){
                 *(number *)dst->value = *(number *)dst->value > *(number *)dst->value;
+                break;
             }
-            break;
         default:
             throw(EI_INVALID_COMBINATION, args->info);
             break;
