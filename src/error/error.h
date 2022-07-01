@@ -1,5 +1,9 @@
 #pragma once
 
+// Define error codes
+#define ERROR 1
+#define OK 0
+
 // Enum of all messages
 enum errorformat {
     // Tokenizer errors
@@ -21,6 +25,11 @@ enum errorformat {
     EI_MISSING_ARGS,
     EI_INVALID_COMBINATION,
     EI_NOT_CALLABLE,
+
+    // Foreign function errors
+    EF_DL_LOADING_FAILED,
+    EF_FF_LOADING_FAILED,
+    EF_FFI_ERROR,
 
 };
 

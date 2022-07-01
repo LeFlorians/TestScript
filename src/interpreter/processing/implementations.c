@@ -1,5 +1,6 @@
 #include "implementations.h"
 #include "../../memory/array.h"
+#include "../dlibs/libraries.h"
 
 // ----- Helper functions -----
 
@@ -75,11 +76,11 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
                 // If a field is returned, really just put its value into dst
                 // pretending the field is an actual value node, for simplicity
 
-                hashelement *res = find(args->hashtable, ret_type, *((char **) pop(args->code, sizeof(char**))));
+                mementry *res = find(args->hashtable, ret_type, *((char **) pop(args->code, sizeof(char**))));
 
                 // allocate and return default value
                 if(res == NULL){
-                    // return a default value
+                    // return a default value constant
                     ret = malloc(sizeof(mementry));
                     ret->type = NUMBER;
                     ret->value = malloc(sizeof(number));
@@ -89,50 +90,31 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
                     break;
                 }
 
-                // set default value
-                if(res->valueptr == NULL) {
-                    // TODO: search for predefined default value here
-
-                    // allocate mementry
+                if(ret_type == REFERENCE) {
+                    // return a reference (do not free references in implementations!)
+                    ret = res;
+                } else {
+                    // return a copy
                     ret = malloc(sizeof(mementry));
 
-                    // set type
-                    ret->type = NUMBER;
+                    // copy type
+                    ret->type = res->type;
 
-                    // allocate and set default number
-                    ret->value = malloc(sizeof(number));
-                    *(number *)ret->value = (number) 0;
-
-                    // assign to hashelement
-                    res->valueptr = ret;
-
-                } else {
-                    if(ret_type == REFERENCE) {
-                        // return a reference
-                        ret = res->valueptr;
-
-                    } else {
-                        // return a copy
-                        ret = malloc(sizeof(mementry));
-
-                        // copy type
-                        ret->type = res->valueptr->type;
-
-                        // copy contents
-                        switch(ret->type) {
-                            case NUMBER:
-                                ret->value = malloc(sizeof(number));
-                                *(number *)ret->value = *(number *)res->valueptr->value;
-                                break;
-                            case STRING:
-                                ret->value = strdup((char *) res->valueptr->value);
-                                break;
-                            case FUNCTION:
-                                ret->value = res->valueptr->value;
-                                break;
-                        }
-
+                    // copy contents (not just pointers)
+                    switch(ret->type) {
+                        case NUMBER:
+                            ret->value = malloc(sizeof(number));
+                            *(number *)ret->value = *(number *)res->value;
+                            break;
+                        case STRING:
+                            ret->value = strdup((char *) res->value);
+                            break;
+                        case FUNCTION:
+                        case CFUNCTION:
+                            ret->value = res->value;
+                            break;
                     }
+
                 }
 
                 break;
@@ -463,45 +445,54 @@ mementry *_pos(opargs *args){
 mementry *_neg(opargs *args){
 }
 
-
 mementry *_call(opargs *args){
-    mementry *dst = _recursiveprocess(args, COPY); // Load function into left operand
-    mementry *params = _recursiveprocess(args, COPY);
+    mementry *dst = _recursiveprocess(args, COPY); // Load function
+    mementry *params = _recursiveprocess(args, COPY); // Load function arguments
 
-    if(dst->type != FUNCTION) {
-        throw(EI_NOT_CALLABLE, args->info);
-        return dst;
+    switch(dst->type) {
+
+        case FUNCTION:
+            // clone stack (for thread safety)
+            bytecode clone = *(bytecode *)dst->value;
+
+            // create new opargs for virtual environment
+            opargs new_args;
+            new_args.code = &clone;
+
+            // create a new, small hashtable for the function to be isolated
+            new_args.hashtable = create_hashtable(8);
+
+            // TODO: put arguments into table
+
+            // copy debug info
+            new_args.info = args->info;
+
+            // the default return value
+            dst = NULL;
+
+            // iterate over each functional instruction, as long as the stack is not empty
+            while(clone.current != clone.start) {
+                dst = _recursiveprocess(&new_args, REFERENCE);
+            }
+
+            // free arguments
+            free(params);
+
+            // call the function and return the result
+            return dst;
+
+        case CFUNCTION:
+            // call function from shared object
+            callfunc((cfunction *) dst->value, params, dst);
+
+            // return the result that's stored in dst now
+            return dst;
+
+        default:
+            // Throw an error if its not a function
+            throw(EI_NOT_CALLABLE, args->info);
+            return dst;
     }
-
-    // clone stack (for thread safety)
-    bytecode clone = *(bytecode *)dst->value;
-
-    // create new opargs for virtual environment
-    opargs new_args;
-    new_args.code = &clone;
-
-    // create a new, small hashtable for the function to be isolated
-    new_args.hashtable = create_hashtable(8);
-
-    // TODO: put arguments into table
-
-    // copy debug info
-    new_args.info = args->info;
-
-    // the default return value
-    mementry *result = NULL;
-
-    // iterate over each functional instruction, as long as the stack is not empty
-    while(clone.current != clone.start) {
-        result = _recursiveprocess(&new_args, REFERENCE);
-    }
-
-    // free arguments
-    free(params);
-    free(dst);
-
-    // call the function and return the result
-    return result;
 }
 
 mementry *_index(opargs *args){

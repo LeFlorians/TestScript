@@ -33,7 +33,7 @@ typedef struct {
     size_t width;
 
     // array of data pointers size 'width'
-    hashelement *array;
+    hashelement **array;
 
 } hashtable;
 
@@ -41,7 +41,7 @@ typedef struct {
 hashtable *create_hashtable(size_t width);
 
 // Function to return pointer to address of value given by key (never NULL)
-hashelement *find(hashtable *table, char allocate, char* key);
+mementry *find(hashtable *table, char allocate, char* key);
 
 // Frees a mementry and the value that is contained within it
 void free_mementry(mementry *entry);

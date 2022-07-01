@@ -5,8 +5,6 @@
 
 #include "../memory/array.h"
 
-
-
 void process(bytecode *code, errorinfo *info, hashtable *memory) {
     // allocate space for operation functions
     opargs args;

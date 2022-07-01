@@ -22,6 +22,9 @@ static const char *errformats[] = {
     "The specified operator cannot be applied to given operand(s)",
     "The specified operand is not a function, therefore it cannot be called",
 
+    "Loading of a shared object failed",
+    "Loading of foreign function failed",
+    "An error occured within libffi when creating a typed foreign function",
 };
 
 void throw(enum errorformat format, errorinfo *info) {

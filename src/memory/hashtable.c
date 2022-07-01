@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "hashtable.h"
+#include "../interpreter/bytecode.h"
 
 // TODO: add cache
 
@@ -10,13 +11,10 @@ hashtable *create_hashtable(size_t width){
     hashtable *ret = (hashtable *) malloc(sizeof(hashtable));
 
     ret->width = width;
-    ret->array = (hashelement *) malloc(sizeof(hashelement) * width);
+    ret->array = (hashelement **) malloc(sizeof(hashelement *) * width);
 
-    // set default keys, alternatives
-    for(hashelement *cur = ret->array; cur < ret->array + width; cur++) {
-        cur->key = NULL;
-        cur->alternative = NULL;
-    }
+    // initialize to NULL
+    memset(ret->array, 0, sizeof(hashelement *) * width);
 
     return ret;
 }
@@ -36,40 +34,55 @@ hash _hash(char* key) {
 
 // find an element in the hash table
 // @param allocate if set and key was not found, automatically allocate it; return NULL if unset
-hashelement *find(hashtable *table, char allocate, char* key) {
+mementry *find(hashtable *table, char allocate, char* key) {
     size_t pos = (_hash(key) % table->width);
 
     // go through elements at that index ( avg. O(n/width * strsize) )
-    hashelement *first = &table->array[pos];
-    hashelement *current = first;
-    while(current->key == NULL || strcmp(current->key, key) != 0) {
-        if(current->key == NULL) {
+    hashelement *start = table->array[pos];
+    hashelement *dataptr = start;
 
-            // if we should not allocate a new one, just return NULL
-            if(!allocate)
-                return NULL;
+    while(dataptr != NULL) {
 
-            // not found, allocate a new element to append
-            hashelement *new = malloc(sizeof(hashelement));
-            new->key = NULL;
-            new->alternative = NULL;
-
-            // append new element
-            current->alternative = new;
-
-            // modify the value to return
-            current->key = key;
-
-            // set default type and value
-            current->valueptr = NULL; // if wanted, allocate manually
-
-            break;
+        if(strcmp(dataptr->key, key) == 0) {
+            // return the found element
+            return dataptr->valueptr;
         }
 
-        current = current->alternative;
+        // key was not right, move on
+        dataptr = dataptr->alternative;
     }
 
-    return current;
+    // return NULL if the element should not be allcoated
+    if(!allocate)
+        return NULL;
+
+    // allocate the missing hashelement
+    hashelement *new = malloc(sizeof(hashelement));
+    new->key = strdup(key);
+
+    // set the alternative to be the current first element in the chain
+    //  according to the locality of reference
+    new->alternative = start;
+
+    // make it the new array start
+    table->array[pos] = new;
+
+    
+    // allocate default value mementry
+    mementry *entry = malloc(sizeof(mementry));
+
+    // set type
+    entry->type = NUMBER;
+
+    // allocate and set default number
+    entry->value = malloc(sizeof(number));
+    *(number *)entry->value = (number) 0;
+
+    // assign to hashelement
+    new->valueptr = entry;
+
+    // return the allocated mementry
+    return entry;
 }
 
 void free_mementry(mementry *entry) {

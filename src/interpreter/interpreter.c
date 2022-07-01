@@ -1,5 +1,6 @@
 #include "interpreter.h"
 #include "runtime.h" // only need runtime.h because parser.h, tokenizer.h, etc. are included
+#include "stdlib/stdlib.h"
 
 /*
 * The interpreter provides an environment for code to run
@@ -40,6 +41,9 @@ void interpret(FILE *stream, char* filename) {
 
     // TODO: choose better table size
     hashtable *memory = create_hashtable(32);
+
+    // load the stdlib
+    loadstd(memory);
 
     // advance once
     advance(&cac);
@@ -85,8 +89,8 @@ void _printst(stnode *root, int depth) {
     // _printside(out, depth);
 
     static const char* typeNames[] = {
-        "Number", "Field", "String", "Array", "Tuple", "Object", "Function", "Nulltkn",
-        "Bracket", "Symbol", "FileEnd", "Block", "BlockEnd", "Member", "Expr"
+        "Number", "Field", "String", "Array", "Tuple", "Object", "Function", "CFunction",
+        "Nulltkn", "Bracket", "Symbol", "FileEnd", "Block", "BlockEnd", "Member", "Expr"
     };
 
     if(root == NULL) {

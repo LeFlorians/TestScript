@@ -1,5 +1,6 @@
 CC := gcc
 CFLAGS := -Wall -g -Wno-switch
+LIBS := -lffi
 
 TEST_INPUT = test.txt
 
@@ -14,7 +15,7 @@ SRCS := $(call rwildcard,src/,*.c)
 OBJS := $(SRCS:%.c=%.o)
 
 all: $(OBJS)
-	$(CC) $(OBJS) -o $(TARGET)
+	$(CC) $(LIBS) $(OBJS) -o $(TARGET)
 
 test: all
 	clear

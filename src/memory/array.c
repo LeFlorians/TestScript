@@ -1,5 +1,3 @@
-#pragma once
-
 #include <string.h>
 
 #include "array.h"
@@ -23,12 +21,6 @@ void free_array(array *arr) {
     free(arr);
 }
 
-array singleton(mementry *element) {
-    array ret;
-    ret.arr = malloc(sizeof(mementry *));
-    *ret.arr = element;
-}
-
 char set(array *arr, array *element, size_t index) {
 
     // make sure the destination array has the right size
@@ -41,7 +33,7 @@ char set(array *arr, array *element, size_t index) {
         }
 
         mementry **newptr;
-        if((newptr = realloc(arr->arr, newsize) != NULL)) {
+        if((newptr = realloc(arr->arr, newsize)) != NULL) {
             arr->arr = newptr;
             arr->size_allocated = newsize;
         } else {
@@ -70,7 +62,7 @@ char set_element(array *arr, mementry *element, size_t index) {
         }
 
         mementry **newptr;
-        if((newptr = realloc(arr->arr, newsize) != NULL)) {
+        if((newptr = realloc(arr->arr, newsize)) != NULL) {
             arr->arr = newptr;
             arr->size_allocated = newsize;
         } else {
