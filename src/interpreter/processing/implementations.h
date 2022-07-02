@@ -51,5 +51,6 @@ mementry *_neg(opargs *args);
 
 mementry *_call(opargs *args);
 mementry *_index(opargs *args);
+mementry *_array(opargs *args);
 mementry *_block(opargs *args);
 mementry *_block_end(opargs *args);

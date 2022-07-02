@@ -43,6 +43,9 @@ void readtkn(cache *cache) {
     // get first character
     char cur = next(cache);
 
+    // set space flag
+    cache->space = (cur && isspace(cur));
+
     // remove leading spaces
     while(cur && isspace(cur))
         cur = next(cache);

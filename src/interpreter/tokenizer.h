@@ -56,6 +56,9 @@ typedef struct {
 
     // bracket stack for parser
     stack *bracketstack;
+    
+    // tokenizer flag for parser to check if a space was encountered during readtkn()
+    char space;
 } cache;
 
 // Read next token from stream and place it in dst

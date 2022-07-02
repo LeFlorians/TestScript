@@ -12,6 +12,34 @@ stnode *allocate_typed(nodetype type) {
     return node;
 }
 
+// helper function to free stnode of any time
+void free_stnode(stnode *node) {
+    switch(node->type) {
+        case MEMBER:
+        case EXPR:
+            // free child nodes
+            if(node->data.parent.left != NULL)
+                free_stnode(node->data.parent.left);
+            if(node->data.parent.right != NULL)
+                free_stnode(node->data.parent.right);
+            break;
+        
+        // these have no properties to be freed
+        case BLOCK:
+        case BLOCK_END:
+        case FILE_END:
+            break;
+
+        // the rest are value-based nodes
+        default:
+            // free the values
+            free(node->data.leaf.value);
+            break;
+    }
+    // free the node itsself
+    free(node);
+}
+
 // Read next token into cache and match brackets
 void advance(cache *cache) {
     readtkn(cache);
@@ -115,14 +143,15 @@ stnode *subexpr(cache *cache, unsigned char rbp) {
     return member;
 }
 
+// parser-defined operators
+operator virtualops[] = {
+    {"f( )", OP_CALL, 0, 0, 0},     // virtual call operator
+    {"g[ ]", OP_INDEX, 0, 0, 0},    // virtual index operator
+    {"[ ]", OP_ARRAY, 0, 0, 0},    // virtual index operator
+};
+
 // Parses a single expression
 stnode *expr(cache *cache, unsigned char rbp) {
-
-    // parser-defined operators
-    static operator virtualops[] = {
-        {"(_)", OP_CALL, 0, 0, 0},     // virtual call operator
-        {"[_]", OP_INDEX, 0, 0, 0},    // virtual index operator
-    };
 
     stnode *left = secondary(cache);
 
@@ -162,18 +191,20 @@ stnode *expr(cache *cache, unsigned char rbp) {
             left = new;
         }
         if(op == 0) {
-            // TODO: free already allocated nodes
-
+            // free already allocated nodes
+            free_stnode(left);
+            
             throw(EP_INVALID_OPERATOR, &cache->info);
             return allocate_typed(FILE_END);
         }
     }
 
     // Handle function calls and indexing
-    if(cache->cur->type == BRACKET) {
+    //  but only if there was no space in between the brackets and symbol
+    if(cache->cur->type == BRACKET && !cache->space) {
         switch(cache->cur->content[0]) {
 
-            case '(': {
+            case '(':
                 advance(cache);
 
                 stnode *call = allocate_typed(EXPR);
@@ -189,16 +220,16 @@ stnode *expr(cache *cache, unsigned char rbp) {
                 if(cache->cur->type == BRACKET && cache->cur->content[0] == ')')
                     advance(cache);
                 else {
-                    // TODO: free already allocated nodes
+                    // free already allocated nodes
+                    free_stnode(left);
 
                     throw(EP_EXPECTED_CLOSING_BRACKET, &cache->info);
                     return allocate_typed(FILE_END);
                 }
 
                 goto repeat;
-            }
 
-            case '[': {
+            case '[':
                 advance(cache);
 
                 stnode *index = allocate_typed(EXPR);
@@ -214,14 +245,14 @@ stnode *expr(cache *cache, unsigned char rbp) {
                 if(cache->cur->type == BRACKET && cache->cur->content[0] == ']')
                     advance(cache);
                 else {
-                    // TODO: free already allocated nodes
+                    // free already allocated nodes
+                    free_stnode(left);
 
                     throw(EP_EXPECTED_CLOSING_SQUARE_BRACKET, &cache->info);
                     return allocate_typed(FILE_END);                
                 }
 
                 goto repeat;
-            }
 
         }
     }
@@ -250,7 +281,9 @@ stnode *secondary(cache *cache){
                         advance(cache);
                         return ret;
                     }
-                    // TODO: free ret
+
+                    // free ret
+                    free_stnode(ret);
 
                     throw(EP_EXPECTED_CLOSING_BRACKET, &cache->info);
                     return allocate_typed(FILE_END);
@@ -262,6 +295,29 @@ stnode *secondary(cache *cache){
                 case '}':
                     advance(cache);
                     return allocate_typed(BLOCK_END);
+
+                // array creation
+                case '[':
+                    printf("array creation\n");
+                    advance(cache);
+
+                    ret = allocate_typed(EXPR);
+                    ret->data.parent.op = &virtualops[2]; // array operator
+
+                    // set list of arguments to be expression
+                    ret->data.parent.left = subexpr(cache, 0);
+
+                    // expect closing bracket
+                    if(cache->cur->type == BRACKET && cache->cur->content[0] == ']')
+                        advance(cache);
+                    else {
+                        // free already allocated nodes
+                        free_stnode(ret);
+
+                        throw(EP_EXPECTED_CLOSING_SQUARE_BRACKET, &cache->info);
+                        return allocate_typed(FILE_END);                
+                    }
+                    return ret;
 
                 // End function calls / indexing
                 case ')':
@@ -286,11 +342,9 @@ stnode *secondary(cache *cache){
 
             if(ret->data.parent.op->position != PREFIX) {
                 throw(EP_EXPECTED_PREFIX_OPERATOR, &cache->info);
-
                 ret->type = FILE_END;
                 return ret;
             }
-            
             // advance to unload operator
             advance(cache);
 
@@ -306,7 +360,6 @@ stnode *secondary(cache *cache){
     if(cache->cur->type == FIELD || cache->cur->type == NUMBER || cache->cur->type == STRING){
         stnode *val;
 
-        // TODO: safe the type of the value as well
         if(ret == NULL) {
             val = (ret = allocate_typed(cache->cur->type));
         } else {

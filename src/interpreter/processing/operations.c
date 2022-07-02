@@ -52,6 +52,7 @@ operation implementationof(opcode code) {
 
             [OP_CALL]      = _call,
             [OP_INDEX]     = _index,
+            [OP_ARRAY]     = _array,
             [OP_BLOCK]     = _block,
             [OP_BLOCK_END] = _block_end,
             

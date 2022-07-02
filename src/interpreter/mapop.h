@@ -24,7 +24,7 @@ typedef enum {
     OP_PREINCR, OP_PREDECR, OP_POS, OP_NEG,
 
     // Internal operators
-    OP_CALL, OP_INDEX,
+    OP_CALL, OP_INDEX, OP_ARRAY,
     OP_BLOCK, OP_BLOCK_END
 
 } opcode;
