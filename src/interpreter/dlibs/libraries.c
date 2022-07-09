@@ -7,6 +7,10 @@
 char loadfunc(cfunction *dst, errorinfo *info, char *filename, char *funcname,
         unsigned nargs, ffi_type **args, ffi_type *rtype){
 
+    foreignfunction *ff;
+
+    dst->funptr = ff = malloc(sizeof(foreignfunction));
+
     // make sure this is recognized as a foreign function
     dst->wrapped = 0;
 
@@ -30,7 +34,7 @@ char loadfunc(cfunction *dst, errorinfo *info, char *filename, char *funcname,
         } 
 
         // load function pointer and check for errors
-        if((dst->funptr = dlsym(sdl, funcname)) == NULL) {
+        if((ff->funptr = dlsym(sdl, funcname)) == NULL) {
             // throw error and return
             throw(EF_FF_LOADING_FAILED, info);
 
@@ -57,9 +61,8 @@ char loadfunc(cfunction *dst, errorinfo *info, char *filename, char *funcname,
 
     #endif
 
-
     // prepare the function
-    if(ffi_prep_cif(&dst->cif, FFI_DEFAULT_ABI,
+    if(ffi_prep_cif(&ff->cif, FFI_DEFAULT_ABI,
         nargs,  // number of arguments
         rtype,  // return type
         args    // array of argument types
@@ -85,7 +88,9 @@ char callfunc(cfunction *func, mementry *params, mementry *dst) {
         return OK;
     }
 
-    if(func->cif.nargs == 0) {
+    foreignfunction *ff = func->funptr;
+
+    if(ff->cif.nargs == 0) {
         if(params != NULL) {
             // TODO: throw error: there should not be arguments
 
@@ -97,7 +102,7 @@ char callfunc(cfunction *func, mementry *params, mementry *dst) {
             return ERROR;
         }
 
-        if((func->cif.nargs == 1) ^ (params->type != TUPLE)) {
+        if((ff->cif.nargs == 1) ^ (params->type != TUPLE)) {
             // dst is not of the right type
         }
     }
@@ -105,21 +110,21 @@ char callfunc(cfunction *func, mementry *params, mementry *dst) {
 
     // break if not enough arguments
     if(dst != NULL && (dst->type == ARRAY || dst->type == TUPLE)) {
-        if(((array *)dst->value)->size != func->cif.nargs) {
+        if(((array *)dst->value)->size != ff->cif.nargs) {
             // TODO: throw error: not right amount of arguments
             return ERROR; 
         }
     }
     // allocate a pointer array for arguments
-    void **args = malloc(func->cif.nargs * sizeof(void *));
+    void **args = malloc(ff->cif.nargs * sizeof(void *));
 
     // allocate space for each argument and put them in place
-    for(size_t i = 0; i < func->cif.nargs; i++) {
+    for(size_t i = 0; i < ff->cif.nargs; i++) {
         // allocate space
-        *(args + i) = malloc((*(func->cif.arg_types + i))->size);
+        *(args + i) = malloc((*(ff->cif.arg_types + i))->size);
 
         // copy value
-        if(func->cif.nargs == 1) {
+        if(ff->cif.nargs == 1) {
             
         } else {
             // it's a tuple
@@ -133,7 +138,7 @@ char callfunc(cfunction *func, mementry *params, mementry *dst) {
     }
 
     // allocate space for return value
-    void *ret = malloc(func->cif.rtype->size);
+    void *ret = malloc(ff->cif.rtype->size);
 
     return OK;
 }

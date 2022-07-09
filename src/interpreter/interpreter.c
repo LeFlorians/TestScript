@@ -79,6 +79,9 @@ void interpret(FILE *stream, char* filename) {
             putchar(cac.bracketstack->start[index - 1]);
         putchar('\n');
     }
+
+    // free token content
+    free(tkn.content);
 }
 
 

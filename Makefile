@@ -30,6 +30,9 @@ profile: all
 	@echo Analysis:
 	gprof -p -b ./$(TARGET) gmon.out
 
+memcheck: all
+	valgrind --tool=memcheck ./$(TARGET) $(TEST_INPUT)
+
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 

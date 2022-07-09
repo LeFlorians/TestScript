@@ -24,8 +24,6 @@ typedef struct {
 
     void *funptr; // function pointer
 
-    ffi_cif cif; // call interface
-
     errorinfo *info; // errorinfo
 } cfunction;
 

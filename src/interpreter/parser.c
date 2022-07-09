@@ -341,6 +341,7 @@ stnode *secondary(cache *cache){
 
             if(ret->data.parent.op->position != PREFIX) {
                 throw(EP_EXPECTED_PREFIX_OPERATOR, &cache->info);
+                
                 ret->type = FILE_END;
                 return ret;
             }
