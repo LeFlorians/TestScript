@@ -20,8 +20,9 @@ typedef enum {
 
     // runtime types
     ARRAY, TUPLE, // both arrays, but internal differences
-    OBJECT,
-    FUNCTION, CFUNCTION, // CFunction refers to a function from a c shared object
+    OBJECT, // an object is a block of data
+    CODE, // this is a chunk of code
+    FUNCTION, CFUNCTION,
     
     // token types
     NULLTKN, // Empty token (EOF, error)

@@ -34,7 +34,7 @@ void loadstd(hashtable *table){
     
     // register all functions
     for(unsigned i = 0; i < sizeof(functions) / sizeof(struct func_id); i++) {
-        mementry *dst = find(table, ALLOC, functions[i].name); // search by value
+        mementry *dst = find(table, functions[i].name, ALLOC); // search by value
         dst->type = CFUNCTION; // set type to c function
         
         cfunction *cfunc = malloc(sizeof(cfunction)); // allocate new cfunction

@@ -6,6 +6,9 @@
 
 #define COPY 0
 #define REFERENCE 1
+#define RAW 2 // to return raw code
+
+#define DEFAULT_ARRAY_SIZE 8
 
 // @param ret_type one of REFERENCE|COPY, defines whether space will be allocated in hashtable
 //  and if a reference or copy of the value is returned
@@ -60,7 +63,7 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
                 ret->type = STRING;
                 break;
 
-            case FUNCTION:
+            case CODE:
                 // allocate ret
                 ret = malloc(sizeof(mementry));
 
@@ -68,15 +71,15 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
                 ret->value = *(bytecode **)pop(args->code, sizeof(bytecode *));
 
                 // set string type
-                ret->type = FUNCTION;
+                ret->type = CODE;
 
                 break;
 
             case FIELD:
                 // If a field is returned, really just put its value into dst
                 // pretending the field is an actual value node, for simplicity
-
-                mementry *res = find(args->hashtable, ret_type, *((char **) pop(args->code, sizeof(char**))));
+                char *key;
+                mementry *res = find(args->hashtable, key = *((char **) pop(args->code, sizeof(char**))), ret_type);
 
                 // allocate and return default value
                 if(res == NULL){
@@ -90,7 +93,7 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
                     break;
                 }
 
-                if(ret_type == REFERENCE) {
+                if(ret_type != COPY) {
                     // return a reference (do not free references in implementations!)
                     ret = res;
                 } else {
@@ -113,14 +116,42 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
                         case CFUNCTION:
                             ret->value = res->value;
                             break;
+                        case OBJECT:
+                            // TODO: add
+                            break;
                     }
 
                 }
 
                 break;
         }
+
+        // evaluate code into object, except requested
+        if(ret_type != RAW && ret->type == CODE) {
+
+            // create new opargs for virtual environment
+            opargs new_args;
+
+            // execute the CODE's value
+            new_args.code = ret->value;
+
+            // use the same hashtable
+            new_args.hashtable = args->hashtable;
+
+            // copy debug info
+            new_args.info = args->info;
+
+            // iterate over each functional instruction, as long as the stack is not empty
+            while(new_args.code->current != new_args.code->start) {
+                ret = _recursiveprocess(&new_args, REFERENCE);
+            }
+
+            // free the code copy
+            free(new_args.code);
+        }
+
+        return ret;
     }
-    return ret;
 }
 
 // assert that a type is not null
@@ -346,12 +377,21 @@ mementry *_lor(opargs *args){
 }
 
 mementry *_lambda(opargs *args){
+    // copy defaults, in case they're used by different functions
+    mementry *defaults = _recursiveprocess(args, COPY);
+    mementry *code = _recursiveprocess(args, RAW);
+
+    // TODO: assert defaults is OBJECT and code is CODE
+
+    // create the function
+
+
 }
 
 mementry *_ass(opargs *args){
     mementry *dst = _recursiveprocess(args, REFERENCE); // Load left operand into dst
     mementry *src = _recursiveprocess(args, COPY); // Load right operand into src
-        
+
     // copy type
     dst->type = src->type;
 
@@ -415,12 +455,12 @@ mementry *_list(opargs *args){
         return right;
     } else {
         // create new array
-        array *arr = create_array(8);
+        array *arr = create_array(DEFAULT_ARRAY_SIZE);
 
         // set elements
         set_element(arr, left, 0);
         set_element(arr, right, 1);
-    
+
         // create new mementry for array
         mementry *ret = malloc(sizeof(mementry));
         ret->type = TUPLE;
@@ -499,6 +539,26 @@ mementry *_index(opargs *args){
 }
 
 mementry *_array(opargs *args){
+    // array of references
+    mementry *content = _recursiveprocess(args, REFERENCE);
+
+    // if tuple, just make array
+    if(content->type == TUPLE){
+        content->type = ARRAY;
+        return content;
+    }
+
+    // create new array
+    array *arr = create_array(DEFAULT_ARRAY_SIZE);
+
+    // set elements
+    set_element(arr, content, 0);
+
+    // create new mementry for array
+    mementry *ret = malloc(sizeof(mementry));
+    ret->type = ARRAY;
+    ret->value = arr;
+    return ret;
 }
 
 mementry *_block(opargs *args){

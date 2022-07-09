@@ -39,6 +39,8 @@ void process(bytecode *code, errorinfo *info, hashtable *memory) {
             break;
         case TUPLE:
             printf("Tuple of size %lu\n", ((array *)dst->value)->size);
+        case ARRAY:
+            printf("Array of size %lu\n", ((array *)dst->value)->size);  
         default:
             break;
     }

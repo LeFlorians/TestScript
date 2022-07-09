@@ -94,8 +94,7 @@ void _recursiveconsume(bytecode *dst, stnode *subtree) {
             *((bytecode **) push(dst, sizeof(bytecode *))) = function;
 
             // Push datatype
-            *((char *)push(dst, 1)) = FUNCTION; // this is a function
-
+            *((char *)push(dst, 1)) = CODE; // this is code
             break;
 
         case FILE_END:

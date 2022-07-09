@@ -8,6 +8,13 @@
 // internally used for the stdlib implementation
 typedef void (*wrapfunction)(mementry *args, mementry *dst);
 
+// define a foreign function
+typedef struct {
+    ffi_cif cif; // call interface
+
+    void *funptr; // pointer to the function
+} foreignfunction;
+
 // define a cfunction
 typedef struct {
     // if 1, funptr is of type wrapfunction
@@ -16,7 +23,10 @@ typedef struct {
     char wrapped;
 
     void *funptr; // function pointer
+
     ffi_cif cif; // call interface
+
+    errorinfo *info; // errorinfo
 } cfunction;
 
 // create a foreign function

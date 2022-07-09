@@ -24,7 +24,7 @@ char loadfunc(cfunction *dst, errorinfo *info, char *filename, char *funcname,
 
             // print error message
             if(info->throwable)
-                fprintf("dlerror: %s\n", dlerror());
+                printf("dlerror: %s\n", dlerror());
 
             return ERROR;
         } 
@@ -36,7 +36,7 @@ char loadfunc(cfunction *dst, errorinfo *info, char *filename, char *funcname,
 
             // print error message
             if(info->throwable)
-                fprintf("dlerror: %s\n", dlerror());
+                printf("dlerror: %s\n", dlerror());
 
             return ERROR;
         }
@@ -82,22 +82,22 @@ char callfunc(cfunction *func, mementry *params, mementry *dst) {
     if(func->wrapped) {
         // call it and return
         ((wrapfunction)(func->funptr))(params, dst);
-        return;
+        return OK;
     }
 
     if(func->cif.nargs == 0) {
-        if(dst != NULL) {
+        if(params != NULL) {
             // TODO: throw error: there should not be arguments
 
             return ERROR;
         }
     } else {
-        if(dst == NULL) {
+        if(params == NULL) {
             // TODO: throw error
             return ERROR;
         }
 
-        if((func->cif.nargs == 1) ^ (dst->type != TUPLE)) {
+        if((func->cif.nargs == 1) ^ (params->type != TUPLE)) {
             // dst is not of the right type
         }
     }
@@ -134,8 +134,6 @@ char callfunc(cfunction *func, mementry *params, mementry *dst) {
 
     // allocate space for return value
     void *ret = malloc(func->cif.rtype->size);
-
-
 
     return OK;
 }

@@ -1,47 +1,75 @@
 #pragma once
 
 #include <stdlib.h>
-#include "../interpreter/tokenizer.h"
+#include <stdint.h>
 
-// n element of a hash table
-typedef struct hashelement hashelement;
+#include "../interpreter/tokenizer.h"
 
 typedef struct {
     // type (one of runtime/shared types)
     typing type;
 
-    // can by any of (char *), (number *)
+    /*
+        Value pointer type depends on type
+            NUMBER              number *
+            FIELD               char *
+            STRING              char *
+
+            ARRAY, TUPLE        array *
+            OBJECT              hashtable *
+            CODE                bytecode *
+            FUNCTION, CFUNCTION function *
+    */
     void *value;
 
 } mementry;
 
-struct hashelement {
+// internally used hash types
+typedef uint16_t _H_HASH;
+#define _H_MAX_VALUE UINT16_MAX
+
+// TODO: compare performance
+// disable interpolation search as it is slower due to per-step overhead
+#define _H_INTERPOLATION_SEARCH 0
+
+// elements in the slices
+typedef struct s_tableentry tableentry;
+typedef struct s_tableentry {
+    // key in object table
     char *key;
+    // the key's hash
+    _H_HASH hash;
 
-    // a pointer to the value of the element
-    // value should not contain the key, as that would not make sense memory-wise
-    mementry *valueptr;
+    // alternative entry, in case two share the same hash
+    tableentry *alternative;
 
-    // for collision prevention
-    hashelement *alternative;
-};
+    // associated data value (linked-list approach)
+    mementry *entry;
+} tableentry;
 
-
-// a hash table struct
+// slices in the object table (acts as dynamic-length sorted list)
 typedef struct {
-    // size of base array
+    size_t size_allocated, size;
+
+    tableentry *array[];
+} tableslice;
+
+
+// object table sturct
+typedef struct {
+
+    // width of the hash-table (fixed)
     size_t width;
 
-    // array of data pointers size 'width'
-    hashelement **array;
+    tableslice *entries[];
 
 } hashtable;
 
-// function to create a hashtable
+// create a table
 hashtable *create_hashtable(size_t width);
 
-// Function to return pointer to address of value given by key (never NULL)
-mementry *find(hashtable *table, char allocate, char* key);
+// find mementry in object table
+mementry *find(hashtable *table, char *key, char allocate);
 
-// Frees a mementry and the value that is contained within it
+// free a mementry and its value
 void free_mementry(mementry *entry);
