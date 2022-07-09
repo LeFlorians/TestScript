@@ -27,7 +27,7 @@ typedef struct {
 #define HASHTABLE_CACHE_SIZE 64
 
 // internally used hash types
-typedef uint16_t _H_HASH;
+typedef uint32_t _H_HASH;
 #define _H_MAX_VALUE UINT16_MAX
 
 // TODO: compare performance

@@ -8,11 +8,11 @@
 // hash function
 // TODO: optimize, ensure uniqueness, EQUAL DISTRIBUTION !!
 _H_HASH _hash(char* key) {
-    char ch;
-    _H_HASH ret = 0;
-    while((ch = *(key++)) != '\0')
-        ret = (ret + ch) * ch;
-    return ret;
+    _H_HASH hash = 0;
+    char c;
+    while(c = *key++)
+        hash = ((hash << 5) + hash) + c;
+    return hash;
 }
 
 hashtable *create_hashtable(size_t width) {
