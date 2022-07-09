@@ -40,8 +40,6 @@ mementry *find(hashtable *table, char *key, char allocate) {
         return value->entry;
     }
 
-    printf("hash not in cache for %s\n", key);
-
     // get the right table entry
     tableslice **sliceptr = table->entries + (hash % table->width);
 
@@ -115,9 +113,7 @@ mementry *find(hashtable *table, char *key, char allocate) {
             // matching hash!
 
             // compare keys
-            printf("matching hash for %s (%s): %u == %u\n", key, value->key, hash, value->hash);
             while(strcmp(key, value->key)) {
-                printf(".");
                 // walk linked-list
                 if(value->alternative == NULL) {
                     // not found, allocate or return NULL
