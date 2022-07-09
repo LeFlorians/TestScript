@@ -298,7 +298,6 @@ stnode *secondary(cache *cache){
 
                 // array creation
                 case '[':
-                    printf("array creation\n");
                     advance(cache);
 
                     ret = allocate_typed(EXPR);

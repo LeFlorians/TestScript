@@ -24,6 +24,8 @@ typedef struct {
 
 } mementry;
 
+#define HASHTABLE_CACHE_SIZE 64
+
 // internally used hash types
 typedef uint16_t _H_HASH;
 #define _H_MAX_VALUE UINT16_MAX
@@ -40,10 +42,10 @@ typedef struct s_tableentry {
     // the key's hash
     _H_HASH hash;
 
-    // alternative entry, in case two share the same hash
+    // alternative entry, in case two share the same hash (linked-list approach)
     tableentry *alternative;
 
-    // associated data value (linked-list approach)
+    // associated data value
     mementry *entry;
 } tableentry;
 
@@ -60,6 +62,9 @@ typedef struct {
 
     // width of the hash-table (fixed)
     size_t width;
+
+    // direct mapped cache for faster lookups
+    tableentry *cache[HASHTABLE_CACHE_SIZE];
 
     tableslice *entries[];
 

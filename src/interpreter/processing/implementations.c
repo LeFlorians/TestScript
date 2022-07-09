@@ -78,8 +78,7 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
             case FIELD:
                 // If a field is returned, really just put its value into dst
                 // pretending the field is an actual value node, for simplicity
-                char *key;
-                mementry *res = find(args->hashtable, key = *((char **) pop(args->code, sizeof(char**))), ret_type);
+                mementry *res = find(args->hashtable, *((char **) pop(args->code, sizeof(char**))), ret_type);
 
                 // allocate and return default value
                 if(res == NULL){
@@ -396,13 +395,13 @@ mementry *_ass(opargs *args){
     dst->type = src->type;
 
     // free original dst value
-    free(dst->value);
+    // ? free(dst->value);
 
     // create value reference
     dst->value = src->value;
 
     // free src
-    free(src);
+    // ? free(src);
 
     return dst;
 }

@@ -21,6 +21,7 @@ hashtable *create_hashtable(size_t width) {
     ret->width = width;
 
     // initialize to NULL
+    memset(ret->cache, 0, sizeof(tableentry *) * HASHTABLE_CACHE_SIZE);
     memset(ret->entries, 0, sizeof(tableslice *) * width);
 
     return ret;
@@ -29,6 +30,17 @@ hashtable *create_hashtable(size_t width) {
 
 mementry *find(hashtable *table, char *key, char allocate) {
     _H_HASH hash = _hash(key);
+    tableentry *value;
+
+    // cache lookup
+    value = table->cache[hash % HASHTABLE_CACHE_SIZE];
+
+    // check if key matches
+    if(value != NULL && strcmp(key, value->key) == 0) {
+        return value->entry;
+    }
+
+    printf("hash not in cache for %s\n", key);
 
     // get the right table entry
     tableslice **sliceptr = table->entries + (hash % table->width);
@@ -39,7 +51,7 @@ mementry *find(hashtable *table, char *key, char allocate) {
 
         // allocate new entry*
         *sliceptr = (tableslice *) malloc(size);
-        
+
         if(*sliceptr == NULL) {
             // TODO: throw error, out of memory; slice could not be allocated
             return NULL;
@@ -63,8 +75,8 @@ mementry *find(hashtable *table, char *key, char allocate) {
         _H_HASH top_value = _H_MAX_VALUE, bottom_value = 0;
     #endif
 
-    // interpolation search
-    tableentry *value, *new_value;
+    // binary search
+    tableentry *new_value;
     while(top > bottom) {
         value = slice->array[index];
 
@@ -103,38 +115,33 @@ mementry *find(hashtable *table, char *key, char allocate) {
             // matching hash!
 
             // compare keys
-            while(strcmp(key, value->key) != 0) {
+            printf("matching hash for %s (%s): %u == %u\n", key, value->key, hash, value->hash);
+            while(strcmp(key, value->key)) {
+                printf(".");
                 // walk linked-list
                 if(value->alternative == NULL) {
                     // not found, allocate or return NULL
                     if(!allocate)
                         return NULL;
-                    
+
                     // attach at end of chain
                     value->alternative = new_value = malloc(sizeof(tableentry));
-                    
-                    init_entry:
 
-                    // set values
-                    new_value->key = strdup(key);
-                    new_value->hash = hash;
-                    new_value->alternative = NULL;
-                    
-                    // allocate the wanted mementry and set default value
-                    (new_value->entry = malloc(sizeof(mementry)))->type = NUMBER;
-                    *((number *) (new_value->entry->value = malloc(sizeof(number)))) = (number)0;
-
-                    // return new entry
-                    return new_value->entry;
+                    // initialize entry
+                    goto init_entry;
                 }
                 value = value->alternative;
             }
+
+            // register entry in cache
+            table->cache[hash % HASHTABLE_CACHE_SIZE] = value;
+
             // return the found data
             return value->entry;
         }
 
     }
-    
+
     // hash not found
     value = slice->array[index];
 
@@ -169,9 +176,8 @@ mementry *find(hashtable *table, char *key, char allocate) {
         newslice->array[index] = new_value = malloc(sizeof(tableentry));
 
         // init new element and return it
-        goto init_entry;
-
     } else {
+        // move everything after index one to the right
         memcpy(slice->array + index + 1, slice->array + index, slice->size - index);
 
         // insert at index into array
@@ -179,10 +185,23 @@ mementry *find(hashtable *table, char *key, char allocate) {
 
         // increment slice size
         slice->size++;
-
-        // init new element and return it
-        goto init_entry;
     }
+
+    init_entry:
+
+    new_value->key = strdup(key);
+    new_value->hash = hash;
+    new_value->alternative = NULL;
+
+    // allocate the wanted mementry and set default value
+    (new_value->entry = malloc(sizeof(mementry)))->type = NUMBER;
+    *((number *) (new_value->entry->value = malloc(sizeof(number)))) = (number)0;
+
+    // register entry in cache
+    table->cache[hash % HASHTABLE_CACHE_SIZE] = new_value;
+
+    // return new entry
+    return new_value->entry;
 
 }
 

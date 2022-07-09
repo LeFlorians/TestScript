@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -Wall -g -Wno-switch
+CFLAGS := -Wall -pg -g -Wno-switch
 LIBS := -lffi
 
 TEST_INPUT = test.txt
@@ -15,12 +15,20 @@ SRCS := $(call rwildcard,src/,*.c)
 OBJS := $(SRCS:%.c=%.o)
 
 all: $(OBJS)
-	$(CC) $(LIBS) $(OBJS) -o $(TARGET)
+	$(CC) $(CFLAGS) $(LIBS) $(OBJS) -o $(TARGET)
 
 test: all
 	clear
 	$(file >> $(TEST_INPUT))
 	./$(TARGET) $(TEST_INPUT)
+
+profile: all
+	clear
+	$(file >> $(TEST_INPUT))
+	@echo Running test program for analysis...
+	./$(TARGET) $(TEST_INPUT) > /dev/null
+	@echo Analysis:
+	gprof -p -b ./$(TARGET) gmon.out
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
@@ -36,4 +44,4 @@ win : CC = x86_64-w64-mingw32-gcc
 win: all
 
 clean:
-	rm -f -- $(TARGET) $(TARGET).exe $(call rwildcard,src/,*.o)
+	rm -f -- $(TARGET) $(TARGET).exe $(call rwildcard,src/,*.o) gmon.out

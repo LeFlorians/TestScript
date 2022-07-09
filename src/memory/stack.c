@@ -2,7 +2,7 @@
 
 #include "stack.h"
 
-#define DEFAULT_ALLOC_SIZE 16
+#define DEFAULT_ALLOC_SIZE 15
 
 #define MAX_ALLOC_SIZE 0xFFFF
 
@@ -86,7 +86,7 @@ void *push(stack *st, elementsize size) {
         // next time, automatically allocate more
         // TODO: better new_size prediction
         if(st->alloc_size < MAX_ALLOC_SIZE)
-            st->alloc_size <<= 1;
+            st->alloc_size = (st->alloc_size << 2) + 0b11;
     }
 
     // pointer to return
