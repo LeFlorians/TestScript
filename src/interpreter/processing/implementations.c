@@ -564,7 +564,13 @@ mementry *_array(opargs *args){
 }
 
 mementry *_block(opargs *args){
+    // move ht scope up
+    ht_up(args->hashtable);
+    return NULL;
 }
 
 mementry *_block_end(opargs *args){
+    // move ht scope down
+    ht_down(args->hashtable);
+    return NULL;
 }

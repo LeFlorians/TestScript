@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "stack.h"
 
@@ -12,7 +13,7 @@
     When resizing fails, the stack will **keep its current size**,
     the stack top may be lowered if the stack was supposed to be shortened.
 */
-static inline _resize_stack(stack *st, size_t newsize) {
+static inline void _resize_stack(stack *st, size_t newsize) {
     char *newptr;
 
     // save offset
@@ -40,9 +41,8 @@ stack *create_stack(size_t size){
 
     ret->alloc_size = DEFAULT_ALLOC_SIZE;
 
-    // initialize with 0s
-    for(char **e = &(ret->start); e < &(ret->start); e++)
-        *e = 0;
+    // initialize with 0
+    memset(ret->start, 0, size);
 
     return ret;
 }

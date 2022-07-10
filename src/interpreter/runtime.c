@@ -23,26 +23,27 @@ void process(bytecode *code, errorinfo *info, hashtable *memory) {
     printf("Result: ");
 
     if(dst == NULL){
-        printf("No result");
+        printf("No result\n");
         return;
     }
 
     switch(dst->type) {
         case NUMBER:
-            printf("Number (%g)\n", (double) *(number *)dst->value);
+            printf("Number (%g)", (double) *(number *)dst->value);
             break;
         case STRING:
-            printf("String (%s)\n", (char *)dst->value);
+            printf("String (%s)", (char *)dst->value);
             break;
         case FUNCTION:
-            printf("Function\n");
+            printf("Function");
             break;
         case TUPLE:
-            printf("Tuple of size %lu\n", ((array *)dst->value)->size);
+            printf("Tuple of size %lu", ((array *)dst->value)->size);
         case ARRAY:
-            printf("Array of size %lu\n", ((array *)dst->value)->size);  
+            printf("Array of size %lu", ((array *)dst->value)->size);  
         default:
             break;
     }
+    printf("\n");
 
 }

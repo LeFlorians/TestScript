@@ -37,7 +37,7 @@ hashtable *create_hashtable(size_t width, size_t cache_size) {
 // private function to delete table entries
 static inline void _free_tableentry(tableentry *entry) {
     free(entry->key);
-    free(entry->entry->value);
+    // free(entry->entry->value);
     free(entry->entry);
     free(entry);
 }
@@ -67,7 +67,7 @@ void free_hashtable(hashtable *table){
 
 void ht_up(hashtable *table) {
     // push NULL to the stack
-    *(tableentry ***)push(table->stack, sizeof(tableentry *)) = NULL;
+    *((tableentry ***)push(table->stack, sizeof(tableentry **))) = NULL;
 }
 
 void ht_down(hashtable *table) {
@@ -82,11 +82,24 @@ void ht_down(hashtable *table) {
         entry = *entryptr; // never null
 
         // remove it from cache if possible
-        if(table->cache[entry->hash] == entry)
-            table->cache[entry->hash] = NULL;
+        if(table->cache[entry->hash % table->cache_size] == entry)
+            table->cache[entry->hash % table->cache_size] = NULL;
 
         // rewire the entries, remove entry from linked list
-        *entryptr = entry->alternative;
+        if((*entryptr = entry->alternative) == NULL) {
+            // get the slice
+            tableslice *slice = table->entries[entry->hash % table->width];
+            if(entryptr >= slice->array) {
+                size_t index = entryptr - slice->array;
+                if(index  < slice->size) {
+                    // remove slice entry at index
+                    memcpy(slice + index, slice + (index + 1), slice->size - (index + 1));
+
+                    // decrement slice size
+                    slice->size--;
+                }
+            }
+        }
 
         // free the entry
         _free_tableentry(entry);

@@ -109,7 +109,7 @@ void _printst(stnode *root, int depth) {
     
     if(root->type == FIELD || root->type == NUMBER || root->type == STRING) {
         printf(" (%s)", root->data.leaf.value);
-    } else if(root->type != FILE_END) {
+    } else if(root->type != FILE_END && root->type != BLOCK && root->type != BLOCK_END) {
 
         if(root->data.parent.left != NULL){
             putchar('\n');
