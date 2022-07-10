@@ -76,20 +76,35 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
                 break;
 
             case FIELD:
-                // If a field is returned, really just put its value into dst
+                // If a field is returned, just put its value into dst
                 // pretending the field is an actual value node, for simplicity
-                mementry *res = find(args->hashtable, *((char **) pop(args->code, sizeof(char**))), ret_type);
+                mementry *res = NULL;
+                hashtable *table = args->hashtable;
+                while(res == NULL && table != NULL) {
+                    // TODO: save time when not found and allocating
+                    // TODO: flag to only search top-level table
+                    // try finding it, do not yet allocate anything
+                    res = find(table, *((char **) pop(args->code, sizeof(char**))), 0);
 
-                // allocate and return default value
+                    // walk up
+                    table = table->parent;
+                }
+                // if not found, allocate it in the highest table if requested
                 if(res == NULL){
-                    // return a default value constant
-                    ret = malloc(sizeof(mementry));
-                    ret->type = NUMBER;
-                    ret->value = malloc(sizeof(number));
-                    *(number *)ret->value = (number) 0;
+                    if(ret_type) {
+                        // this time, allocate it
+                        res = find(args->hashtable, *((char **) pop(args->code, sizeof(char**))), 1);
+                    } else {
+                        // allocate a default value
+                        // return a default value constant
+                        ret = malloc(sizeof(mementry));
+                        ret->type = NUMBER;
+                        ret->value = malloc(sizeof(number));
+                        *(number *)ret->value = (number) 0;
 
-                    // break from switch
-                    break;
+                        // break from switch
+                        break;
+                    }
                 }
 
                 if(ret_type != COPY) {
@@ -134,16 +149,24 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
             // execute the CODE's value
             new_args.code = ret->value;
 
-            // use the same hashtable
-            new_args.hashtable = args->hashtable;
+            // create a new hashtable
+            new_args.hashtable = create_hashtable(8, 4);
+            // set parent table
+            new_args.hashtable->parent = args->hashtable;
 
             // copy debug info
             new_args.info = args->info;
 
             // iterate over each functional instruction, as long as the stack is not empty
             while(new_args.code->current != new_args.code->start) {
-                ret = _recursiveprocess(&new_args, REFERENCE);
+                _recursiveprocess(&new_args, REFERENCE);
             }
+
+            // change type
+            ret->type = OBJECT;
+
+            // return the object's table
+            ret->value = new_args.hashtable;
 
             // free the code copy
             free(new_args.code);
@@ -498,7 +521,7 @@ mementry *_call(opargs *args){
             opargs new_args;
             new_args.code = &clone;
 
-            // create a new, small hashtable for the function to be isolated
+            // create a new, small hashtable for the function to be isolated (without parent table)
             new_args.hashtable = create_hashtable(8, 4);
 
             // TODO: put arguments into table

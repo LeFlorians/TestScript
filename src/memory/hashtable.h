@@ -34,7 +34,7 @@ typedef uint32_t _H_HASH;
 
 // elements in the slices
 typedef struct s_tableentry tableentry;
-typedef struct s_tableentry {
+struct s_tableentry {
     // key in object table
     char *key;
     // the key's hash
@@ -45,7 +45,7 @@ typedef struct s_tableentry {
 
     // associated data value
     mementry *entry;
-} tableentry;
+};
 
 // slices in the object table (acts as dynamic-length sorted list)
 typedef struct {
@@ -56,7 +56,8 @@ typedef struct {
 
 
 // object table sturct
-typedef struct {
+typedef struct s_hashtable hashtable;
+struct s_hashtable {
 
     // width of the hash-table (fixed)
     size_t width, cache_size;
@@ -64,12 +65,16 @@ typedef struct {
     // scope stack
     stack *stack;
 
+    // the parent table of objects (NULL for root table)
+    hashtable *parent;
+
     // direct mapped cache for faster lookups
     tableentry **cache;
 
+    // hashtables slices (buckets)
     tableslice *entries[];
 
-} hashtable;
+};
 
 // create/free a table
 hashtable *create_hashtable(size_t width, size_t cache_size);
@@ -84,3 +89,6 @@ mementry *find(hashtable *table, char *key, char allocate);
 
 // free a mementry and its value
 void free_mementry(mementry *entry);
+
+// function to iterate over all table entries
+void walk_table(hashtable *table, void (*callback)(tableentry *));

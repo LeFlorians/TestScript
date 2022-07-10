@@ -24,6 +24,9 @@ hashtable *create_hashtable(size_t width, size_t cache_size) {
     // allocate stack (with a guessed size)
     ret->stack = create_stack(width << 2);
 
+    // make parent table NULL
+    ret->parent = NULL;
+
     // allocate cache
     ret->cache = malloc(cache_size * sizeof(tableentry *));
 
@@ -37,7 +40,10 @@ hashtable *create_hashtable(size_t width, size_t cache_size) {
 // private function to delete table entries
 static inline void _free_tableentry(tableentry *entry) {
     free(entry->key);
+
+    // TODO: free the mementries / data values
     // free(entry->entry->value);
+    
     free(entry->entry);
     free(entry);
 }
@@ -51,13 +57,21 @@ void free_hashtable(hashtable *table){
 
     // free table slices
     tableslice *sliceptr;
+    tableentry *entry, *next;
     for(size_t i = 0; i < table->width; i++){
         sliceptr = table->entries[i];
 
         // free all entries
-        for(size_t j = 0; j < sliceptr->size; j++) {
-            _free_tableentry(sliceptr->array[j]);
-        }
+        if(sliceptr != NULL)
+            for(size_t j = 0; j < sliceptr->size; j++) {
+                entry = sliceptr->array[j];
+                // free entry and its alternatives
+                while(entry != NULL){
+                    next = entry->alternative;
+                    _free_tableentry(entry);
+                    entry = next;
+                }
+            }
 
     }
 
@@ -289,8 +303,28 @@ mementry *find(hashtable *table, char *key, char allocate) {
 
 }
 
+void walk_table(hashtable *table, void (*callback)(tableentry *)) {
+    // iterate slices
+    tableslice *sliceptr;
+    tableentry *entry;
+    for(size_t i = 0; i < table->width; i++){
+        sliceptr = table->entries[i];
+
+        // iterate entries
+        if(sliceptr != NULL)
+            for(size_t j = 0; j < sliceptr->size; j++) {
+                entry = sliceptr->array[j];
+                while(entry != NULL) {
+                    callback(entry);
+                    entry = entry->alternative;
+                }
+            }
+
+    }
+}
+
 void free_mementry(mementry *entry) {
-    
+    // TODO: free objects properly
     // free the value
     free(entry->value);
 
