@@ -4,15 +4,17 @@
 
 // ----- Helper functions -----
 
+// flags for the processing function
 #define COPY 0
 #define REFERENCE 1
 #define RAW 2 // to return raw code
+#define DIRECT 2 // to allocate a field in top-scope (if not field, same as reference)
 
 #define DEFAULT_ARRAY_SIZE 8
 
-// @param ret_type one of REFERENCE|COPY, defines whether space will be allocated in hashtable
+// @param flags one of REFERENCE|COPY, defines whether space will be allocated in hashtable
 //  and if a reference or copy of the value is returned
-mementry *_recursiveprocess(opargs *args, char ret_type) {
+mementry *_recursiveprocess(opargs *args, char flags) {
     opcode *opcodeptr = (opcode *)pop(args->code, 1);
 
     // check if NULL
@@ -80,20 +82,24 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
                 // pretending the field is an actual value node, for simplicity
                 mementry *res = NULL;
                 hashtable *table = args->hashtable;
-                while(res == NULL && table != NULL) {
-                    // TODO: save time when not found and allocating
-                    // TODO: flag to only search top-level table
-                    // try finding it, do not yet allocate anything
-                    res = find(table, *((char **) pop(args->code, sizeof(char**))), 0);
+                char *key = *((char **) pop(args->code, sizeof(char**)));
 
-                    // walk up
-                    table = table->parent;
-                }
+                // if direct, don't search parent tables
+                if(flags != DIRECT)
+                    while(res == NULL && table != NULL) {
+                        // TODO: save time when not found and allocating
+                        // TODO: flag to only search top-level table
+                        // try finding it, do not yet allocate anything
+                        res = find(table, key, 0);
+
+                        // walk up
+                        table = table->parent;
+                    }
                 // if not found, allocate it in the highest table if requested
                 if(res == NULL){
-                    if(ret_type) {
+                    if(flags) {
                         // this time, allocate it
-                        res = find(args->hashtable, *((char **) pop(args->code, sizeof(char**))), 1);
+                        res = find(args->hashtable, key, 1);
                     } else {
                         // allocate a default value
                         // return a default value constant
@@ -107,7 +113,7 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
                     }
                 }
 
-                if(ret_type != COPY) {
+                if(flags != COPY) {
                     // return a reference (do not free references in implementations!)
                     ret = res;
                 } else {
@@ -141,7 +147,7 @@ mementry *_recursiveprocess(opargs *args, char ret_type) {
         }
 
         // evaluate code into object, except requested
-        if(ret_type != RAW && ret->type == CODE) {
+        if(flags != RAW && ret->type == CODE) {
 
             // create new opargs for virtual environment
             opargs new_args;
@@ -429,6 +435,27 @@ mementry *_ass(opargs *args){
     return dst;
 }
 
+mementry *_hardset(opargs *args) {
+    mementry *dst = _recursiveprocess(args, DIRECT); // Load left operand into dst
+    mementry *src = _recursiveprocess(args, COPY); // Load right operand into src
+
+    // copy type
+    dst->type = src->type;
+
+    // free original dst value
+    // ? free(dst->value);
+
+    // create value reference
+    dst->value = src->value;
+
+    // free src
+    // ? free(src);
+
+    return dst;
+}
+
+
+
 mementry *_bxorass(opargs *args){
 }
 
@@ -454,9 +481,6 @@ mementry *_divass(opargs *args){
 }
 
 mementry *_modass(opargs *args){
-}
-
-mementry *_default(opargs *args){
 }
 
 mementry *_list(opargs *args){

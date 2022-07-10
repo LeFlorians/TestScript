@@ -32,6 +32,7 @@ operation implementationof(opcode code) {
             [OP_LOR]       = _lor,
             [OP_LAMBDA]    = _lambda,
             [OP_ASS]       = _ass,
+            [OP_HARDSET]   = _hardset,
             [OP_BXORASS]   = _bxorass,
             [OP_BNOTASS]   = _bnotass,
             [OP_BANDASS]   = _bandass,
@@ -41,7 +42,6 @@ operation implementationof(opcode code) {
             [OP_MULASS]    = _mulass,
             [OP_DIVASS]    = _divass,
             [OP_MODASS]    = _modass,
-            [OP_DEFAULT]   = _default,
             [OP_LIST]      = _list,
             [OP_END]       = _end,
 

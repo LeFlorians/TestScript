@@ -41,6 +41,9 @@ void _print_value(mementry *dst) {
             walk_table((hashtable *)dst->value, _print_object);
             printf("%*s}", _indent, "");
             break;
+        case UNDEFINED:
+            printf("undefined");
+            break;
         default:
             break;
     }

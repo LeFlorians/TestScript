@@ -121,7 +121,7 @@ void ht_down(hashtable *table) {
 }
 
 
-mementry *find(hashtable *table, char *key, char allocate) {
+mementry *_find(hashtable *table, char *key, char allocate) {
     _H_HASH hash = _hash(key);
     tableentry *value;
 
@@ -235,7 +235,11 @@ mementry *find(hashtable *table, char *key, char allocate) {
 
     }
 
-    // hash not found
+    // hash not found, cancel if requested
+    if(!allocate)
+        return NULL;
+
+    // insert at requested position
     value = slice->array[index];
 
     // get insertion index
@@ -292,8 +296,8 @@ mementry *find(hashtable *table, char *key, char allocate) {
     new_value->alternative = NULL;
 
     // allocate the wanted mementry and set default value
-    (new_value->entry = malloc(sizeof(mementry)))->type = NUMBER;
-    *((number *) (new_value->entry->value = malloc(sizeof(number)))) = (number)0;
+    (new_value->entry = malloc(sizeof(mementry)))->type = UNDEFINED;
+    new_value->entry->value = NULL;
 
     // register entry in cache
     table->cache[hash % table->cache_size] = new_value;
@@ -320,6 +324,42 @@ void walk_table(hashtable *table, void (*callback)(tableentry *)) {
                 }
             }
 
+    }
+}
+
+mementry *find(hashtable *table, char *key, char allocate) {
+    char *next = key;
+    char done = 0;
+
+    mementry *ret = NULL;
+
+    while(1) {
+        // go to next point
+        while(*next != '.') {
+            if((done = (*next == '\0')))
+                break;
+            next++;
+        }
+
+        if(!done)
+            *next = '\0';
+
+
+        // find child in the parent object
+        ret = _find(table, key, allocate);
+
+        if(done || ret == NULL || ret->type != OBJECT){
+            return ret;
+        }
+
+        // undo substitution
+        *next = '.';
+
+        // make the result the new parent object
+        table = (hashtable *)ret->value;
+
+        // make sure to search for the child's key
+        key = ++next;
     }
 }
 

@@ -85,7 +85,7 @@ void readtkn(cache *cache) {
         do {
             *con++ = cur;
             cur = next(cache);
-        } while ( cur && !(ispunct(cur) && cur != '_') && !isspace(cur));
+        } while ( cur && !(ispunct(cur) && cur != '_' && cur != '.') && !isspace(cur));
 
         // push back last character if not space
         if(!isspace(cur)){

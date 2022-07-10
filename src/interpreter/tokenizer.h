@@ -19,6 +19,7 @@ typedef enum {
     STRING,
 
     // runtime types
+    UNDEFINED,
     ARRAY, TUPLE, // both arrays, but internal differences
     OBJECT, // an object is a block of data
     CODE, // this is a chunk of code
