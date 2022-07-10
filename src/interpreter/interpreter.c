@@ -40,7 +40,7 @@ void interpret(FILE *stream, char* filename) {
     bytecode *code;
 
     // TODO: choose better table size
-    hashtable *memory = create_hashtable(32);
+    hashtable *memory = create_hashtable(32, 16);
 
     // load the stdlib
     loadstd(memory);

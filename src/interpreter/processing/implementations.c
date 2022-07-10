@@ -499,7 +499,7 @@ mementry *_call(opargs *args){
             new_args.code = &clone;
 
             // create a new, small hashtable for the function to be isolated
-            new_args.hashtable = create_hashtable(8);
+            new_args.hashtable = create_hashtable(8, 4);
 
             // TODO: put arguments into table
 
@@ -513,6 +513,9 @@ mementry *_call(opargs *args){
             while(clone.current != clone.start) {
                 dst = _recursiveprocess(&new_args, REFERENCE);
             }
+
+            // ree table
+            free_hashtable(new_args.hashtable);
 
             // free arguments
             free(params);

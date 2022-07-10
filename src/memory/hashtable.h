@@ -24,11 +24,9 @@ typedef struct {
 
 } mementry;
 
-#define HASHTABLE_CACHE_SIZE 64
-
 // internally used hash types
 typedef uint32_t _H_HASH;
-#define _H_MAX_VALUE UINT16_MAX
+#define _H_MAX_VALUE UINT32_MAX
 
 // TODO: compare performance
 // disable interpolation search as it is slower due to per-step overhead
@@ -61,17 +59,25 @@ typedef struct {
 typedef struct {
 
     // width of the hash-table (fixed)
-    size_t width;
+    size_t width, cache_size;
+
+    // scope stack
+    stack *stack;
 
     // direct mapped cache for faster lookups
-    tableentry *cache[HASHTABLE_CACHE_SIZE];
+    tableentry **cache;
 
     tableslice *entries[];
 
 } hashtable;
 
-// create a table
-hashtable *create_hashtable(size_t width);
+// create/free a table
+hashtable *create_hashtable(size_t width, size_t cache_size);
+void free_hashtable(hashtable *table);
+
+// move up/down scopes
+void ht_up(hashtable *table);
+void ht_down(hashtable *table);
 
 // find mementry in object table
 mementry *find(hashtable *table, char *key, char allocate);

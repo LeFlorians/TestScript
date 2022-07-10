@@ -6,25 +6,91 @@
 #define DEFAULT_ENTRY_SIZE 8
 
 // hash function
-// TODO: optimize, ensure uniqueness, EQUAL DISTRIBUTION !!
+// TODO: optimize
 _H_HASH _hash(char* key) {
     _H_HASH hash = 0;
     char c;
-    while(c = *key++)
+    while((c = *key++))
         hash = ((hash << 5) + hash) + c;
     return hash;
 }
 
-hashtable *create_hashtable(size_t width) {
+hashtable *create_hashtable(size_t width, size_t cache_size) {
     hashtable *ret = (hashtable *) malloc(sizeof(hashtable) + width * sizeof(tableslice *));
 
     ret->width = width;
+    ret->cache_size = cache_size;
+
+    // allocate stack (with a guessed size)
+    ret->stack = create_stack(width << 2);
+
+    // allocate cache
+    ret->cache = malloc(cache_size * sizeof(tableentry *));
 
     // initialize to NULL
-    memset(ret->cache, 0, sizeof(tableentry *) * HASHTABLE_CACHE_SIZE);
+    memset(ret->cache, 0, sizeof(tableentry *) * cache_size);
     memset(ret->entries, 0, sizeof(tableslice *) * width);
 
     return ret;
+}
+
+// private function to delete table entries
+void _free_tableentry(tableentry *entry) {
+    free(entry->key);
+    free(entry->entry->value);
+    free(entry->entry);
+    free(entry);
+}
+
+void free_hashtable(hashtable *table){
+    // free stack
+    free_stack(table->stack);
+
+    // free cache
+    free(table->cache);
+
+    // free table slices
+    tableslice *sliceptr;
+    for(size_t i = 0; i < table->width; i++){
+        sliceptr = table->entries[i];
+
+        // free all entries
+        for(size_t j = 0; j < sliceptr->size; j++) {
+            _free_tableentry(sliceptr->array[j]);
+        }
+
+    }
+
+    // free table
+    free(table);
+}
+
+void ht_up(hashtable *table) {
+    // push NULL to the stack
+    *(tableentry ***)push(table->stack, sizeof(tableentry *)) = NULL;
+}
+
+void ht_down(hashtable *table) {
+    // free everything until NULL
+    stack *s = table->stack;
+    tableentry ***stackptr;
+    tableentry **entryptr;
+    tableentry *entry;
+
+    while((stackptr = pop(s, sizeof(tableentry **))) != NULL && (entryptr = *stackptr) != NULL) {
+        // copy the entry
+        entry = *entryptr; // never null
+
+        // remove it from cache if possible
+        if(table->cache[entry->hash] == entry)
+            table->cache[entry->hash] = NULL;
+
+        // rewire the entries, remove entry from linked list
+        *entryptr = entry->alternative;
+
+        // free the entry
+        _free_tableentry(entry);
+    }
 }
 
 
@@ -33,7 +99,7 @@ mementry *find(hashtable *table, char *key, char allocate) {
     tableentry *value;
 
     // cache lookup
-    value = table->cache[hash % HASHTABLE_CACHE_SIZE];
+    value = table->cache[hash % table->cache_size];
 
     // check if key matches
     if(value != NULL && strcmp(key, value->key) == 0) {
@@ -67,7 +133,7 @@ mementry *find(hashtable *table, char *key, char allocate) {
 
     // predict the index, assuming an equal distribution
     size_t top, bottom = 0;
-    size_t index = ((top = slice->size) * hash) / (_H_MAX_VALUE + 1);
+    size_t index = ((uint64_t) (top = slice->size) * hash) / ((uint64_t) _H_MAX_VALUE + 1);
 
     #if _H_INTERPOLATION_SEARCH
         _H_HASH top_value = _H_MAX_VALUE, bottom_value = 0;
@@ -123,6 +189,10 @@ mementry *find(hashtable *table, char *key, char allocate) {
                     // attach at end of chain
                     value->alternative = new_value = malloc(sizeof(tableentry));
 
+                    // register into stack
+                    // since this element is attached to the end, its parent will never be freed before it
+                    *(tableentry ***)push(table->stack, sizeof(tableentry **)) = &value->alternative;
+
                     // initialize entry
                     goto init_entry;
                 }
@@ -130,7 +200,7 @@ mementry *find(hashtable *table, char *key, char allocate) {
             }
 
             // register entry in cache
-            table->cache[hash % HASHTABLE_CACHE_SIZE] = value;
+            table->cache[hash % table->cache_size] = value;
 
             // return the found data
             return value->entry;
@@ -171,7 +241,8 @@ mementry *find(hashtable *table, char *key, char allocate) {
         // insert at index into array
         newslice->array[index] = new_value = malloc(sizeof(tableentry));
 
-        // init new element and return it
+        // push address stack
+        *(tableentry ***)push(table->stack, sizeof(tableentry **)) = &newslice->array[index];
     } else {
         // move everything after index one to the right
         memcpy(slice->array + index + 1, slice->array + index, slice->size - index);
@@ -179,10 +250,14 @@ mementry *find(hashtable *table, char *key, char allocate) {
         // insert at index into array
         slice->array[index] = new_value = malloc(sizeof(tableentry));
 
+        // push address stack
+        *(tableentry ***)push(table->stack, sizeof(tableentry **)) = &slice->array[index];
+
         // increment slice size
         slice->size++;
     }
 
+    // init new element and return it
     init_entry:
 
     new_value->key = strdup(key);
@@ -194,7 +269,7 @@ mementry *find(hashtable *table, char *key, char allocate) {
     *((number *) (new_value->entry->value = malloc(sizeof(number)))) = (number)0;
 
     // register entry in cache
-    table->cache[hash % HASHTABLE_CACHE_SIZE] = new_value;
+    table->cache[hash % table->cache_size] = new_value;
 
     // return new entry
     return new_value->entry;

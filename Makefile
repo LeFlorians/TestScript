@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -Wall -pg -g -Wno-switch
+CFLAGS := -Wall -pg -g -Wno-switch -Wno-return-type
 LIBS := -lffi
 
 TEST_INPUT = test.txt
