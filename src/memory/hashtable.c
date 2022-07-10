@@ -7,7 +7,7 @@
 
 // hash function
 // TODO: optimize
-_H_HASH _hash(char* key) {
+static inline _H_HASH _hash(char* key) {
     _H_HASH hash = 0;
     char c;
     while((c = *key++))
@@ -35,7 +35,7 @@ hashtable *create_hashtable(size_t width, size_t cache_size) {
 }
 
 // private function to delete table entries
-void _free_tableentry(tableentry *entry) {
+static inline void _free_tableentry(tableentry *entry) {
     free(entry->key);
     free(entry->entry->value);
     free(entry->entry);

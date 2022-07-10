@@ -8,7 +8,7 @@
 // local filepos struct
 
 // TODO: optimize
-char next(cache *cache) {
+static inline char next(cache *cache) {
     // enforce max length
     if(cache->tokenpos == MAX_CONTENT - 1) {
         throw(ET_TOKEN_LENGTH_EXCEEDED, &cache->info);

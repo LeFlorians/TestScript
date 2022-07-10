@@ -46,7 +46,7 @@ void interpret(FILE *stream, char* filename) {
     loadstd(memory);
 
     // advance once
-    advance(&cac);
+    parser_init(&cac);
 
     while(1) {
         // parse tree

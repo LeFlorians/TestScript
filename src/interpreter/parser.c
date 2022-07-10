@@ -1,12 +1,12 @@
 #include "parser.h"
 
 // helper function to allocate an stnode
-stnode *allocate_stnode() {
+static inline stnode *allocate_stnode() {
     return (stnode *)malloc(sizeof(stnode));
 }
 
 // allocate an stnode with given type
-stnode *allocate_typed(nodetype type) {
+static inline stnode *allocate_typed(nodetype type) {
     stnode *node = (stnode *)malloc(sizeof(stnode));
     node->type = type;
     return node;
@@ -41,7 +41,7 @@ void free_stnode(stnode *node) {
 }
 
 // Read next token into cache and match brackets
-void advance(cache *cache) {
+static inline void advance(cache *cache) {
     readtkn(cache);
 
     if(cache->cur->type == BRACKET){
@@ -78,6 +78,12 @@ void advance(cache *cache) {
             break;
         }
     }
+}
+
+// function to initialize the parser
+void parser_init(cache *cache) {
+    // advance the cache once
+    advance(cache);
 }
 
 // Define the following functions

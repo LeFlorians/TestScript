@@ -12,7 +12,7 @@
     When resizing fails, the stack will **keep its current size**,
     the stack top may be lowered if the stack was supposed to be shortened.
 */
-void _resize_stack(stack *st, size_t newsize) {
+static inline _resize_stack(stack *st, size_t newsize) {
     char *newptr;
 
     // save offset

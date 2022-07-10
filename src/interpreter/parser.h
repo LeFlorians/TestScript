@@ -24,11 +24,10 @@ struct stnode {
         } leaf;
     } data;
 
-
 };
 
 // Parse a stream and save resulting tree in dst
 stnode *parse(cache *cache);
 
 // Read a new token and keep track of read brackets
-void advance(cache *cache);
+void parser_init(cache *cache);
