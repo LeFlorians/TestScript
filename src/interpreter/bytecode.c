@@ -56,12 +56,12 @@ void _recursiveconsume(bytecode *dst, stnode *subtree) {
             break;
 
         case EXPR:
-            // if there is one, process right child first
+            // process left child first
+            _recursiveconsume(dst, subtree->data.parent.left);
+
+            // if there is one, process right child next
             if(subtree->data.parent.right != NULL)
                 _recursiveconsume(dst, subtree->data.parent.right);
-
-            // then process left child
-            _recursiveconsume(dst, subtree->data.parent.left);
 
             // then push operator onto the stack
             *((char *) push(dst, 1)) = subtree->data.parent.op->opcode | (char)128;

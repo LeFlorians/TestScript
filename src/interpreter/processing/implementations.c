@@ -137,7 +137,8 @@ mementry *_recursiveprocess(opargs *args, char flags) {
                             ret->value = res->value;
                             break;
                         case OBJECT:
-                            // TODO: add
+                            // objects are just referenced
+                            ret->value = res->value;
                             break;
                     }
 
@@ -242,8 +243,8 @@ mementry *_bnot(opargs *args) {
 }
 
 mementry *_mul(opargs *args){
-    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
     mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -261,8 +262,8 @@ mementry *_mul(opargs *args){
 }
 
 mementry *_div(opargs *args) {
-    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
     mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -284,8 +285,8 @@ mementry *_mod(opargs *args){
 }
 
 mementry *_add(opargs *args){
-    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
     mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -303,8 +304,8 @@ mementry *_add(opargs *args){
 }
 
 mementry *_sub(opargs *args){
-    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
     mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -322,8 +323,8 @@ mementry *_sub(opargs *args){
 }
 
 mementry *_let(opargs *args){
-    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
     mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -341,8 +342,8 @@ mementry *_let(opargs *args){
 }
 
 mementry *_leq(opargs *args){
-    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
     mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -360,8 +361,8 @@ mementry *_leq(opargs *args){
 }
 
 mementry *_grt(opargs *args){
-    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
     mementry *tmp = _recursiveprocess(args, COPY); // Load right operand into tmp mementry
+    mementry *dst = _recursiveprocess(args, COPY); // Load left operand into dst mementry
 
     switch (dst->type) {
         case NUMBER:
@@ -406,8 +407,8 @@ mementry *_lor(opargs *args){
 
 mementry *_lambda(opargs *args){
     // copy defaults, in case they're used by different functions
-    mementry *defaults = _recursiveprocess(args, COPY);
     mementry *code = _recursiveprocess(args, RAW);
+    mementry *defaults = _recursiveprocess(args, COPY);
 
     // TODO: assert defaults is OBJECT and code is CODE
 
@@ -417,8 +418,8 @@ mementry *_lambda(opargs *args){
 }
 
 mementry *_ass(opargs *args){
-    mementry *dst = _recursiveprocess(args, REFERENCE); // Load left operand into dst
     mementry *src = _recursiveprocess(args, COPY); // Load right operand into src
+    mementry *dst = _recursiveprocess(args, REFERENCE); // Load left operand into dst
 
     // copy type
     dst->type = src->type;
@@ -436,8 +437,8 @@ mementry *_ass(opargs *args){
 }
 
 mementry *_hardset(opargs *args) {
-    mementry *dst = _recursiveprocess(args, DIRECT); // Load left operand into dst
     mementry *src = _recursiveprocess(args, COPY); // Load right operand into src
+    mementry *dst = _recursiveprocess(args, DIRECT); // Load left operand into dst
 
     // copy type
     dst->type = src->type;
@@ -484,8 +485,8 @@ mementry *_modass(opargs *args){
 }
 
 mementry *_list(opargs *args){
-    mementry *left = _recursiveprocess(args, REFERENCE);
     mementry *right = _recursiveprocess(args, REFERENCE);
+    mementry *left = _recursiveprocess(args, REFERENCE);
 
     if(left->type == TUPLE) {
         if(right->type == TUPLE) {
@@ -532,8 +533,8 @@ mementry *_neg(opargs *args){
 }
 
 mementry *_call(opargs *args){
-    mementry *dst = _recursiveprocess(args, COPY); // Load function
     mementry *params = _recursiveprocess(args, COPY); // Load function arguments
+    mementry *dst = _recursiveprocess(args, COPY); // Load function
 
     switch(dst->type) {
 

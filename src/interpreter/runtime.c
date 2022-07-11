@@ -13,7 +13,6 @@ void _print_object(tableentry *entry);
 
 void _print_value(mementry *dst) {
 
-
     if(dst == NULL){
         printf("undefined\n");
         return;
@@ -26,6 +25,7 @@ void _print_value(mementry *dst) {
         case STRING:
             printf("'%s'",  (char *)dst->value);
             break;
+        case CFUNCTION:
         case FUNCTION:
             printf("Function");
             break;

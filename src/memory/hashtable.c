@@ -328,7 +328,7 @@ void walk_table(hashtable *table, void (*callback)(tableentry *)) {
 }
 
 mementry *find(hashtable *table, char *key, char allocate) {
-    char *next = key;
+    char *next = key = strdup(key);
     char done = 0;
 
     mementry *ret = NULL;
@@ -341,19 +341,23 @@ mementry *find(hashtable *table, char *key, char allocate) {
             next++;
         }
 
-        if(!done)
-            *next = '\0';
+        *next = (char)'\0';
 
 
         // find child in the parent object
         ret = _find(table, key, allocate);
 
-        if(done || ret == NULL || ret->type != OBJECT){
+        if(done || ret == NULL)
             return ret;
+
+        // just allocate it as as an object
+        if(ret->type == UNDEFINED) {
+            ret->type = OBJECT;
+            ret->value = create_hashtable(8, 4);
         }
 
-        // undo substitution
-        *next = '.';
+        if(ret->type != OBJECT)
+            return ret;
 
         // make the result the new parent object
         table = (hashtable *)ret->value;
