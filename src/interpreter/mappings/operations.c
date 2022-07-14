@@ -1,5 +1,5 @@
-#include "implementations.h"
-#include "../mapop.h"
+#include "../processing/implementations.h"
+#include "mapop.h"
 
 // This file only creates mappings between opcodes and corresponding operation functions
 // For implementations, see implementations.c

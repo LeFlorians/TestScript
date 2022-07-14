@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #include "tokenizer.h"
-#include "mapop.h"
+#include "mappings/mapop.h"
 
 // Defines a tree node
 typedef struct stnode stnode;

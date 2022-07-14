@@ -2,8 +2,8 @@
 
 #include <stdio.h>
 
-#include "../error/error.h"
-#include "../memory/stack.h"
+#include "error/error.h"
+#include "memory/stack.h"
 
 #define MAX_CONTENT 256
 

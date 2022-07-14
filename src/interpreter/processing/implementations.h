@@ -1,6 +1,6 @@
 #pragma once
 
-#include "operations.h"
+#include "../mappings/operations.h"
 
 // Define a function to process the output of some code into destination mementry
 // to be used by operator implementations and runtime.c

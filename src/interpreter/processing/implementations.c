@@ -1,6 +1,6 @@
 #include "implementations.h"
-#include "../../memory/array.h"
-#include "../dlibs/libraries.h"
+#include "../memory/array.h"
+#include "../libraries/libraries.h" 
 
 // ----- Helper functions -----
 

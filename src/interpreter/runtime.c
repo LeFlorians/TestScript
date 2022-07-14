@@ -1,9 +1,9 @@
 #include "processing/implementations.h"
 
 #include "runtime.h"
-#include "../error/error.h"
+#include "error/error.h"
 
-#include "../memory/array.h"
+#include "memory/array.h"
 
 // private functions for output formatting
 

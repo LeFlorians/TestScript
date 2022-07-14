@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stddef.h>
-#include <stdbool.h>
 
 /*
 * This file declares the stack memory structure
@@ -28,5 +27,5 @@ void *pop(stack *st, elementsize size);
 void *peek(stack *st, elementsize size);
 void *get_element(size_t element, elementsize size); // returns NULL if out-of-bounds
 
-bool is_empty(stack *st);
+char is_empty(stack *st);
 size_t get_size(stack *st); // Return amount of items currently on stack

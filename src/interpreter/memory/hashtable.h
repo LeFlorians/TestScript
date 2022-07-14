@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "../interpreter/tokenizer.h"
+#include "../tokenizer.h"
 
 typedef struct {
     // type (one of runtime/shared types)

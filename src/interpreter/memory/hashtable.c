@@ -1,7 +1,7 @@
 #include <string.h>
 
 #include "hashtable.h"
-#include "../interpreter/bytecode.h"
+#include "../bytecode.h"
 
 #define DEFAULT_ENTRY_SIZE 8
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../../memory/stack.h"
-#include "../../memory/hashtable.h"
-#include "../mapop.h"
+#include "../memory/stack.h"
+#include "../memory/hashtable.h"
 #include "../bytecode.h"
+#include "mapop.h"
 
 // Define struct for operation function arguments
 typedef struct {

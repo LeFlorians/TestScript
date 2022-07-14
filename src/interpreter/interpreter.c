@@ -1,6 +1,6 @@
 #include "interpreter.h"
+#include "libraries/stdlib/stdlib.h"
 #include "runtime.h" // only need runtime.h because parser.h, tokenizer.h, etc. are included
-#include "stdlib/stdlib.h"
 
 /*
 * The interpreter provides an environment for code to run

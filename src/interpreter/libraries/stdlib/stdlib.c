@@ -1,7 +1,5 @@
 #include "stdlib.h"
-#include "../dlibs/libraries.h"
-
-#include "../bytecode.h"
+#include "../../bytecode.h"
 
 #define ALLOC 1
 
@@ -47,7 +45,7 @@ void loadstd(hashtable *table){
 
     // array of all functions and their name
     static struct func_id {
-        wrapfunction func;
+        wfunction func;
         char *name;
     } functions[] = {
 
@@ -78,11 +76,10 @@ void loadstd(hashtable *table){
         mementry *dst = find(stdtable, functions[i].name, ALLOC); // search by value
         dst->type = CFUNCTION; // set type to c function
 
-        cfunction *cfunc = malloc(sizeof(cfunction)); // allocate new cfunction
-        dst->value = cfunc; // copy cfunction pointer
+        cfunction *cf = malloc(sizeof(cfunction)); // allocate new cfunction
+        dst->value = cf; // copy cfunction pointer
 
-        cfunc->wrapped = 1; // make sure this is recognized as wrapfunction
-        cfunc->funptr = functions[i].func; // copy over function pointer
+        cf->funptr = functions[i].func; // copy over function pointer
     }
 
 }

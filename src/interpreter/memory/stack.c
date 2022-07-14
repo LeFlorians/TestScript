@@ -118,8 +118,8 @@ void fit_stack(stack *st) {
     _resize_stack(st, st->current - st->start);
 }
 
-// Returns true if empty, false otherwise
-bool is_empty(stack *st) {
+// Returns 1 if empty, 0 otherwise
+char is_empty(stack *st) {
     return st->current < st->start;
 }
 
