@@ -8,7 +8,7 @@
 #define DOUBLE(string) (number) strtod(string, NULL)
 
 static inline mementry *_register(bytecode *code, stackptr ptr, typing type) {
-    mementry *ret = push(code, ptr, sizeof(mementry));
+    mementry *ret = *(mementry **)push(code, ptr, sizeof(mementry *)) = malloc(sizeof(mementry));
     ret->type = type;
     return ret;
 }

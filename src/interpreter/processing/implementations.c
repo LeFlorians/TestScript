@@ -30,7 +30,7 @@ static inline void _free_synth(mementry *entry) {
 
 mementry *_recursiveprocess(opargs *args, char flags) {
     // get the next mementry from the bytecode
-    mementry *memptr = (mementry *)pop(args->code, &args->offset, sizeof(mementry));
+    mementry *memptr = *(mementry **)pop(args->code, &args->offset, sizeof(mementry *));
 
     repeat:
 
