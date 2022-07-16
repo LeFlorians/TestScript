@@ -5,6 +5,9 @@
 
 #include "../tokenizer.h"
 
+// define hashtable type
+typedef struct s_hashtable hashtable;
+
 typedef struct {
     // type (one of runtime/shared types)
     typing type;
@@ -12,15 +15,37 @@ typedef struct {
     /*
         Value pointer type depends on type
             NUMBER              number *
-            FIELD               char *
             STRING              char *
+
+            REFERENCE           mementry *
+
+            EXPR                operation
 
             ARRAY, TUPLE        array *
             OBJECT              hashtable *
             CODE                bytecode *
             FUNCTION, CFUNCTION function *
+
+            UNDEFINED           NULL
     */
     void *value;
+
+    // the owner of the mementry
+    // when the owner dies, the mementry is deleted as well (going out of scope)
+    // TODO: implement in hashtable.c
+    hashtable *owner;
+
+    // some flags
+    struct s_mementry_flags {
+        // set if this mementry is a mutable field (mutable entry in hashtable)
+        unsigned char mutable: 1;
+        
+        // > used by implementations.c < to see if a mementry only exists during expression-evaluation
+        unsigned char synthetic: 1; 
+        // used to check if the value this mementry is pointing to is synthetic
+        // this will only be set, if synthetic is set as well
+        unsigned char value_synthetic: 1;
+    } flags;
 
 } mementry;
 
@@ -56,7 +81,6 @@ typedef struct {
 
 
 // object table sturct
-typedef struct s_hashtable hashtable;
 struct s_hashtable {
 
     // width of the hash-table (fixed)
@@ -64,6 +88,9 @@ struct s_hashtable {
 
     // scope stack
     stack *stack;
+
+    // stack offset
+    size_t offset;
 
     // the parent table of objects (NULL for root table)
     hashtable *parent;
@@ -85,7 +112,7 @@ void ht_up(hashtable *table);
 void ht_down(hashtable *table);
 
 // find mementry in object table
-mementry *find(hashtable *table, char *key, char allocate);
+mementry *find(hashtable *table, char *key);
 
 // free a mementry and its value
 void free_mementry(mementry *entry);

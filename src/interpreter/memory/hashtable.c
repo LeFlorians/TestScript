@@ -24,6 +24,9 @@ hashtable *create_hashtable(size_t width, size_t cache_size) {
     // allocate stack (with a guessed size)
     ret->stack = create_stack(width << 2);
 
+    // set offset to 0
+    ret->offset = 0;
+
     // make parent table NULL
     ret->parent = NULL;
 
@@ -81,7 +84,7 @@ void free_hashtable(hashtable *table){
 
 void ht_up(hashtable *table) {
     // push NULL to the stack
-    *((tableentry ***)push(table->stack, sizeof(tableentry **))) = NULL;
+    *((tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **))) = NULL;
 }
 
 void ht_down(hashtable *table) {
@@ -91,7 +94,7 @@ void ht_down(hashtable *table) {
     tableentry **entryptr;
     tableentry *entry;
 
-    while((stackptr = pop(s, sizeof(tableentry **))) != NULL && (entryptr = *stackptr) != NULL) {
+    while((stackptr = pop(s, &table->offset, sizeof(tableentry **))) != NULL && (entryptr = *stackptr) != NULL) {
         // copy the entry
         entry = *entryptr; // never null
 
@@ -121,7 +124,7 @@ void ht_down(hashtable *table) {
 }
 
 
-mementry *_find(hashtable *table, char *key, char allocate) {
+mementry *_find(hashtable *table, char *key) {
     _H_HASH hash = _hash(key);
     tableentry *value;
 
@@ -209,16 +212,14 @@ mementry *_find(hashtable *table, char *key, char allocate) {
             while(strcmp(key, value->key)) {
                 // walk linked-list
                 if(value->alternative == NULL) {
-                    // not found, allocate or return NULL
-                    if(!allocate)
-                        return NULL;
+                    // not found, allocate
 
                     // attach at end of chain
                     value->alternative = new_value = malloc(sizeof(tableentry));
 
                     // register into stack
                     // since this element is attached to the end, its parent will never be freed before it
-                    *(tableentry ***)push(table->stack, sizeof(tableentry **)) = &value->alternative;
+                    *(tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **)) = &value->alternative;
 
                     // initialize entry
                     goto init_entry;
@@ -235,11 +236,7 @@ mementry *_find(hashtable *table, char *key, char allocate) {
 
     }
 
-    // hash not found, cancel if requested
-    if(!allocate)
-        return NULL;
-
-    // insert at requested position
+    // hash not found, insert at requested position
     value = slice->array[index];
 
     // get insertion index
@@ -273,7 +270,7 @@ mementry *_find(hashtable *table, char *key, char allocate) {
         newslice->array[index] = new_value = malloc(sizeof(tableentry));
 
         // push address stack
-        *(tableentry ***)push(table->stack, sizeof(tableentry **)) = &newslice->array[index];
+        *(tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **)) = &newslice->array[index];
     } else {
         // move everything after index one to the right
         memcpy(slice->array + index + 1, slice->array + index, slice->size - index);
@@ -282,7 +279,7 @@ mementry *_find(hashtable *table, char *key, char allocate) {
         slice->array[index] = new_value = malloc(sizeof(tableentry));
 
         // push address stack
-        *(tableentry ***)push(table->stack, sizeof(tableentry **)) = &slice->array[index];
+        *(tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **)) = &slice->array[index];
 
         // increment slice size
         slice->size++;
@@ -298,6 +295,7 @@ mementry *_find(hashtable *table, char *key, char allocate) {
     // allocate the wanted mementry and set default value
     (new_value->entry = malloc(sizeof(mementry)))->type = UNDEFINED;
     new_value->entry->value = NULL;
+    new_value->entry->flags = (struct s_mementry_flags) {.mutable=1, .synthetic=0, .value_synthetic=0};
 
     // register entry in cache
     table->cache[hash % table->cache_size] = new_value;
@@ -327,7 +325,7 @@ void walk_table(hashtable *table, void (*callback)(tableentry *)) {
     }
 }
 
-mementry *find(hashtable *table, char *key, char allocate) {
+mementry *find(hashtable *table, char *key) {
     char *next = key = strdup(key);
     char done = 0;
 
@@ -345,7 +343,7 @@ mementry *find(hashtable *table, char *key, char allocate) {
 
 
         // find child in the parent object
-        ret = _find(table, key, allocate);
+        ret = _find(table, key);
 
         if(done || ret == NULL)
             return ret;

@@ -48,19 +48,19 @@ static inline void advance(cache *cache) {
 
         switch(cache->cur->content[0]) {
             case '{':
-                *((char *) push(cache->bracketstack, 1)) = '}';
+                *((char *) push(cache->bracketstack, &cache->bracketstack_offset, 1)) = '}';
                 break;
             case '(':
-                *((char *) push(cache->bracketstack, 1)) = ')';
+                *((char *) push(cache->bracketstack, &cache->bracketstack_offset, 1)) = ')';
                 break;
             case '[':
-                *((char *) push(cache->bracketstack, 1)) = ']';
+                *((char *) push(cache->bracketstack, &cache->bracketstack_offset, 1)) = ']';
                 break;
 
             default:
                 char *popped;
 
-                if((popped = (char *)pop(cache->bracketstack, 1)) == NULL) {
+                if((popped = (char *)pop(cache->bracketstack, &cache->bracketstack_offset, 1)) == NULL) {
                     // Throw error, no closing bracket expected
                     throw(EP_INVALID_CLOSING_BRACKET, &cache->info);
 

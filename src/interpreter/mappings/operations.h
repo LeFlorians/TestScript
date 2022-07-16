@@ -7,12 +7,13 @@
 
 // Define struct for operation function arguments
 typedef struct {
-    hashtable* hashtable;
-
     errorinfo *info; // This information will not be exact, but better than nothing
 
     // the bytecode to be recursively processed
     bytecode *code;
+
+    // bytecode offset
+    size_t offset;
 } opargs;
 
 // Define return type and arguments of operation functions

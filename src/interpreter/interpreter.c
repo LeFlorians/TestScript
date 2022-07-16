@@ -34,6 +34,7 @@ void interpret(FILE *stream, char* filename) {
 
         // allocate bracket stack for parser
         cac.bracketstack = create_stack(16);        
+        cac.bracketstack_offset = 0;        
     }
 
     stnode *root;
@@ -61,22 +62,21 @@ void interpret(FILE *stream, char* filename) {
             break;
 
         // create bytecode from tree
-        code = consume(root);
+        code = consume(root, memory);
 
         // process bytecode, also passing debug information from parser
-        process(code, &cac.info, memory);
+        process(code, &cac.info);
 
     };
 
     printf("Reached end of file!\n");
 
     // Print unmatched brackets
-    size_t size;
-    if((size = get_size(cac.bracketstack)) != 0) {
-        printf("\nNot all brackets matched, %u left!\n", (unsigned int) size);
+    if(cac.bracketstack_offset != 0) {
+        printf("\nNot all brackets matched, %u left!\n", (unsigned int) cac.bracketstack_offset);
         printf("Assuming: ");
-        for(size_t index = size; index > 0; index--)
-            putchar(cac.bracketstack->start[index - 1]);
+        while(cac.bracketstack_offset != 0)
+            putchar(*(char *)pop(cac.bracketstack, &cac.bracketstack_offset, 1));
         putchar('\n');
     }
 
@@ -92,8 +92,10 @@ void _printst(stnode *root, int depth) {
     // _printside(out, depth);
 
     static const char* typeNames[] = {
-        "Number", "Field", "String", "Undefined", "Array", "Tuple", "Object", "Code", "Function", "CFunction",
-        "Nulltkn", "Bracket", "Symbol", "FileEnd", "Block", "BlockEnd", "Member", "Expr"
+        "Number", "String", "Undefined", "Array", "Tuple",
+        "Object", "Code", "Function", "CFunction", "Reference", 
+        "NullToken", "Bracket", "Symbol", "Field", "FileEnd",
+        "Block", "BlockEnd", "Member", "Expr"
     };
 
     if(root == NULL) {

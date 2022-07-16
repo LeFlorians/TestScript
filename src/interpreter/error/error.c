@@ -19,8 +19,9 @@ static const char *errformats[] = {
     "Token unmatched",
 
     "Missing argument(s) for given operator",
-    "The specified operator cannot be applied to given operand(s)",
+    "The specified operator cannot be used on of given type(s)",
     "The specified operand is not a function, therefore it cannot be called",
+    "The specified operand must be mutable",
 
     "Loading of a shared object failed",
     "Loading of foreign function failed",

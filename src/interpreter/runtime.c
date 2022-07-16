@@ -61,14 +61,15 @@ void _print_object(tableentry *entry) {
 
 
 // Actual function processing the bytecode and printing the result
-void process(bytecode *code, errorinfo *info, hashtable *memory) {
+void process(bytecode *code, errorinfo *info) {
     // allocate space for operation functions
     opargs args;
 
     args.info = info;
     args.code = code;
 
-    args.hashtable = memory;
+    // set the stack offset
+    args.offset = args.code->elements;
 
     // process the given bytecode
     // this function is defined in implementations.c

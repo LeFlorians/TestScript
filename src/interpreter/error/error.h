@@ -23,8 +23,9 @@ enum errorformat {
 
     // Implementation error
     EI_MISSING_ARGS,
-    EI_INVALID_COMBINATION,
+    EI_WRONG_TYPE,
     EI_NOT_CALLABLE,
+    EI_REQ_MUTABLE,
 
     // Foreign function errors
     EF_DL_LOADING_FAILED,

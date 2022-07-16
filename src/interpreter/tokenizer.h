@@ -15,7 +15,6 @@
 typedef enum {
     // shared
     NUMBER,
-    FIELD,
     STRING,
 
     // runtime types
@@ -24,11 +23,13 @@ typedef enum {
     OBJECT, // an object is a block of data
     CODE, // this is a chunk of code
     FUNCTION, CFUNCTION,
-    
+    REFERENCE, // a reference is what the bytecode compiler creates from a field
+
     // token types
     NULLTKN, // Empty token (EOF, error)
     BRACKET,
     SYMBOL,
+    FIELD,
 
     // parser node types
     // TODO: replace most used with null
@@ -36,7 +37,7 @@ typedef enum {
     BLOCK,  // no kids
     BLOCK_END, // no kids
     MEMBER, 
-    EXPR,   
+    EXPR,
 } typing;
 
 // Define a token
@@ -58,7 +59,9 @@ typedef struct {
 
     // bracket stack for parser
     stack *bracketstack;
-    
+    // the corresponding stack offset
+    size_t bracketstack_offset;
+
     // tokenizer flag for parser to check if a space was encountered during readtkn()
     char space;
 } cache;

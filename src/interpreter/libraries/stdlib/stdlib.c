@@ -58,7 +58,7 @@ void loadstd(hashtable *table){
     };
 
     // get std table
-    mementry *std = find(table, "std", ALLOC);
+    mementry *std = find(table, "std");
     if(std->type == UNDEFINED) {
         std->value = create_hashtable(8, 4);
         std->type = OBJECT;
@@ -73,7 +73,7 @@ void loadstd(hashtable *table){
 
     // register all functions
     for(unsigned i = 0; i < sizeof(functions) / sizeof(struct func_id); i++) {
-        mementry *dst = find(stdtable, functions[i].name, ALLOC); // search by value
+        mementry *dst = find(stdtable, functions[i].name); // search by value
         dst->type = CFUNCTION; // set type to c function
 
         cfunction *cf = malloc(sizeof(cfunction)); // allocate new cfunction

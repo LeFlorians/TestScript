@@ -11,4 +11,4 @@ typedef struct {
     hashtable *defaults; // object containing default values
 } function;
 
-void process(bytecode *code, errorinfo *info, hashtable *memory);
+void process(bytecode *code, errorinfo *info);
