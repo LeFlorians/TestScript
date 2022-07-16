@@ -8,14 +8,13 @@
     When resizing fails, the stack will **keep its current size**,
     the stack top may be lowered if the stack was supposed to be shortened.
 */
-#define MIN(x, y) (((x) < (y)) ?  (x) : (y))
 static inline void _resize_stack(stack *st, size_t newsize) {
     void *newptr;
 
     // resize array
     if((newptr = malloc(newsize)) != NULL) {
         // copy data
-        memcpy(newptr, st->floor,  MIN(st->elements, newsize));
+        memcpy(newptr, st->floor,  (st->elements < newsize) ? st->elements : newsize);
 
         // free old stack pointer
         free(st->floor);
@@ -30,6 +29,7 @@ stack *create_stack(size_t size){
     stack* ret = malloc(sizeof(stack));
     ret->floor = malloc(size);
     ret->size = size;
+    ret->elements = 0;
 
     // initialize with 0
     memset(ret->floor, 0, size);
@@ -73,7 +73,7 @@ void *push(stack *st, stackptr ptr, elementsize size) {
     *ptr += size;
 
     // set number of elements
-    st->elements = ((st->elements) > (*ptr) ? st->elements : *ptr);
+    st->elements = ((st->elements) > (*ptr)) ? st->elements : *ptr;
         
     return ret;
 }
