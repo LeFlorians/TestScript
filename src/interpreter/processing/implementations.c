@@ -373,52 +373,75 @@ mementry *_neg(opargs *args){
 
 mementry *_call(opargs *args){
     mementry *params = _recursiveprocess(args, DEREFERENCE); // Load function arguments
-    mementry *dst = _recursiveprocess(args, DEREFERENCE); // Load function
+    mementry *fun = _recursiveprocess(args, DEREFERENCE); // Load function
 
-    switch(dst->type) {
+    // mementry for the result
+    mementry *dst = NULL;
+
+    switch(fun->type) {
 
         case FUNCTION:
 
             // create new opargs for virtual environment
             opargs new_args;
 
-            // reference the fu nction code stack
-            new_args.code = (bytecode *)dst->value;
+            // reference the function code stack
+            new_args.code = (bytecode *)fun->value;
 
             // TODO: put arguments into table
 
             // copy debug info
             new_args.info = args->info;
 
-            // the default return value
-            dst = NULL;
-
             // create a stack pointer, starting at the end
             new_args.offset = new_args.code->elements;
 
             // iterate over each functional instruction, as long as the stack is not empty
             while(new_args.offset != 0) {
+                if(dst != NULL)
+                    _free_synth(dst);
                 dst = _recursiveprocess(&new_args, REFERENCE);
             }
 
             // free arguments
+            _free_synth(fun);
             _free_synth(params);
 
             // call the function and return the result
-            return dst;
+            break;
 
         case CFUNCTION:
+            if(params->flags.synthetic)
+                dst = params;
+            else if(fun->flags.synthetic)
+                dst = fun;
+            else {
+                // type and value will be set by the called function
+                dst = malloc(sizeof(mementry));
+                dst->flags = (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
+            }
+
+            // make sure the value_synthetic flag is set
+            dst->flags.value_synthetic = 1;
+
             // call function from shared object
-            callfunc((cfunction *) dst->value, params, dst);
+            callfunc((cfunction *) fun->value, params, dst);
 
             // return the result that's stored in dst now
-            return dst;
+            break;
 
         default:
             // Throw an error if its not a function
             throw(EI_NOT_CALLABLE, args->info);
-            return dst;
+            break;
     }
+
+
+    // free arguments
+    _free_synth(fun);
+    _free_synth(params);
+
+    return dst;
 }
 
 mementry *_index(opargs *args){

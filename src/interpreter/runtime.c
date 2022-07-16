@@ -13,6 +13,8 @@ void _print_object(tableentry *entry);
 
 void _print_value(mementry *dst) {
 
+    repeat:
+
     if(dst == NULL){
         printf("undefined\n");
         return;
@@ -44,6 +46,10 @@ void _print_value(mementry *dst) {
         case UNDEFINED:
             printf("undefined");
             break;
+        case REFERENCE:
+            printf("Reference to: ");
+            dst = dst->value;
+            goto repeat;
         default:
             break;
     }

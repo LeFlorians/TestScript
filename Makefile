@@ -1,21 +1,28 @@
-CC := gcc
-CFLAGS := -Wall -pg -g -Wno-switch -Wno-return-type
-LIBS := -lm
-
+# specify destination files
+TARGET := lang
 TEST_INPUT = test.txt
 
-TARGET := lang
+# general compiler flags
+CC := gcc
+LIBS := -lm
+CFLAGS := -Wall -pg -Og -g -Wno-switch -Wno-return-type
 
-# Define recursive wildcard function
+# apply optimizations for the release target
+release: CFLAGS := -Wall -O3
+
+# define recursive wildcard function
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
-.PHONY: all clean
-
+# search for .c files in ./src
 SRCS := $(call rwildcard,src/,*.c)
 OBJS := $(SRCS:%.c=%.o)
 
+.PHONY: all clean
+
 all: $(OBJS)
 	$(CC) $(CFLAGS) $(LIBS) $(OBJS) -o $(TARGET)
+
+release: all
 
 test: all
 	clear
@@ -47,4 +54,4 @@ win : CC = x86_64-w64-mingw32-gcc
 win: all
 
 clean:
-	rm -f -- $(TARGET) $(TARGET).exe $(call rwildcard,src/,*.o) gmon.out
+	rm -f -- $(TARGET) $(TARGET).exe gmon.out
