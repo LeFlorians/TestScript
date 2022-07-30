@@ -54,4 +54,4 @@ win : CC = x86_64-w64-mingw32-gcc
 win: all
 
 clean:
-	rm -f -- $(TARGET) $(TARGET).exe gmon.out
+	rm -f -- $(TARGET) $(TARGET).exe gmon.out $(call rwildcard,src/,*.o)
