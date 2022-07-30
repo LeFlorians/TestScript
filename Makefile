@@ -3,7 +3,7 @@ TARGET := lang
 TEST_INPUT = test.txt
 
 # general compiler flags
-CC := clang
+CC := gcc
 LIBS := -lm
 CFLAGS := -Wall -pg -Og -g -Wno-switch -Wno-return-type
 
@@ -54,8 +54,4 @@ win : CC = x86_64-w64-mingw32-gcc
 win: all
 
 clean:
-<<<<<<< HEAD
-	rm -f -- $(TARGET) $(TARGET).exe gmon.out
-=======
 	rm -f -- $(TARGET) $(TARGET).exe gmon.out $(call rwildcard,src/,*.o)
->>>>>>> 4f0535b038ddbda1d6234f95704ecd75d36695df

@@ -380,7 +380,7 @@ mementry *_call(opargs *args){
 
     switch(fun->type) {
 
-        case FUNCTION:
+        case FUNCTION: {
 
             // create new opargs for virtual environment
             opargs new_args;
@@ -409,6 +409,7 @@ mementry *_call(opargs *args){
 
             // call the function and return the result
             break;
+        }
 
         case CFUNCTION:
             if(params->flags.synthetic)

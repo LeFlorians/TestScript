@@ -68,7 +68,7 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *
             _register(dst, ptr, EXPR)->value = implementationof(subtree->data.parent.op->opcode);
             break;
 
-        case MEMBER:
+        case MEMBER: {
             // TODO: allocate the member lambda function somewhere else and create a link
 
             // Create a new stack for the underlying function
@@ -97,6 +97,7 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *
             _register(dst, ptr, CODE)->value = function;
 
             break;
+        }
 
         case FILE_END:
             // Do not push anything
