@@ -57,7 +57,7 @@ static inline void advance(cache *cache) {
                 *((char *) push(cache->bracketstack, &cache->bracketstack_offset, 1)) = ']';
                 break;
 
-            default:
+            default: {
                 char *popped;
 
                 if((popped = (char *)pop(cache->bracketstack, &cache->bracketstack_offset, 1)) == NULL) {
@@ -76,6 +76,7 @@ static inline void advance(cache *cache) {
                     break;
                 }
             break;
+            }
         }
     }
 }

@@ -3,7 +3,7 @@ TARGET := lang
 TEST_INPUT = test.txt
 
 # general compiler flags
-CC := gcc
+CC := clang
 LIBS := -lm
 CFLAGS := -Wall -pg -Og -g -Wno-switch -Wno-return-type
 
