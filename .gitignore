@@ -1,6 +1,9 @@
 # Executable
 lang
 
+# LS cache
+.ccls-cache
+
 # Text files
 *.txt
 
