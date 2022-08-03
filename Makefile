@@ -10,6 +10,9 @@ CFLAGS := -Wall -pg -Og -g -Wno-switch -Wno-return-type
 # apply optimizations for the release target
 release: CFLAGS := -Wall -O3
 
+# activate debug output for test release
+test: CFLAGS += -DDEBUG
+
 # define recursive wildcard function
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 

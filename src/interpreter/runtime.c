@@ -5,6 +5,7 @@
 
 #include "memory/array.h"
 
+#if DEBUG
 // private functions for output formatting
 
 // TODO: make thread safe
@@ -62,8 +63,7 @@ void _print_object(tableentry *entry) {
     _print_value(entry->entry);
     _indent -= 2;
 }
-
-
+#endif
 
 
 // Actual function processing the bytecode and printing the result
@@ -81,9 +81,10 @@ void process(bytecode *code, errorinfo *info) {
     // this function is defined in implementations.c
     mementry *dst = _recursiveprocess(&args, 0); // just return a copy here
     
-    // TODO: remove
+    #if DEBUG
     // DEBUG print result
     printf("Result:\n");
     _indent = 0;
     _print_value(dst);
+    #endif
 }

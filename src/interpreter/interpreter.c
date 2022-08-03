@@ -6,8 +6,10 @@
 * The interpreter provides an environment for code to run
 */
 
+#if DEBUG
 // function to print syntaxtree
 void printst(stnode *root);
+#endif
 
 // interpret from a stream
 void interpret(FILE *stream, char* filename) {
@@ -53,9 +55,11 @@ void interpret(FILE *stream, char* filename) {
         // parse tree
         root = parse(&cac);
 
+        #if DEBUG
         // print out tree
         printf("\nNew Parse tree:\n");
         printst(root);
+        #endif
 
         // break if null or FILE_END
         if(root == NULL || root->type == FILE_END)
@@ -69,8 +73,8 @@ void interpret(FILE *stream, char* filename) {
 
     };
 
-    printf("Reached end of file!\n");
-
+    #if DEBUG
+    printf("Reached EOF\n");
     // Print unmatched brackets
     if(cac.bracketstack_offset != 0) {
         printf("\nNot all brackets matched, %u left!\n", (unsigned int) cac.bracketstack_offset);
@@ -79,13 +83,14 @@ void interpret(FILE *stream, char* filename) {
             putchar(*(char *)pop(cac.bracketstack, &cac.bracketstack_offset, 1));
         putchar('\n');
     }
+    #endif
 
     // free token content
     free(tkn.content);
 }
 
 
-
+#if DEBUG
 /* Functions to print out syntaxtree */
 
 void _printst(stnode *root, int depth) {
@@ -139,3 +144,4 @@ void printst(stnode *root) {
     _printst(root, 0);
     putchar('\n');
 }
+#endif
