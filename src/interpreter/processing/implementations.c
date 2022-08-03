@@ -472,7 +472,9 @@ mementry *_array(opargs *args){
 }
 
 mementry *_block(opargs *args){
+    return NULL;
 }
 
 mementry *_block_end(opargs *args){
+    return NULL;
 }

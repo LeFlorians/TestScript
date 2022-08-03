@@ -31,9 +31,12 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *
             break;
 
         case FIELD:
+            // deal with preprocessor instructions
+            char *key = subtree->data.leaf.value;
+
             // find (or allocate) the memory entry and push it to the stack
-            _register(dst, ptr, REFERENCE)->value = find(table, subtree->data.leaf.value);
-            
+            _register(dst, ptr, REFERENCE)->value = find(table, key);
+
             // free the key
             free(subtree->data.leaf.value);
             break;
@@ -47,12 +50,14 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *
             break;
 
         case BLOCK:
-            // register the block expression
+            // modify table scope
+            ht_up(table);
             _register(dst, ptr, EXPR)->value = _block;
             break;
 
         case BLOCK_END:
-            // register the block_end expression
+            // modify table scope
+            ht_down(table);
             _register(dst, ptr, EXPR)->value = _block_end;
             break;
 

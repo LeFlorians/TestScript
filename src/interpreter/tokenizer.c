@@ -77,7 +77,7 @@ void readtkn(cache *cache) {
             cache->info.fileinfo.character--;
         }
 
-    } else if(isalpha(cur) || cur == '_') {
+    } else if(isalpha(cur) || cur == '_' || cur == '#') {
         // set type
         dst->type = FIELD;
 

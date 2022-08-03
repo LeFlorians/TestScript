@@ -98,17 +98,18 @@ void ht_down(hashtable *table) {
         // copy the entry
         entry = *entryptr; // never null
 
-        // remove it from cache if possible
+        // remove it from cache if possible by replacing it with its alternative
         if(table->cache[entry->hash % table->cache_size] == entry)
-            table->cache[entry->hash % table->cache_size] = NULL;
+            table->cache[entry->hash % table->cache_size] = entry->alternative;
 
-        // rewire the entries, remove entry from linked list
+        // get the slice
+        tableslice *slice = table->entries[entry->hash % table->width];
+
+        // rewire the entries, remove ecntry from linked list
         if((*entryptr = entry->alternative) == NULL) {
-            // get the slice
-            tableslice *slice = table->entries[entry->hash % table->width];
             if(entryptr >= slice->array) {
                 size_t index = entryptr - slice->array;
-                if(index  < slice->size) {
+                if(index < slice->size) {
                     // remove slice entry at index
                     memcpy(slice + index, slice + (index + 1), slice->size - (index + 1));
 
@@ -123,17 +124,24 @@ void ht_down(hashtable *table) {
     }
 }
 
+#define _NO_INIT_ALTERNATIVE 2
+static inline tableentry *_find(hashtable *table, char *key) {
+    // check if the key should be shadowed
+    char shadow;
+    if((shadow = (*key == '#')))
+        key++;
 
-mementry *_find(hashtable *table, char *key) {
     _H_HASH hash = _hash(key);
     tableentry *value;
 
-    // cache lookup
-    value = table->cache[hash % table->cache_size];
+    // cache lookup if not shadowing
+    if(!shadow) {
+        value = table->cache[hash % table->cache_size];
 
-    // check if key matches
-    if(value != NULL && strcmp(key, value->key) == 0) {
-        return value->entry;
+        // check if key matches
+        if(value != NULL && strcmp(key, value->key) == 0) {
+                return value;
+        }
     }
 
     // get the right table entry
@@ -174,9 +182,8 @@ mementry *_find(hashtable *table, char *key) {
     while(top > bottom) {
         value = slice->array[index];
 
-        // if hashes don't match, perform interpolation
-        
         #if _H_INTERPOLATION_SEARCH
+        // if hashes don't match, perform interpolation
 
         if(value->hash < hash) {
             bottom = index + 1;
@@ -208,6 +215,9 @@ mementry *_find(hashtable *table, char *key) {
         #endif
             // matching hash!
 
+            // this is for shadowing
+            tableentry **source = slice->array + index;
+
             // compare keys
             while(strcmp(key, value->key)) {
                 // walk linked-list
@@ -218,20 +228,49 @@ mementry *_find(hashtable *table, char *key) {
                     value->alternative = new_value = malloc(sizeof(tableentry));
 
                     // register into stack
-                    // since this element is attached to the end, its parent will never be freed before it
                     *(tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **)) = &value->alternative;
 
                     // initialize entry
                     goto init_entry;
                 }
+                source = &value->alternative;
                 value = value->alternative;
+            }
+
+            // shadow if requested
+            if(shadow) {
+                // backup the current value of *source
+                new_value = value;
+
+                // create new tableentry at source
+                *source = malloc(sizeof(tableentry));
+
+                // put it onto the stack
+                // since the entry to be shadowed already exists, it will be removed from stack after this,
+                // so ht_down is actually safe
+                *(tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **)) = source;
+
+                // set the alternative
+                (*source)->alternative = value;
+
+                // set new_value for initialization
+                new_value = *source;
+
+                // register into cache
+                table->cache[hash % table->cache_size] = new_value;
+
+                // make sure not to overwrite the alternative
+                shadow = _NO_INIT_ALTERNATIVE;
+
+                // initialize entry
+                goto init_entry;
             }
 
             // register entry in cache
             table->cache[hash % table->cache_size] = value;
 
             // return the found data
-            return value->entry;
+            return value;
         }
 
     }
@@ -290,7 +329,9 @@ mementry *_find(hashtable *table, char *key) {
 
     new_value->key = strdup(key);
     new_value->hash = hash;
-    new_value->alternative = NULL;
+
+    if(shadow != _NO_INIT_ALTERNATIVE)
+        new_value->alternative = NULL;
 
     // allocate the wanted mementry and set default value
     (new_value->entry = malloc(sizeof(mementry)))->type = UNDEFINED;
@@ -301,7 +342,7 @@ mementry *_find(hashtable *table, char *key) {
     table->cache[hash % table->cache_size] = new_value;
 
     // return new entry
-    return new_value->entry;
+    return new_value;
 
 }
 
@@ -325,6 +366,29 @@ void walk_table(hashtable *table, void (*callback)(tableentry *)) {
     }
 }
 
+void lock(hashtable *table, char *key) {
+    // locking it creates a new variable, initiated to undefined, which takes the stop of the actual value
+    _H_HASH hash = _hash(key);
+    
+    // this is a placeholder for the new value
+    tableentry *new = NULL;
+
+    // to do so, first, find the tableentry in the cache
+    tableentry *value;
+
+    // cache lookup
+    value = table->cache[hash % table->cache_size];
+
+    // check if key matches
+    if(value != NULL && strcmp(key, value->key) == 0) {
+        // replace the found value
+        return value;
+    }
+
+    
+    
+}
+
 mementry *find(hashtable *table, char *key) {
     char *next = key = strdup(key);
     char done = 0;
@@ -343,7 +407,7 @@ mementry *find(hashtable *table, char *key) {
 
 
         // find child in the parent object
-        ret = _find(table, key);
+        ret = _find(table, key)->entry;
 
         if(done || ret == NULL)
             return ret;
