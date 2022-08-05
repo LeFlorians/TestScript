@@ -366,29 +366,6 @@ void walk_table(hashtable *table, void (*callback)(tableentry *)) {
     }
 }
 
-void lock(hashtable *table, char *key) {
-    // locking it creates a new variable, initiated to undefined, which takes the stop of the actual value
-    _H_HASH hash = _hash(key);
-    
-    // this is a placeholder for the new value
-    tableentry *new = NULL;
-
-    // to do so, first, find the tableentry in the cache
-    tableentry *value;
-
-    // cache lookup
-    value = table->cache[hash % table->cache_size];
-
-    // check if key matches
-    if(value != NULL && strcmp(key, value->key) == 0) {
-        // replace the found value
-        return value;
-    }
-
-    
-    
-}
-
 mementry *find(hashtable *table, char *key) {
     char *next = key = strdup(key);
     char done = 0;

@@ -68,6 +68,9 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *
             // if there is one, process right child next
             if(subtree->data.parent.right != NULL)
                 _recursiveconsume(dst, ptr, subtree->data.parent.right, table);
+            // make sure to provide a right-hand argument if it's a function call
+            else if(subtree->data.parent.op->opcode == OP_CALL)
+                _register(dst, ptr, UNDEFINED);
 
             // then push operation onto the stack
             _register(dst, ptr, EXPR)->value = implementationof(subtree->data.parent.op->opcode);
@@ -80,6 +83,9 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *
             bytecode *function = create_stack(64);
 
             size_t offset = 0;
+
+            // enter member scope
+            ht_up(table);
 
             // Consume a member chain into the stack
             stnode *tree;
@@ -94,6 +100,9 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *
                 // Free the MEMBER node
                 free(tree);
             }
+
+            // reset scope
+            ht_down(table);
 
             // resize the stack to the minimal needed size
             fit_stack(function);

@@ -12,7 +12,6 @@
 #define MUTABLE 1 // require the value of a reference to a mutable field
 #define DEREFERENCE 2
 
-
 #define DEFAULT_ARRAY_SIZE 8
 
 // the right modulo function for the number type
@@ -51,7 +50,8 @@ mementry *_recursiveprocess(opargs *args, char flags) {
             goto repeat;
 
         case CODE:
-            // TODO: make to function or evaluate to objecto
+            // TODO: remove CODE typing
+            memptr->type = FUNCTION;
             break;
     }
 
@@ -71,38 +71,6 @@ mementry *_recursiveprocess(opargs *args, char flags) {
         if(memptr->type == REFERENCE)
             memptr = memptr->value;
     }
-
-    // // evaluate code into object, except requested
-    // if(flags != RAW && ret->type == CODE) {
-
-    //     // create new opargs for virtual environment
-    //     opargs new_args;
-
-    //     // execute the CODE's value
-    //     new_args.code = ret->value;
-
-    //     // create a new hashtable
-    //     new_args.hashtable = create_hashtable(8, 4);
-    //     // set parent table
-    //     new_args.hashtable->parent = args->hashtable;
-
-    //     // copy debug info
-    //     new_args.info = args->info;
-
-    //     // iterate over each functional instruction, as long as the stack is not empty
-    //     while(new_args.code->current != new_args.code->start) {
-    //         _recursiveprocess(&new_args, REFERENCE);
-    //     }
-
-    //     // change type
-    //     ret->type = OBJECT;
-
-    //     // return the object's table
-    //     ret->value = new_args.hashtable;
-
-    //     // free the code copy
-    //     free(new_args.code);
-    // }
 
     return memptr;
 }
@@ -294,6 +262,7 @@ mementry *_ass(opargs *args){
 }
 
 mementry *_hardset(opargs *args) {
+    
 }
 
 mementry *_bxorass(opargs *args){
@@ -324,8 +293,8 @@ mementry *_modass(opargs *args){
 }
 
 mementry *_list(opargs *args){
-    mementry *right = _recursiveprocess(args, REFERENCE);
-    mementry *left = _recursiveprocess(args, REFERENCE);
+    mementry *right = _recursiveprocess(args, 0);
+    mementry *left = _recursiveprocess(args, 0);
 
     if(left->type == TUPLE) {
         if(right->type == TUPLE) {
@@ -450,7 +419,7 @@ mementry *_index(opargs *args){
 
 mementry *_array(opargs *args){
     // array of references
-    mementry *content = _recursiveprocess(args, REFERENCE);
+    mementry *content = _recursiveprocess(args, 0);
 
     // if tuple, just make array
     if(content->type == TUPLE){
