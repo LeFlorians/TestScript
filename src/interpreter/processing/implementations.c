@@ -48,11 +48,6 @@ mementry *_recursiveprocess(opargs *args, char flags) {
 
             // repeat this with the result in memptr
             goto repeat;
-
-        case CODE:
-            // TODO: remove CODE typing
-            memptr->type = FUNCTION;
-            break;
     }
 
     // require mutable field
@@ -369,7 +364,7 @@ mementry *_call(opargs *args){
             while(new_args.offset != 0) {
                 if(dst != NULL)
                     _free_synth(dst);
-                dst = _recursiveprocess(&new_args, REFERENCE);
+                dst = _recursiveprocess(&new_args, 0);
             }
 
             // free arguments

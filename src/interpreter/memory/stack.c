@@ -31,9 +31,6 @@ stack *create_stack(size_t size){
     ret->size = size;
     ret->elements = 0;
 
-    // initialize with 0
-    memset(ret->floor, 0, size);
-
     return ret;
 }
 
@@ -74,24 +71,16 @@ void *push(stack *st, stackptr ptr, elementsize size) {
 
     // set number of elements
     st->elements = ((st->elements) > (*ptr)) ? st->elements : *ptr;
-        
+
     return ret;
 }
 
-// Returns the element on top of the stack (or NULL if empty) and removes it
+// Returns the element on top of the stack (or NULL if empty)
+// @param ptr in queue mode, the last element is at 0
 void *pop(stack *st, stackptr ptr, elementsize size) {
     // check if not empty
-    if(st->elements + size >= *ptr){
-        // decremt pointer and return stack element
+    if(st->elements + size >= *ptr)
         return (st->floor + (*ptr -= size));
-    }
-    return NULL;
-}
-
-// Returns element on top of the stack or NULL if empty
-void *peek(stack *st, stackptr ptr, elementsize size) {
-    if(st->elements >= *ptr + size)
-        return (st->floor + (*ptr - size));
     return NULL;
 }
 

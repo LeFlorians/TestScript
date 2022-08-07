@@ -1,5 +1,6 @@
 #include "interpreter.h"
 #include "libraries/stdlib/stdlib.h"
+#include "localizer.h"
 #include "runtime.h" // only need runtime.h because parser.h, tokenizer.h, etc. are included
 
 /*
@@ -65,8 +66,11 @@ void interpret(FILE *stream, char* filename) {
         if(root == NULL || root->type == FILE_END)
             break;
 
+        // resolve fields
+        localize(root, memory);
+
         // create bytecode from tree
-        code = consume(root, memory);
+        code = consume(root);
 
         // process bytecode, also passing debug information from parser
         process(code, &cac.info);
@@ -98,7 +102,7 @@ void _printst(stnode *root, int depth) {
 
     static const char* typeNames[] = {
         "Number", "String", "Undefined", "Array", "Tuple",
-        "Object", "Code", "Function", "CFunction", "Reference", 
+        "Object", "Function", "CFunction", "Reference", 
         "NullToken", "Bracket", "Symbol", "Field", "FileEnd",
         "Block", "BlockEnd", "Member", "Expr"
     };

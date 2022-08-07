@@ -21,7 +21,6 @@ typedef enum {
     UNDEFINED,
     ARRAY, TUPLE, // both arrays, but internal differences
     OBJECT, // an object is a block of data
-    CODE, // this is a chunk of code
     FUNCTION, CFUNCTION,
     REFERENCE, // a reference is what the bytecode compiler creates from a field
 

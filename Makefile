@@ -49,7 +49,7 @@ memcheck: all
 # target to generate mapop.c
 # requires gperf to be installed
 mapop:
-	gperf --output-file=./src/mappings/mapop.c ./mapop.gperf
+	gperf --output-file=./src//interpreter/mappings/mapop.c ./mapop.gperf
 
 # set windows compiler and define target
 # do not use this target on windows

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdlib.h>
 
 #include "tokenizer.h"
@@ -20,7 +22,7 @@ struct stnode {
         } parent;
 
         struct {
-            char *value;
+            void *value;
         } leaf;
     } data;
 

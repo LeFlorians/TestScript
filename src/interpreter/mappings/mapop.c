@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.1 */
-/* Command-line: gperf --output-file=./src/interpreter/mapop.c ./mapop.gperf  */
+/* Command-line: gperf --output-file=./src//interpreter/mappings/mapop.c ./mapop.gperf  */
 /* Computed positions: -k'1-2' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -172,7 +172,7 @@ lookup (register const char *str, register size_t len)
       {"~=",   OP_BNOTASS, INFIX,   RTL, 3     /*  Bitwise NOT Assignment    */},
       {""}, {""}, {""},
 #line 58 "./mapop.gperf"
-      {",",    OP_LIST,    INFIX,   RTL, 2     /*  List                      */},
+      {",",    OP_LIST,    INFIX,   LTR, 2     /*  List                      */},
 #line 26 "./mapop.gperf"
       {"++",   OP_INCR,    POSTFIX, LTR, 14    /*  Increment                 */},
       {""}, {""}, {""},

@@ -102,7 +102,7 @@ stnode *subexpr(cache *cache, unsigned char rbp) {
     if(member != NULL && member->type == BLOCK){
         // loop variable
         stnode *left, *last;
-        
+
         // change type from block to member
         member->type = MEMBER;
 
@@ -134,16 +134,16 @@ stnode *subexpr(cache *cache, unsigned char rbp) {
             }
 
             // skip this once
-            if(flag) {         
+            if(flag) {    
                 // reverse direction
                 last = member;
                 member = allocate_typed(MEMBER);
                 member->data.parent.right = last;                  
             } else
                 flag = 1;
-            
+
             member->data.parent.left = left;
-            
+
         }
 
     }
@@ -361,8 +361,6 @@ stnode *secondary(cache *cache){
         case NULLTKN:
             return allocate_typed(FILE_END);
     }
-
-    // ? match strings too
 
     if(cache->cur->type == FIELD || cache->cur->type == NUMBER || cache->cur->type == STRING){
         stnode *val;

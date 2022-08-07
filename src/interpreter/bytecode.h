@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 #include "parser.h"
-#include "memory/hashtable.h"
 
 /* 
     Bytecode format specification
@@ -50,4 +49,4 @@ typedef long double number;
 typedef stack bytecode;
 
 // Consumes a syntax tree (freeing it) and a hashtable and returns the corresponding bytecode 
-bytecode *consume(stnode *root, hashtable *table);
+bytecode *consume(stnode *root);

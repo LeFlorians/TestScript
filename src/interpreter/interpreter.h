@@ -12,6 +12,9 @@
           Parser
             |
             V
+        Localizer
+            |
+            V
      Bytecode compiler  (-> Save to File)
             |
             V

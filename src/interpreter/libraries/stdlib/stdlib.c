@@ -52,7 +52,7 @@ void loadstd(hashtable *table){
         // --- Array of all functions and their names in the stdlib
 
         { _print, "print" },
-        { _exec,  "unsafe.exec" },
+        { _exec,  "exec" },
 
         // ---
     };

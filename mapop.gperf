@@ -55,7 +55,7 @@ struct s_op;
 /=\   OP_DIVASS,  INFIX,   RTL, 3     /*  Division Assignment       */
 "%="\ OP_MODASS,  INFIX,   RTL, 3     /*  Modulo Assignment         */
 ->\   OP_LAMBDA,  INFIX,   RTL, 3     /*  Lambda declaration        */
-,\    OP_LIST,    INFIX,   RTL, 2     /*  List                      */
+,\    OP_LIST,    INFIX,   LTR, 2     /*  List                      */
 ;\    OP_END,     POSTFIX, RTL, 1     /*  Semicolon; end expression */
 %%
 

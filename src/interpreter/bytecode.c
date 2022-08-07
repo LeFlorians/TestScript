@@ -14,8 +14,7 @@ static inline mementry *_register(bytecode *code, stackptr ptr, typing type) {
 }
 
 // see protocol specifications in header file
-void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *table) {
-
+void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree) {
     switch(subtree->type){
 
         case NUMBER:
@@ -31,14 +30,9 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *
             break;
 
         case FIELD:
-            // deal with preprocessor instructions
-            char *key = subtree->data.leaf.value;
+            // just copy the mementry pointer
+            _register(dst, ptr, REFERENCE)->value = subtree->data.leaf.value;
 
-            // find (or allocate) the memory entry and push it to the stack
-            _register(dst, ptr, REFERENCE)->value = find(table, key);
-
-            // free the key
-            free(subtree->data.leaf.value);
             break;
 
         case STRING:
@@ -51,23 +45,21 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *
 
         case BLOCK:
             // modify table scope
-            ht_up(table);
             _register(dst, ptr, EXPR)->value = _block;
             break;
 
         case BLOCK_END:
             // modify table scope
-            ht_down(table);
             _register(dst, ptr, EXPR)->value = _block_end;
             break;
 
         case EXPR:
             // process left child first
-            _recursiveconsume(dst, ptr, subtree->data.parent.left, table);
+            _recursiveconsume(dst, ptr, subtree->data.parent.left);
 
             // if there is one, process right child next
             if(subtree->data.parent.right != NULL)
-                _recursiveconsume(dst, ptr, subtree->data.parent.right, table);
+                _recursiveconsume(dst, ptr, subtree->data.parent.right);
             // make sure to provide a right-hand argument if it's a function call
             else if(subtree->data.parent.op->opcode == OP_CALL)
                 _register(dst, ptr, UNDEFINED);
@@ -77,21 +69,16 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *
             break;
 
         case MEMBER: {
-            // TODO: allocate the member lambda function somewhere else and create a link
-
             // Create a new stack for the underlying function
             bytecode *function = create_stack(64);
 
             size_t offset = 0;
 
-            // enter member scope
-            ht_up(table);
-
             // Consume a member chain into the stack
             stnode *tree;
             while(subtree != NULL && subtree->data.parent.left != NULL) {
                 // Consume the left subtree
-                _recursiveconsume(function, (stackptr) &offset, subtree->data.parent.left, table);
+                _recursiveconsume(function, (stackptr) &offset, subtree->data.parent.left);
 
                 // Reassign values for the loop
                 tree = subtree;
@@ -101,14 +88,11 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *
                 free(tree);
             }
 
-            // reset scope
-            ht_down(table);
-
             // resize the stack to the minimal needed size
             fit_stack(function);
 
             // push function pointer to stack
-            _register(dst, ptr, CODE)->value = function;
+            _register(dst, ptr, FUNCTION)->value = function;
 
             break;
         }
@@ -122,7 +106,7 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, hashtable *
     free(subtree);
 }
 
-bytecode *consume(stnode *root, hashtable *table) {
+bytecode *consume(stnode *root) {
     
     // allocate the bytecode
     bytecode *code = create_stack(INITIAL_DATA_SIZE);
@@ -131,7 +115,7 @@ bytecode *consume(stnode *root, hashtable *table) {
     size_t offset = 0;
 
     // post order traversal
-    _recursiveconsume(code, (stackptr) &offset, root, table);
+    _recursiveconsume(code, (stackptr) &offset, root);
 
     // return code
     return code;

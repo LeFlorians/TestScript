@@ -28,5 +28,3 @@ void fit_stack(stack *st); // shrink the stack to the exact space it currently o
 void *push(stack *st, stackptr ptr, elementsize size); 
 
 void *pop(stack *st, stackptr ptr, elementsize size);
-void *peek(stack *st, stackptr ptr, elementsize size);
-void *get_element(size_t element, elementsize size); // returns NULL if out-of-bounds

@@ -199,7 +199,6 @@ static inline tableentry *_find(hashtable *table, char *key) {
             index = (index - bottom) * (hash - bottom_value) / (value->hash - bottom_value) + bottom;
         } else {
 
-        
         #else
 
         if(value->hash < hash) {
@@ -312,7 +311,7 @@ static inline tableentry *_find(hashtable *table, char *key) {
         *(tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **)) = &newslice->array[index];
     } else {
         // move everything after index one to the right
-        memcpy(slice->array + index + 1, slice->array + index, slice->size - index);
+        memcpy(slice->array + (index + 1), slice->array + index, (slice->size - index) * sizeof(tableentry *));
 
         // insert at index into array
         slice->array[index] = new_value = malloc(sizeof(tableentry));
