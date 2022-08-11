@@ -367,11 +367,6 @@ mementry *_call(opargs *args){
                 dst = _recursiveprocess(&new_args, 0);
             }
 
-            // free arguments
-            _free_synth(fun);
-            _free_synth(params);
-
-            // call the function and return the result
             break;
         }
 
@@ -385,9 +380,6 @@ mementry *_call(opargs *args){
                 dst = malloc(sizeof(mementry));
                 dst->flags = (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
             }
-
-            // make sure the value_synthetic flag is set
-            dst->flags.value_synthetic = 1;
 
             // call function from shared object
             callfunc((cfunction *) fun->value, params, dst);
@@ -403,8 +395,10 @@ mementry *_call(opargs *args){
 
 
     // free arguments
-    _free_synth(fun);
-    _free_synth(params);
+    if(dst != fun)
+        _free_synth(fun);
+    if(dst != params)
+        _free_synth(params);
 
     return dst;
 }

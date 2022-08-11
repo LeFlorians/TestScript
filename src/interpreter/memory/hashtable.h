@@ -7,6 +7,7 @@
 
 // define hashtable type
 typedef struct s_hashtable hashtable;
+typedef struct s_tableentry tableentry;
 
 typedef struct {
     // type (one of runtime/shared types)
@@ -30,16 +31,11 @@ typedef struct {
     */
     void *value;
 
-    // the owner of the mementry
-    // when the owner dies, the mementry is deleted as well (going out of scope)
-    // TODO: implement in hashtable.c
-    hashtable *owner;
-
     // some flags
     struct s_mementry_flags {
         // set if this mementry is a mutable field (mutable entry in hashtable)
         unsigned char mutable: 1;
-        
+
         // > used by implementations.c < to see if a mementry only exists during expression-evaluation
         unsigned char synthetic: 1; 
         // used to check if the value this mementry is pointing to is synthetic
@@ -58,7 +54,6 @@ typedef uint32_t _H_HASH;
 #define _H_INTERPOLATION_SEARCH 0
 
 // elements in the slices
-typedef struct s_tableentry tableentry;
 struct s_tableentry {
     // key in object table
     char *key;

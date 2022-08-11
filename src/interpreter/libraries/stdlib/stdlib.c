@@ -5,20 +5,43 @@
 
 // ----- stdlib implementations -----
 
+// return type-string of given argument
+void _type(mementry *args, mementry *dst) {
+    static const char* typeNames[] = {
+        "number", "string", "undefined", "array", "tuple",
+        "object", "function", "cfunction", "reference", 
+        "nulltkn", "bracket", "symbol", "field", "eof",
+        "block", "block_end", "member", "expr"
+    };
+
+    dst->type = STRING;
+    dst->value = strdup(typeNames[args->type]);
+
+    return dst;
+}
+
 // print a value to the console
 void _print(mementry *args, mementry *dst) {
-    dst->type = NUMBER;
-    dst->value = malloc(sizeof(number));
 
-    if(args->type != NUMBER){
-        *((number *)dst->value) = (number) 0;
-        return dst;
+    switch(args->type) {
+        case NUMBER:
+            printf("%Lg", *((number *)args->value));
+            break;
+
+        case STRING:
+            printf("%s", (char *)args->value);
+            break;
+
+        // if anything else is passed, return 0
+        default:
+            dst->type = NUMBER;
+            dst->value = malloc(sizeof(number));
+            *((number *)dst->value) = (number) 0;
+            return dst;
     }
 
-    // print the number in args
-    printf("Printing number: %Lg\n", *((number *)args->value));
-    
-
+    dst->type = NUMBER;
+    dst->value = malloc(sizeof(number));
     *((number *)dst->value) = (number) 1;
     return dst;
 }
@@ -52,6 +75,7 @@ void loadstd(hashtable *table){
         // --- Array of all functions and their names in the stdlib
 
         { _print, "print" },
+        { _type,  "type" },
         { _exec,  "exec" },
 
         // ---

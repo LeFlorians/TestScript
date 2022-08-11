@@ -67,7 +67,7 @@ void interpret(FILE *stream, char* filename) {
             break;
 
         // resolve fields
-        localize(root, memory);
+        localize(root, memory, &cac.info);
 
         // create bytecode from tree
         code = consume(root);

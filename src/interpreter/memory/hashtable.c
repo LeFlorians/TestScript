@@ -105,7 +105,7 @@ void ht_down(hashtable *table) {
         // get the slice
         tableslice *slice = table->entries[entry->hash % table->width];
 
-        // rewire the entries, remove ecntry from linked list
+        // rewire the entries, remove entry from linked list
         if((*entryptr = entry->alternative) == NULL) {
             if(entryptr >= slice->array) {
                 size_t index = entryptr - slice->array;
@@ -140,7 +140,7 @@ static inline tableentry *_find(hashtable *table, char *key) {
 
         // check if key matches
         if(value != NULL && strcmp(key, value->key) == 0) {
-                return value;
+            return value;
         }
     }
 
@@ -314,7 +314,7 @@ static inline tableentry *_find(hashtable *table, char *key) {
         memcpy(slice->array + (index + 1), slice->array + index, (slice->size - index) * sizeof(tableentry *));
 
         // insert at index into array
-        slice->array[index] = new_value = malloc(sizeof(tableentry));
+        slice->array[index] = (new_value = malloc(sizeof(tableentry)));
 
         // push address stack
         *(tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **)) = &slice->array[index];
