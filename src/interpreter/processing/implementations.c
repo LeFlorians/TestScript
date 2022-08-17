@@ -260,33 +260,6 @@ mementry *_hardset(opargs *args) {
     
 }
 
-mementry *_bxorass(opargs *args){
-}
-
-mementry *_bnotass(opargs *args){
-}
-
-mementry *_bandass(opargs *args){
-}
-
-mementry *_borass(opargs *args){
-}
-
-mementry *_addass(opargs *args){
-}
-
-mementry *_subass(opargs *args){
-}
-
-mementry *_mulass(opargs *args){
-}
-
-mementry *_divass(opargs *args){
-}
-
-mementry *_modass(opargs *args){
-}
-
 mementry *_list(opargs *args){
     mementry *right = _recursiveprocess(args, 0);
     mementry *left = _recursiveprocess(args, 0);

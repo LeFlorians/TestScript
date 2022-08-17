@@ -5,6 +5,9 @@
 
 #include "../tokenizer.h"
 
+// define datatype for level
+typedef unsigned int table_level;
+
 // define hashtable type
 typedef struct s_hashtable hashtable;
 typedef struct s_tableentry tableentry;
@@ -12,6 +15,9 @@ typedef struct s_tableentry tableentry;
 typedef struct {
     // type (one of runtime/shared types)
     typing type;
+
+    // the hashmap-level this variable was created on (or zero for contants)
+    table_level level;
 
     /*
         Value pointer type depends on type
@@ -80,6 +86,9 @@ struct s_hashtable {
 
     // width of the hash-table (fixed)
     size_t width, cache_size;
+
+    // the level of the table (modified by ht_up, ht_down)
+    table_level level;
 
     // scope stack
     stack *stack;

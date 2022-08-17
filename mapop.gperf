@@ -45,15 +45,6 @@ struct s_op;
 ||\   OP_LOR,     INFIX,   LTR, 4     /*  Logical OR                */
 =\    OP_ASS,     INFIX,   RTL, 3     /*  Assign                    */
 :\    OP_HARDSET, INFIX,   RTL, 3     /*  Set in current scope      */
-^=\   OP_BXORASS, INFIX,   RTL, 3     /*  Bitwise XOR Assignment    */
-~=\   OP_BNOTASS, INFIX,   RTL, 3     /*  Bitwise NOT Assignment    */
-&=\   OP_BANDASS, INFIX,   RTL, 3     /*  Bitwise AND Assignment    */
-|=\   OP_BORASS,  INFIX,   RTL, 3     /*  Bitwise OR Assignment     */
-+=\   OP_ADDASS,  INFIX,   RTL, 3     /*  Addition Assignment       */
--=\   OP_SUBASS,  INFIX,   RTL, 3     /*  Subtraction Assignment    */
-*=\   OP_MULASS,  INFIX,   RTL, 3     /*  Multiplication Assignment */
-/=\   OP_DIVASS,  INFIX,   RTL, 3     /*  Division Assignment       */
-"%="\ OP_MODASS,  INFIX,   RTL, 3     /*  Modulo Assignment         */
 ->\   OP_LAMBDA,  INFIX,   RTL, 3     /*  Lambda declaration        */
 ,\    OP_LIST,    INFIX,   LTR, 2     /*  List                      */
 ;\    OP_END,     POSTFIX, RTL, 1     /*  Semicolon; end expression */

@@ -85,6 +85,9 @@ void free_hashtable(hashtable *table){
 void ht_up(hashtable *table) {
     // push NULL to the stack
     *((tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **))) = NULL;
+    // increase level
+    // TODO: prevent overflow
+    table->level++;
 }
 
 void ht_down(hashtable *table) {
@@ -93,6 +96,9 @@ void ht_down(hashtable *table) {
     tableentry ***stackptr;
     tableentry **entryptr;
     tableentry *entry;
+
+    // decrease level
+    table->level--;
 
     while((stackptr = pop(s, &table->offset, sizeof(tableentry **))) != NULL && (entryptr = *stackptr) != NULL) {
         // copy the entry
@@ -335,6 +341,7 @@ static inline tableentry *_find(hashtable *table, char *key) {
     // allocate the wanted mementry and set default value
     (new_value->entry = malloc(sizeof(mementry)))->type = UNDEFINED;
     new_value->entry->value = NULL;
+    new_value->entry->level = table->level;
     new_value->entry->flags = (struct s_mementry_flags) {.mutable=1, .synthetic=0, .value_synthetic=0};
 
     // register entry in cache
