@@ -1,0 +1,35 @@
+#+TITLE: The Creation of a Programming Language
+#+AUTHOR: Florian Donnelly
+#+DATE: Autumn 2022 
+
+#+LaTeX_class: article
+#+LaTeX_CLASS_OPTIONS: [11pt,a4paper,titlepage]
+#+LaTeX_HEADER: \usepackage{breakcites}
+#+LaTeX_HEADER: \usepackage{paralist}
+#+LaTeX_HEADER: \usepackage{biblatex}
+#+LaTeX_HEADER: \addbibresource{libary.bib}
+#+LaTeX_HEADER: \let\itemize\compactitem
+#+LaTeX_HEADER: \let\description\compactdesc
+#+LaTeX_HEADER: \let\enumerate\compactenum
+
+#+BEGIN_ABSTRACT
+
+*Abstract*
+
+To me, programming...
+
+#+END_ABSTRACT
+
+#+LaTeX: \newpage
+#+LaTeX: \tableofcontents
+
+* Introduction
+** Relevance of this topic
+  why is the topic relevant
+
+** My goals
+  my goals  
+
+https://jonathanabennett.github.io/blog/2019/05/29/writing-academic-papers-with-org-mode/
+https://en.wikibooks.org/wiki/LaTeX/Document_Structure
+
