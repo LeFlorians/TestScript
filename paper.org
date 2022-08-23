@@ -27,6 +27,11 @@ To me, programming...
 ** Relevance of this topic
   why is the topic relevant
 
+#+BEGIN_SRC python -n
+    import numpy as np
+    print("test")
+#+END_SRC
+
 ** My goals
   my goals  
 
