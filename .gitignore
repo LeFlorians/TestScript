@@ -6,7 +6,6 @@ lang
 
 # Text files
 *.txt
-*.pdf
 
 # VS Code
 .vscode

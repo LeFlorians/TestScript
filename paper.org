@@ -39,11 +39,39 @@
 
 * Implementation
 ** Used software
+  Since the interpreter was going to be written in C, standard tools like the
+  GNU Compiler Collection, gcc for short, as well as the GNU Make build-system
+  were used.
+  
+  GNU Make takes a so-called Makefile and interprets it. In a Makefile one can
+  define build targets that depend on files or other build targets and GNU
+  make will automatically build the requested target.
+
+  As code editor, Microsoft's Visual Studio Code was used, as it provides good
+  C syntax highlighting and completion and it has git and GitHub integration.
+  
 ** Procedure
+*** Building the Project
+  At the heart of building the interpreter from it's C source-code stand gcc
+  and make, the compiler and the build system.
+
+  See the Makefile used by the project:
+#+INCLUDE: "Makefile" src makefile
+
+  At the top, several variables define compiler flags and the destination path
+  where the interpreter executable will be created. The rwildcard function is
+  defined, so that the source directory can be recursively searched for .c
+  files. Then several build targets follow, starting with the default target
+  'all'. This target depends on the mapop target as well as all object files.
+  Object files end in .o and are created from their respective source, or .c,
+  files by gcc given the compiler flags set beforehand. The all target then
+  instructs gcc to assemble all object files into a single executable file.
+  The test target is an extension of the all target, which after building the
+  interpreter executable, then runs against the test.txt input file.
+
 *** Compiler vs Interpreter vs JIT
 *** Using stages
   pratt parsing etc.
-#+INCLUDE: "./src/interpreter/tokenizer.c" src c :lines "20-50"
 
 * Results
 ** Description of Product (objective)
