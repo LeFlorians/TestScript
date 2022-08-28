@@ -3,11 +3,7 @@
 #+DATE: Autumn 2022 
 
 #+LaTeX_class: article
-#+LaTeX_CLASS_OPTIONS: [11pt,a4paper,titlepage]
-#+LaTeX_HEADER: \usepackage{breakcites}
-#+LaTeX_HEADER: \usepackage{paralist}
-#+LaTeX_HEADER: \usepackage{biblatex}
-#+LaTeX_HEADER: \addbibresource{libary.bib}
+#+LaTeX_CLASS_OPTIONS: [10pt,a4paper,titlepage]
 #+LaTeX_HEADER: \let\itemize\compactitem
 #+LaTeX_HEADER: \let\description\compactdesc
 #+LaTeX_HEADER: \let\enumerate\compactenum
@@ -15,25 +11,59 @@
 #+BEGIN_ABSTRACT
 
 *Abstract*
-
-To me, programming...
+# Summary, e.g. for an archive
 
 #+END_ABSTRACT
 
 #+LaTeX: \newpage
 #+LaTeX: \tableofcontents
+#+LaTeX: \newpage
 
 * Introduction
 ** Relevance of this topic
-  why is the topic relevant
+  Programming languages are in some way the very essence of the modern, digital
+  world. Whether indirectly or directly, they define what connect, entertain, 
+  employ and often also upset today's people.
+  Programming languages create an interface between the human mind and
+  the computers hardware. But there is no such thing as the perfect programming
+  language or programming ecosystem.
 
-#+BEGIN_SRC python -n
-    import numpy as np
-    print("test")
-#+END_SRC
+** The Goals
+  The main Goal of this work is the process, to learn about various
+  technologies and their inner workings, focusing on programming languages.
+  And what better way is there to learn about programming languages than to
+  create one yourself?
 
-** My goals
-  my goals  
+* Theory
+** A brief History of Programming Languages
+
+* Implementation
+** Used software
+** Procedure
+*** Compiler vs Interpreter vs JIT
+*** Using stages
+  pratt parsing etc.
+#+INCLUDE: "./src/interpreter/tokenizer.c" src c :lines "20-50"
+
+* Results
+** Description of Product (objective)
+
+* Discussion
+** Analyzation of Product
+#does it work, what doesn't, how to extend
+** Prospect
+  what would i've done different
+  what it takes, example: rust
+** Conclusion
+  
+
+* Index
+
+* Closing Words
+
+* Declaration of Autonomy
+
+* Appendix
 
 https://jonathanabennett.github.io/blog/2019/05/29/writing-academic-papers-with-org-mode/
 https://en.wikibooks.org/wiki/LaTeX/Document_Structure
