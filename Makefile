@@ -22,7 +22,7 @@ OBJS := $(SRCS:%.c=%.o)
 
 .PHONY: all clean
 
-all: mapop $(OBJS)
+all: $(OBJS)
 	$(CC) $(CFLAGS) $(LIBS) $(OBJS) -o $(TARGET)
 
 release: all
@@ -48,7 +48,7 @@ memcheck: all
 
 # target to generate mapop.c
 # requires gperf to be installed
-mapop: mapop.gperf
+mapop:
 	gperf --output-file=./src//interpreter/mappings/mapop.c ./mapop.gperf
 
 # set windows compiler and define target
