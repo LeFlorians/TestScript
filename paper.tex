@@ -1,0 +1,42 @@
+\documentclass[12pt,a4paper,man]{apa7}
+\usepackage{listings}
+
+
+\author{Florian Donnelly}
+\title{The Creation of a Programming Language}
+\date{August 2022}
+\affiliation{Gymnasium Burgdorf}
+\shorttitle{Creation of a Programming Language}
+\abstract{
+    This is an abstract...
+}
+
+% Defining custom commands
+\newcommand{\code}[3] {
+    \lstset{language=C,numbers=left,basicstyle=\scriptsize,
+        frame=single,caption=src/#1,keywordstyle=\color{blue},
+        stringstyle=\color{green},commentstyle=\color{gray},
+        morecomment=[l][\color{magenta}]{\#}}
+    \lstinputlisting{src/#1}
+}
+
+\begin{document}
+\maketitle
+
+\tableofcontents\newpage
+
+\section{Introduction}
+
+\code{main.c}
+
+
+\section{Theory}
+\section{Implementation}
+\section{Results}
+\section{Discussion}
+\section{Index}
+\section{Closing Words}
+\section{Declaration of Autonomy}
+\section{Appendix}
+
+\end{document}
