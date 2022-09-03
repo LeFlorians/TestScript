@@ -35,8 +35,8 @@ test: all
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
-paper: paper.org
-	pandoc -f org -t pdf paper.org -o paper.pdf
+paper: paper.tex
+	pdflatex paper.tex && pdflatex paper.tex
 
 # target to generate mapop.c
 # requires gperf to be installed
@@ -44,4 +44,4 @@ mapop: mapop.gperf
 	gperf --output-file=./src//interpreter/mappings/mapop.c ./mapop.gperf
 
 clean:
-	rm -f -- $(TARGET) $(TARGET).exe gmon.out $(call rwildcard,src/,*.o)
+	rm -f -- paper.toc paper.aux paper.run.xml paper.log paper.bcf $(TARGET) $(TARGET).exe gmon.out $(call rwildcard,src/,*.o)

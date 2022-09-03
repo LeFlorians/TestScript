@@ -4,8 +4,6 @@
 #include "interpreter/interpreter.h"
 
 int main(int argc, char** argv){
-
-    // For later: https://www.gnu.org/software/libc/manual/html_node/Streams-and-Threads.html
     FILE *input;
 
     if(argc >= 2) {
@@ -18,5 +16,4 @@ int main(int argc, char** argv){
 
     // interpret input
     interpret(input, argc >= 2 ? argv[1] : NULL);
-
 }

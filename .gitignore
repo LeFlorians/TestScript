@@ -7,6 +7,11 @@ lang
 # Text files
 *.txt
 
+# TeX files
+*.aux
+*.log
+*.toc
+
 # VS Code
 .vscode
 
