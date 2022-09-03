@@ -26,6 +26,7 @@ enum errorformat {
     EI_WRONG_TYPE,
     EI_NOT_CALLABLE,
     EI_REQ_MUTABLE,
+    EI_UNLEVELED,
 
     // Foreign function errors
     EF_DL_LOADING_FAILED,

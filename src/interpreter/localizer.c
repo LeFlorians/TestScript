@@ -51,7 +51,7 @@ void localize(stnode *subtree, hashtable *table, errorinfo *info) {
             ht_down(table);
             break;
 
-        case FIELD:
+        case FIELD: {
             // resolve field into reference
             char *key = subtree->data.leaf.value;
             subtree->data.leaf.value = find(table, key);
@@ -59,7 +59,7 @@ void localize(stnode *subtree, hashtable *table, errorinfo *info) {
             // free the key
             free(key);
 
-            break;
+            break; }
 
         default:
             // Ignore

@@ -232,13 +232,29 @@ mementry *_lambda(opargs *args){
 }
 
 mementry *_ass(opargs *args){
-    mementry *src = _recursiveprocess(args, DEREFERENCE); // Load right operand into src
-    mementry *dst = _recursiveprocess(args, MUTABLE); // Load left operand into dst
+    mementry *src = _recursiveprocess(args, 0); // Load right operand into src
+    mementry *dst = _recursiveprocess(args, 0); // Load left operand into dst
 
-    if(dst == NULL) {
+    if(dst == NULL || dst->type != REFERENCE) {
         throw(EI_REQ_MUTABLE, args->info);
         return NULL;
     }
+
+    if(src->type == REFERENCE || src->type == FUNCTION) {
+        // make sure that dst exists higher than source
+        if(src->value != NULL && dst->level < src->level) {
+            throw(EI_UNLEVELED, args->info);
+            return NULL;
+        }
+
+    }
+
+    if(src->type == REFERENCE)
+        // dereference field
+        src = src->value;
+
+    // dereference field
+    dst = dst->value;
 
     // copy type
     dst->type = src->type;

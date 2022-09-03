@@ -13,6 +13,9 @@ static inline mementry *_register(bytecode *code, stackptr ptr, typing type) {
     return ret;
 }
 
+// TODO: does not work for multi-thread
+table_level max_level;
+
 // see protocol specifications in header file
 void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree) {
     switch(subtree->type){
@@ -29,11 +32,17 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree) {
 
             break;
 
-        case FIELD:
+        case FIELD: {
             // just copy the mementry pointer
-            _register(dst, ptr, REFERENCE)->value = subtree->data.leaf.value;
+            mementry *fielddst = _register(dst, ptr, REFERENCE);
+            fielddst->value = subtree->data.leaf.value;
+            fielddst->level = ((mementry *)fielddst->value)->level;
 
-            break;
+            // reassign max_field
+            if(fielddst->level > max_level)
+                max_level = fielddst->level;
+            
+            break; }
 
         case STRING:
             // push pointer and don't free the orignial memory
@@ -74,6 +83,9 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree) {
 
             size_t offset = 0;
 
+            // reset max level
+            max_level = 0;
+
             // Consume a member chain into the stack
             stnode *tree;
             while(subtree != NULL && subtree->data.parent.left != NULL) {
@@ -92,7 +104,10 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree) {
             fit_stack(function);
 
             // push function pointer to stack
-            _register(dst, ptr, FUNCTION)->value = function;
+            mementry *fundst = _register(dst, ptr, FUNCTION);
+            fundst->value = function;
+            // set functions maximally used level
+            fundst->level = max_level;
 
             break;
         }

@@ -22,6 +22,8 @@ static const char *errformats[] = {
     "The specified operator cannot be used on of given type(s)",
     "The specified operand is not a function, therefore it cannot be called",
     "The specified operand must be mutable",
+    "You can only assign the value from one field to another, if the source "
+        "field was created in a scope equal or lower than the destination field",
 
     "Loading of a shared object failed",
     "Loading of foreign function failed",
