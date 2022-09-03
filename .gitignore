@@ -11,6 +11,10 @@ lang
 *.aux
 *.log
 *.toc
+*.run.xml
+*.bbl
+*.bcf
+*.blg
 
 # VS Code
 .vscode

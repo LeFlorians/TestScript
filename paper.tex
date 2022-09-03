@@ -1,42 +1,132 @@
 \documentclass[12pt,a4paper,man]{apa7}
 \usepackage{listings}
+\usepackage{setspace}
+\usepackage{times} % Use Times New Roman font
+\usepackage[style=apa]{biblatex}
 
+\addbibresource{bibliography.bib}
 
 \author{Florian Donnelly}
 \title{The Creation of a Programming Language}
-\date{August 2022}
-\affiliation{Gymnasium Burgdorf}
+\authorsaffiliations{Gymnasium Burgdorf}
 \shorttitle{Creation of a Programming Language}
 \abstract{
     This is an abstract...
 }
 
 % Defining custom commands
+
+% include C code from file #1 from lines #2 to #3
 \newcommand{\code}[3] {
     \lstset{language=C,numbers=left,basicstyle=\scriptsize,
         frame=single,caption=src/#1,keywordstyle=\color{blue},
         stringstyle=\color{green},commentstyle=\color{gray},
         morecomment=[l][\color{magenta}]{\#}}
-    \lstinputlisting{src/#1}
+    \lstinputlisting[firstnumber=#2,firstline=#2,lastline=#3]{src/#1}
 }
 
 \begin{document}
-\maketitle
 
-\tableofcontents\newpage
+\onehalfspacing
+\maketitle\tableofcontents\newpage
+
+% the name of the programming language
+\newcommand{\name}{-the language- }
 
 \section{Introduction}
+\subsection{Relevance of the Topic}
+\subsection{Goals}
 
-\code{main.c}
+\code{main.c}{2}{6}
 
 
 \section{Theory}
+\subsection{What this is and what this is not}
+The final product in the process of creating this programming language will 
+not be perfect, or in fact, be used or adopted by anyone at all, and it is not
+intended to be. Creating a good, or even usable, programming language 
+implementation by today's  standards means to create an entire ecosystem of 
+tools, not only including a compiler or interpreter, but also a package manager
+for dealing with dependencies and a platform for people to share their work.
+
+The process used in this paper is more so a very core implementation of what
+a programming language, only containing the very necessary features.
+
 \section{Implementation}
+\subsection{Used Software}
+At the heart of creating a program in C stands the C compiler. This project uses
+\emph{gcc}, the GNU Compiler Collection, which, as the name suggests, also 
+supports different languages than C. Substantiating the development process is 
+\emph{GNU Make}, a general-purpose build system. It handles tasks like building
+the executable step-by-step from the project source code and directory clean-up.
+The C ecosystem is very easy to use and fundamentally supported by 
+\emph{GNU+Linux}, the operating system used to program on.
+The main code editor used was \emph{Microsoft Visual Studio Code}, providing great
+features like built-in git integration.
+\emph{Git} is the project management and tracking software used to back-up and share
+the project files on \emph{GitHub.com}, a Microsoft hosted git repository server to
+store and collaborate on source code.
+
 \section{Results}
 \section{Discussion}
+
+\subsection{Interesting Ideas untouched}
+Creating the ideal programming language takes a lot of planning and sketching
+out. This section of the paper gives insight on interesting ideas or concepts
+that are used in other programming languages, not \name.
+
+\subsubsection{Foreign Function Interfaces}
+A foreign function interface\footcite{FFI} often abbreviated as FFI,
+is a mechanism by which one programming language can call functions written 
+in another. This makes a language more attractive, as it can be used with
+existing libraries from another language, instead of functions having to be
+re-written. Enabling C function calls often allows a certain language to
+directly interact with system libraries or the operating system itsself.
+
+Foreign function interfaces are available in many modern languages.
+Examples are Java, Python and Rust.
+Java enables users to call C, C++ and even assembly code with the Java Native
+Interface\footcite{JNI}, JNI for short, whereas within Python C function can
+be run with the standard ctypes\footcite{ctypes} library.
+
+Foreign function interfaces are specially difficult to implement, or implement
+right. Let us assume a programming language interpreter \name written in C that
+would like to call some functions that are part of yet another C program or
+library. The problem lies in the fact that at runtime, C does not know
+structure of the functions to be called, say return- or argument-types, which
+is by the way where the term foreign functions originates from. This is why the
+\name developer would have to provide that information by re-declaring the
+function inside \name, so that, with some trickery, data can be passed to and
+received from the function in the correct format, preventing a segmentation
+fault. The libffi\footcite{libffi} C-library, which is also used by Java and
+Python for this purpose, can be used to load and call such foreign functions.
+
+\subsubsection{Reflection}
+Reflection\footcite{reflection}, also called reflective programming, describes
+the ability of a program to examine and modify its own structure and behaviour 
+at runtime. An example would be self-modifying code. This can easily be
+achieved in assembly language, which inherently does not differenciate between
+data and instructions.
+Another example is Java, providing methods and classes in the java.lang.reflect
+package that enable developers to examine and change properties or functions
+of objects.
+The advantage of reflection over not having it is that it allows for non-static
+programs and program flows, effectively making smaller executables and more
+resource efficient programs, as those programs can adjust themselfs to run
+differently under different conditions at runtime.
+The easiest and simplest way to go about implementing Reflection in \name is
+certainly to allow the interpretation of strings at runtime. That way, strings
+holding program instructions can be created and modified and later executed.
+
 \section{Index}
 \section{Closing Words}
 \section{Declaration of Autonomy}
+Hereby I, Florian Donnelly, declare to have written this paper, also including
+the entire source code of \name by myself using resources listed under the
+references section.
+
 \section{Appendix}
+
+\newpage\printbibliography[heading=bibintoc]
 
 \end{document}
