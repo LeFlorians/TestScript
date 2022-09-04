@@ -17,6 +17,20 @@
 // the right modulo function for the number type
 #define MOD(a, b) (number) fmodl(a, b)
 
+// return the truth-value of a mementry
+char truth_of(mementry *entry) {
+    if(entry == NULL)
+        return 0;
+    if(entry->type == REFERENCE)
+        entry = entry->value;
+    if(entry->type == UNDEFINED ||
+            (entry->type == NUMBER && (*(number *)entry->value) == 0) ||
+            (entry->type == STRING && (*(char *)entry->value) == '\0'))
+        return 0;
+    return 1;
+}
+
+
 // free a synthetic mementry and its synthetic value
 void _free_synth(mementry *entry) {
     if(entry->flags.synthetic) {
@@ -147,7 +161,7 @@ mementry *_bnot(opargs *args) {
     mementry *ro = _recursiveprocess(args, DEREFERENCE); /* Load right operand into tmp mementry */\
     mementry *lo = _recursiveprocess(args, DEREFERENCE); /* Load left operand into dst mementry */\
     \
-    /* make sure only to multiply numbers */\
+    /* make sure only to calculate numbers */\
     if(ro->type != NUMBER || lo->type != NUMBER) {\
         throw(EI_WRONG_TYPE, args->info);\
         return NULL; \
@@ -193,33 +207,75 @@ mementry *_add(opargs *args){ CALCULATE(a + b) }
 
 mementry *_sub(opargs *args){ CALCULATE(a - b) }
 
-mementry *_let(opargs *args){
-}
+mementry *_let(opargs *args){ CALCULATE(a < b) }
 
-mementry *_leq(opargs *args){
-}
+mementry *_leq(opargs *args){ CALCULATE(a <= b) }
 
-mementry *_grt(opargs *args){
-}
+mementry *_grt(opargs *args){ CALCULATE(a > b) }
 
-mementry *_geq(opargs *args){
-
-}
+mementry *_geq(opargs *args){ CALCULATE(a >= b) }
 
 mementry *_equ(opargs *args){
+    mementry *ro = _recursiveprocess(args, DEREFERENCE); /* Load right operand into tmp mementry */
+    mementry *lo = _recursiveprocess(args, DEREFERENCE); /* Load left operand into dst mementry */
+    
+    /* determine the dst entry (or allocate a new one if ro and lo are not synthetics) */
+    mementry *dst = NULL;
+    if(lo->flags.synthetic)
+        dst = lo;
+    else if(ro->flags.synthetic)
+        dst = ro;
+    else {
+        dst = malloc(sizeof(mementry));
+        dst->value = malloc(sizeof(number));
+        dst->type = NUMBER;
+        dst->flags = (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
+    }
+    
+    number *valdst = dst->flags.value_synthetic ? dst->value : malloc(sizeof(number));
+    
+    // check if equal
+    // for stings, numbers, this checks contents
+    // for other types, checks memory location
+    if(lo->type != ro->type)
+        *valdst = 0;
+    else {
+        if(lo->type == STRING) {
+            *valdst = (strcmp((char *)lo->value, (char *)ro->value) == 0);
+        } else if(lo->type == NUMBER) {
+            *valdst = (a == b); // a,b are numeric values of ro,lo
+        } else {
+            *valdst = (lo->value == ro->value);
+        }
+    }
+    
+    if(!dst->flags.value_synthetic){
+        dst->flags.value_synthetic = 1;
+        dst->value = valdst;
+    }
+    
+    /* free right operand if it's not the entry to be returned */
+    if(dst != ro)
+        _free_synth(ro);
+    
+    return dst;
 }
 
 mementry *_nequ(opargs *args){
+    // just perform equ and negate result for simplicity
+    mementry *res = _equ(args);
+    (*(number *)res->value) = !(*(number *)res->value);
+    return res;
 }
 
-mementry *_band(opargs *args){
-}
+mementry *_band(opargs *args){ 
+    CALCULATE( (number) ((long long)a & (long long) b) ) }
 
 mementry *_bxor(opargs *args){
-}
+    CALCULATE( (number) ((long long)a ^ (long long) b) ) }
 
 mementry *_bor(opargs *args){
-}
+    CALCULATE( (number) ((long long)a | (long long) b) ) }
 
 mementry *_land(opargs *args){
 }
@@ -319,9 +375,40 @@ mementry *_predecr(opargs *args){
 }
 
 mementry *_pos(opargs *args){
+    // if number, return itself, else return truth value
+    mementry *o = _recursiveprocess(args, DEREFERENCE);
+
+    if(o->type != NUMBER) {
+        throw(EI_WRONG_TYPE, args->info);
+        return NULL;
+    }
+    
+    /* determine the dst entry */
+    mementry *dst = NULL;
+    if(o->flags.synthetic)
+        dst = o;
+    else {
+        dst = malloc(sizeof(mementry));
+        dst->value = malloc(sizeof(number));
+        dst->type = NUMBER;
+        dst->flags = (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
+    }
+    
+    if(dst != o) {
+        *(number *)dst->value = *(number *)o->value;
+    }
+
+    if(!dst->flags.value_synthetic)
+        dst->flags.value_synthetic = 1;
+    
+    return dst;
 }
 
 mementry *_neg(opargs *args){
+    // negate the output of _pos for simplicity
+    mementry *res = _pos(args);
+    *(number *)res->value = -(*(number *)res->value);
+    return res;
 }
 
 mementry *_call(opargs *args){
@@ -394,6 +481,23 @@ mementry *_call(opargs *args){
 }
 
 mementry *_index(opargs *args){
+    mementry *index = _recursiveprocess(args, DEREFERENCE);
+    mementry *arr = _recursiveprocess(args, DEREFERENCE);
+
+
+    printf("arr type: %i\n", arr->type);
+    if(arr->type != ARRAY && arr->type != TUPLE || index->type != NUMBER) {
+        throw(EI_WRONG_TYPE, args->info);
+        return NULL;
+    }
+
+    size_t i = (size_t) *(number *)index->value;
+    if(i < 0 || i >= ((array *)arr->value)->size) {
+        throw(EI_INDEX_OOB, args->info);
+        return NULL;
+    }
+   
+    return get((array *)arr->value, i);
 }
 
 mementry *_array(opargs *args){

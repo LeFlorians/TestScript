@@ -223,7 +223,7 @@ void readtkn(cache *cache) {
                 dst->type = SYMBOL;
 
                 // read all following punctuation characters
-                while (ispunct(cur)) {
+                while (ispunct(cur) && (cur != '\'' && cur != '"' )) {
                     *con++ = cur;
                     cur = next(cache);
                 };

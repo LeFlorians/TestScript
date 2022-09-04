@@ -24,6 +24,7 @@ static const char *errformats[] = {
     "The specified operand must be mutable",
     "You can only assign the value from one field to another, if the source "
         "field was created in a scope equal or lower than the destination field",
+    "Index out of bounds",
 
     "Loading of a shared object failed",
     "Loading of foreign function failed",

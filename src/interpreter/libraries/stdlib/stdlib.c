@@ -72,8 +72,7 @@ void _if(mementry *args, mementry *dst) {
             if(cond->type == REFERENCE) {
                 cond = cond->value;
             }
-            if(cond->type == NUMBER && *((number *)cond->value) != 0 ||
-                    cond->type == STRING && *((char *)args->value) != '\0') {
+            if(truth_of(cond)) {
                 // perform if case
                 fun = arr->arr[1];
             } else if(arr->size == 3) {
