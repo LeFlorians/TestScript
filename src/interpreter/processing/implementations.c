@@ -18,7 +18,7 @@
 #define MOD(a, b) (number) fmodl(a, b)
 
 // free a synthetic mementry and its synthetic value
-static inline void _free_synth(mementry *entry) {
+void _free_synth(mementry *entry) {
     if(entry->flags.synthetic) {
         if(entry->flags.value_synthetic)
             free(entry->value);
@@ -367,7 +367,8 @@ mementry *_call(opargs *args){
             else {
                 // type and value will be set by the called function
                 dst = malloc(sizeof(mementry));
-                dst->flags = (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
+                dst->flags = (struct s_mementry_flags) 
+                    {.mutable=0, .synthetic=1, .value_synthetic=1};
             }
 
             // call function from shared object

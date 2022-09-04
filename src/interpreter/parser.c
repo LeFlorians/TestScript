@@ -89,66 +89,7 @@ void parser_init(cache *cache) {
 
 // Define the following functions
 stnode *expr(cache *cache, unsigned char rbp);
-stnode *secondary(cache *cache);
-
-
-// Builds a member tree of multiple expressions
-stnode *subexpr(cache *cache, unsigned char rbp) {
-    stnode *member;
-    
-    member = expr(cache, rbp);
-
-    // Parse in-expression code blocks
-    if(member != NULL && member->type == BLOCK){
-        // loop variable
-        stnode *left, *last;
-
-        // change type from block to member
-        member->type = MEMBER;
-
-        // Set right pointer to NULL
-        member->data.parent.right = NULL;
-
-        // keep track of level
-        unsigned int level = 1;
-
-        // left child is expression or BLOCK_END
-        // right child is member pointer or NULL
-
-        char flag = 0;
-
-        while(1) {
-            left = parse(cache);
-
-            // pass on errors / EOF and ignore sub-scope
-            if(left->type == FILE_END)
-                return left;
-
-            // keep track of level
-            else if(left->type == BLOCK)
-                level++;
-            else if(left->type == BLOCK_END){
-                level--;
-                if(level == 0) 
-                    break;
-            }
-
-            // skip this once
-            if(flag) {    
-                // reverse direction
-                last = member;
-                member = allocate_typed(MEMBER);
-                member->data.parent.right = last;                  
-            } else
-                flag = 1;
-
-            member->data.parent.left = left;
-
-        }
-
-    }
-    return member;
-}
+stnode *secondary(cache *cache, unsigned char rbp);
 
 // parser-defined operators
 operator virtualops[] = {
@@ -158,9 +99,11 @@ operator virtualops[] = {
 };
 
 // Parses a single expression
+char in_expression; // does not work for multi-thread
 stnode *expr(cache *cache, unsigned char rbp) {
 
-    stnode *left = secondary(cache);
+    stnode *left = secondary(cache, rbp);
+    in_expression = 1;
 
     // If secondary is done, just return
     if(left == NULL || left->type == FILE_END)
@@ -186,7 +129,7 @@ stnode *expr(cache *cache, unsigned char rbp) {
             advance(cache);
 
             if(op->position == INFIX){
-                new->data.parent.right = subexpr(cache, op->precedence - op->associativity);
+                new->data.parent.right = expr(cache, op->precedence - op->associativity);
             } else {
                 new->data.parent.right = NULL;
 
@@ -221,7 +164,7 @@ stnode *expr(cache *cache, unsigned char rbp) {
                 left = call;
 
                 // Set list of arguments to be expression
-                call->data.parent.right = subexpr(cache, 0);
+                call->data.parent.right = expr(cache, 0);
 
                 // expect closing bracket
                 if(cache->cur->type == BRACKET && cache->cur->content[0] == ')')
@@ -246,7 +189,7 @@ stnode *expr(cache *cache, unsigned char rbp) {
                 left = index;
 
                 // Set list of arguments to be expression
-                index->data.parent.right = subexpr(cache, 0);
+                index->data.parent.right = expr(cache, 0);
 
                 // expect closing bracket
                 if(cache->cur->type == BRACKET && cache->cur->content[0] == ']')
@@ -260,7 +203,6 @@ stnode *expr(cache *cache, unsigned char rbp) {
                 }
 
                 goto repeat;
-
         }
     }
 
@@ -269,7 +211,7 @@ stnode *expr(cache *cache, unsigned char rbp) {
 
 // Parses a single 'secondary' value
 // Returns FILE_END on error
-stnode *secondary(cache *cache){
+stnode *secondary(cache *cache, unsigned char rbp){
     // declare node to return
     stnode *ret = NULL;
 
@@ -281,7 +223,7 @@ stnode *secondary(cache *cache){
                     advance(cache);
 
                     // parse subexpression
-                    ret = subexpr(cache, 0);
+                    ret = expr(cache, 0);
 
                     // expect closing bracket
                     if(cache->cur->type == BRACKET && cache->cur->content[0] == ')'){
@@ -295,9 +237,64 @@ stnode *secondary(cache *cache){
                     throw(EP_EXPECTED_CLOSING_BRACKET, &cache->info);
                     return allocate_typed(FILE_END);
 
-                case '{':
+                case '{': {
                     advance(cache);
-                    return allocate_typed(BLOCK);
+
+                    // when this is a stand-alone bracket, just return a BLOCK
+                    if(!in_expression)
+                        return allocate_typed(BLOCK);
+
+                    ret = allocate_typed(MEMBER);
+                    
+                    // loop variable
+                    stnode *left, *last;
+
+                    // Set right pointer to NULL
+                    ret->data.parent.right = NULL;
+
+                    // keep track of level
+                    unsigned int level = 1;
+
+                    // left child is expression or BLOCK_END
+                    // right child is member pointer or NULL
+
+                    char flag = 0;
+
+                    while(1) {
+                        // next token will close
+                        if(cache->cur->type == BRACKET &&
+                                cache->cur->content[0] == '}') {
+                            advance(cache);
+                            if(--level == 0)
+                                break;
+                        }
+
+                        left = expr(cache, 0);
+
+                        if(left == NULL)
+                            break;
+
+                        // pass on errors / EOF and ignore sub-scope
+                        if(left->type == FILE_END)
+                            return left;
+
+                        // keep track of level
+                        else if(left->type == BLOCK)
+                            level++;
+
+                        // skip this once
+                        if(flag) {    
+                            // reverse direction
+                            last = ret;
+                            ret = allocate_typed(MEMBER);
+                            ret->data.parent.right = last;                  
+                        } else
+                            flag = 1;
+
+                        ret->data.parent.left = left;
+                    }
+
+                    return ret; }
 
                 case '}':
                     advance(cache);
@@ -311,7 +308,7 @@ stnode *secondary(cache *cache){
                     ret->data.parent.op = &virtualops[2]; // array operator
 
                     // set list of arguments to be expression
-                    ret->data.parent.left = subexpr(cache, 0);
+                    ret->data.parent.left = expr(cache, 0);
 
                     // expect closing bracket
                     if(cache->cur->type == BRACKET && cache->cur->content[0] == ']')
@@ -394,5 +391,6 @@ stnode *secondary(cache *cache){
 }
 
 stnode *parse(cache *cache){
+    in_expression = 0;
     return expr(cache, 0);
 }

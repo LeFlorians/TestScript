@@ -48,8 +48,6 @@ typedef struct {
         unsigned int line, character;
     } fileinfo;
 
-    // TODO: add thread info & name
-
 } errorinfo;
 
 // Throw selected error, print it to stderr

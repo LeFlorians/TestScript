@@ -7,6 +7,7 @@
 // @param return_reference if set, a reference from hashtable is returned (and element is allocated)
 //  else, a copy is returned
 mementry *_recursiveprocess(opargs *args, char return_reference);
+void _free_synth(mementry *entry);
 
 // ----- Declarations -----
 mementry *_incr(opargs *args);
