@@ -68,6 +68,10 @@ void _if(mementry *args, mementry *dst) {
         // can be (condition, if) or (condition, if, else)
         if(arr->size == 2 || arr->size == 3) {
             mementry *cond = arr->arr[0];
+            // resolve field
+            if(cond->type == REFERENCE) {
+                cond = cond->value;
+            }
             if(cond->type == NUMBER && *((number *)cond->value) != 0 ||
                     cond->type == STRING && *((char *)args->value) != '\0') {
                 // perform if case
@@ -75,46 +79,23 @@ void _if(mementry *args, mementry *dst) {
             } else if(arr->size == 3) {
                 // perform else case 
                 fun = arr->arr[2];
-            }        
-
-            if(fun != NULL && fun->type == FUNCTION){
-                // same as in implementations.c
-                // create new opargs for virtual environment
-                opargs new_args;
-
-                // reference the function code stack
-                new_args.code = (bytecode *)fun->value;
-
-                // TODO: put arguments into table
-
-                // print any errors from pseudo-if 
-                errorinfo info = {.throwable = 0, .fileinfo=
-                    {.filename="<if-statement>", .line=0, .character=0}};
-                new_args.info = &info;
-
-                // create a stack pointer, starting at the end
-                new_args.offset = new_args.code->elements;
-
-                // iterate over each functional instruction,
-                // as long as the stack is not empty
-                mementry *ret = NULL;
-                while(new_args.offset != 0) {
-                    if(ret != NULL)
-                        _free_synth(ret);
-                    ret = _recursiveprocess(&new_args, 0);
-                }
-                // copy from ret                    
-                if(ret != NULL){
-                    dst->type = ret->type;
-                    dst->value = ret->value;
-                    dst->level = ret->level;
-                }
-                return; 
             }
+            if(fun == NULL) {
+                dst->type = UNDEFINED; 
+            } else {
+                dst->type = fun->type;
+                dst->level = fun->level;
+                dst->value = fun->value;
+
+                // free fun if synthetic, but not value
+                if(fun->flags.synthetic)
+                    free(fun);
+            }
+            return;
         }
     }
     // error during if statement
-    printf("error during execution of if-statement\n");
+    printf("[error during execution of if-statement]\n");
 }
 
 // -----

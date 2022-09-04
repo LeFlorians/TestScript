@@ -32,12 +32,14 @@ void localize(stnode *subtree, hashtable *table, errorinfo *info) {
 
         case MEMBER:
 
-            // localize child first
-            if(subtree->data.parent.right != NULL)
-                _localize_member(subtree->data.parent.right, table, info);
+            if(subtree->data.parent.left != NULL) {
+                // localize child first
+                if(subtree->data.parent.right != NULL)
+                    _localize_member(subtree->data.parent.right, table, info);
 
-            // localize current expression
-            localize(subtree->data.parent.left, table, info);
+                // localize current expression
+                localize(subtree->data.parent.left, table, info);
+            }
 
             break;
 

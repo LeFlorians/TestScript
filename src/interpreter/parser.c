@@ -249,8 +249,9 @@ stnode *secondary(cache *cache, unsigned char rbp){
                     // loop variable
                     stnode *left, *last;
 
-                    // Set right pointer to NULL
+                    // Set right and left pointers to NULL
                     ret->data.parent.right = NULL;
+                    ret->data.parent.left = NULL;
 
                     // keep track of level
                     unsigned int level = 1;
