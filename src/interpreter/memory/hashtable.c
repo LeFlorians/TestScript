@@ -30,6 +30,9 @@ hashtable *create_hashtable(size_t width, size_t cache_size) {
     // make parent table NULL
     ret->parent = NULL;
 
+    // set table level to 0 by default
+    ret->level = 0;
+
     // allocate cache
     ret->cache = malloc(cache_size * sizeof(tableentry *));
 
