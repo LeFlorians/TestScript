@@ -1,6 +1,8 @@
 \documentclass[12pt,a4paper,man]{apa7}
 \usepackage{listings}
 \usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{dirtree}
 \usepackage{times} % Use Times New Roman font
 \usepackage[style=apa]{biblatex}
 
@@ -19,10 +21,10 @@
 % include C code from file #1 from lines #2 to #3
 \newcommand{\code}[3] {
     \lstset{language=C,numbers=left,basicstyle=\scriptsize,
-        frame=single,caption=src/#1,keywordstyle=\color{blue},
+        frame=single,caption=#1,keywordstyle=\color{blue},
         stringstyle=\color{green},commentstyle=\color{gray},
         morecomment=[l][\color{magenta}]{\#}}
-    \lstinputlisting[firstnumber=#2,firstline=#2,lastline=#3]{src/#1}
+    \lstinputlisting[firstnumber=#2,firstline=#2,lastline=#3]{#1}
 }
 
 \begin{document}
@@ -37,9 +39,6 @@
 \subsection{Relevance of the Topic}
 \subsection{Goals}
 
-\code{main.c}{2}{6}
-
-
 \section{Theory}
 \subsection{What this is and what this is not}
 The final product in the process of creating this programming language will 
@@ -52,6 +51,50 @@ for dealing with dependencies and a platform for people to share their work.
 The process used in this paper is more so a very core implementation of what
 a programming language, only containing the very necessary features.
 
+\subsection{Different types of interpreters}
+In computing, there are several types of interpreters that behave differently.
+Here are some examples and their use-cases:
+\begin{itemize}
+    \item \emph{Just in time Compiler.} JIT-compilers blur the line between
+        classical interpreters and compilers. As the name suggests, code is
+        being compiled at run time of the program. The JIT-compiler can optimize
+        compilation of more-often used code and therefore adapt itself to
+        behave somewhat close to optimally for a given use-case. Today, this 
+        technique is often used instead of classical interpreters, as
+        JIT-compilers come with only advantages. The most popular example of
+        a JIT-compiler would be Google's V8\footcite{V8} JavaScript engine used
+        in NodeJS and any Chromium browsers.
+    \item \emph{Bytecode Interpreter.} Such interpret the bytecode that was
+        output by a bytecode compiler from a given piece of code. The bytecode
+        is an intermediate representation of the program, used to speed up
+        both compilation and interpretation. Such an intermediary bytecode is
+        useful for ensuring platform independence or portability, as it will be
+        the same across any machine, the only difference being the interpreter.
+        The most popular example would be the Java Virtual Machine\footcite{jvm},
+        a bytecode interpreter for java bytecode, also used by many other languages
+        such as Kotlin, Scala or Groovy.
+    \item \emph{Abstract Syntax Tree interpreter.} Source code can be
+        transformed into an AST or parse tree by a parser. A simple example
+        can be found under 
+        \hyperref[simple interpreter]{'Implementation/The Art of Abstraction'}
+        on page \pageref{simple interpreter}. Compared to bytecode interpreters
+        there is a large time overhead when performing syntax related computation
+        or visiting tree nodes recursively.
+    \item \emph{Self interpreter.} These are interpreters that interpret the
+        language they themselves are written in. This requires a program
+        written in another language running an interpreter for the wanted
+        language, in which runs another interpreted for and written in said
+        language. Using a host language to initiate such system is called
+        bootstrapping.
+
+        Self-interpreters are closely related to self-hosting compilers. These
+        are in turn compilers which are written in the language they compile.
+        An example of a compiler written in itself is rustc, the Rust
+        compiler\footcite{rustc}, which was bootstrapped by the OCaml language.
+\end{itemize}
+This paper will implement a mixture form of an AST compiler and bytecode
+interpreter in-one.
+
 \section{Implementation}
 \subsection{Used Software}
 At the heart of creating a program in C stands the C compiler. This project uses
@@ -63,11 +106,273 @@ The C ecosystem is very easy to use and fundamentally supported by
 \emph{GNU+Linux}, the operating system used to program on.
 The main code editor used was \emph{Microsoft Visual Studio Code}, providing great
 features like built-in git integration.
-\emph{Git} is the project management and tracking software used to back-up and share
+\emph{Git} is the project management and tracking software used to back up and share
 the project files on \emph{GitHub.com}, a Microsoft hosted git repository server to
 store and collaborate on source code.
 
+\subsection{The Art of Abstraction}
+When dealing with problems in general, a helpful method of going about can be
+to create an abstraction. This is also the case when building a programming
+language interpreter. Like that, an interpreter is often times subdivided into several
+components, each solving a discrete problem. One way to define
+such components could be the following:
+\begin{enumerate}\label{simple interpreter}
+    \item Create meaningful groups of characters from the input string. This
+        process is called tokenizing and is done with the component called
+        tokenizer or lexer. As an example, the string "aa+  bb" could result
+        in three tokens, namely "aa", "+" and "bb", in case space characters
+        are considered unimportant.
+    \item Ordering the tokens into a so-called parse-tree or syntax-tree.
+        Creating an order is important, as some calculations depend on others, e.g. multiplication
+        is always done before addition. TODO:example
+    \item Technically, the parse tree could now be interpreted directly, and
+        an output could be produced, as the interpreter know knows what to do
+        and in what order to perform computations.
+\end{enumerate}
+As seen above, these components, or stages as they will be called in this paper,
+each input and output data, where the output of one stage is the input of the
+respective next stage.
+
+\subsection{A Project Overview}
+
+\newpage\subsubsection{File Structure}
+Here is a file tree overview of the project which will be referenced
+several times in the following sections of this paper. In the depicted file tree
+only source files are shown, no build files or executables.
+\small{\setlength{\DTbaselineskip}{10pt}\dirtree{%
+    .1 project root.
+    .2 .gitignore.
+    .2 README.md.
+    .2 LICENSE.
+    .2 Makefile.
+    .2 mapop.gperf.
+    .2 paper.tex.
+    .2 bibliography.bib.
+    .2 pseudocode
+        .3 parser.c
+    .2 src.
+        .3 main.c.
+        .3 interpreter.
+            .4 bytecode.c.
+            .4 bytecode.h.
+            .4 error.
+                .5 error.c.
+                .5 error.h.
+            .4 interpreter.c.
+            .4 interpreter.h.
+            .4 libraries.
+                .5 libraries.c.
+                .5 libraries.h.
+                .5 stdlib.
+                    .6 stdlib.c.
+                    .6 stdlib.h.
+            .4 localizer.c.
+            .4 localizer.h.
+            .4 mappings.
+                .5 operations.c.
+                .5 operations.h.
+                .5 mapop.c.
+                .5 mapop.h.
+            .4 memory.
+                .5 hashtable.c.
+                .5 hashtable.h.
+                .5 array.c.
+                .5 array.h.
+                .5 stack.c.
+                .5 stack.h.
+            .4 parser.c.
+            .4 parser.h.
+            .4 processing.
+                .5 implementations.c.
+                .5 implementations.h.
+            .4 runtime.c.
+            .4 runtime.h.
+            .4 tokenizer.c.
+            .4 tokenizer.h.
+}}
+
+As visible in the file tree, most of the source-code files, ending in .c,
+have a corresponding header file ending in .h. This is due to the nature
+of the compilation process of the C language, which is the host language
+the interpreter of \name is written in.
+Each header file contains only information about functions, types or variables
+available to other source or header files. The actual implementations or values
+are stored in the respective .c files.
+TODO:explain C compilation or link example
+
+The pseudocode directory contains only examples used in this paper, no acutal,
+working code. The paper is written in \LaTeX and BibLaTeX and compiled with
+the tools pdflatex and biber. The paper's source files are paper.tex and
+bibliography.bib.
+
+The file mapop.gperf is a file to generate a perfect-hash-function\footcite{hash}
+with the GNU gperf tool. The generated mapop.c file is used to map string operators
+like '==' or '+' to a simpler number representation in constant time.
+
+\subsubsection{Interpreter Construction}
+This section will explain the process of constructing and the inner workings of
+the \name interpreter. It is therefore the most complicated yet detailed section
+in this paper. Examples will be made with both pseudo code and actual source
+code from the project to further illustrate the approaches made. File paths
+used are relative to the project's root directory.
+
+The syntax of \name is not specified in a formal programming language grammar,
+but rather implemented from scratch in the files src/interpreter/tokenizer.c 
+and src/interpreter/parser.c.
+
+Source code can be found on GitHub TODO: insert link
+
+\subsubsection{The Entry Point}
+The entry point of the project lies in the src/main.c file.
+The file implements the C main function, which is the entry-point of any
+C application in general. Since the file is so small, here is its source code:
+\code{src/main.c}{1}{999}
+
+For the readers who do not know how to read source code, C in particular, here is a short
+explanation of the basic syntax of the C language based on the src/main.c file:
+\begin{itemize}
+    \item \emph{Preprocessor Instructions.} Lines beginning with hashtags are
+        C preprocessor instructions, they are dealt with by the C preprocessor.
+        Preprocessing is what the compiler does before actually compiling the
+        code.
+
+        The most important preprocessor instructions are '\#include <header.h>'
+        to include various definitions from a header file and '\#define A B' to
+        define A as an alias for B.
+    \item \emph{Functions.} Functions in C are defined the following way:
+        '<return type> <function name>([arguments]) { <function body> }'.
+        In main.c there is one function. The function's name is 'main', its
+        return type is 'int', it has two arguments 'argc' and 'argv' and a
+        function body containing what the function does.
+    \item \emph{Pointers.} Pointers are variables that store memory addresses
+        of data. In C-like syntax they are defined with the star (*) symbol.
+        An example from src/main.c is 'FILE *input;'. That means that input is not
+        actually a FILE, but rather the memory address to where a FILE is.
+
+        To dereference the pointer, meaning to actually retrieve the value stored
+        at the memory address it contains, another star could be used as such:
+        'FILE value = *input;'.
+\end{itemize}
+
+For those who are further interested in the C programming language, there are
+many internet articles or tutorials going about reading and understanding or
+writing and compiling C code. One such example is the article 'The C Beginner's
+Handbook' provided by freeCodeCamp.org linked in the sources\footcite{freeCodeCamp}
+on page \pageref{bibliography}.
+
+Here is a summary of what happens in the src/main.c file: the src/interpreter/interpreter.h
+header file is included. In the main function, the program decides to either
+read a program from the standard input or from a file. Then, the interpret function
+from the said included header is called with the selected input.
+
+\subsubsection{The Interpreter}
+This section deals with the file src/interpreter/interpreter.c which guides
+input data through the various stages of the \name interpreter in its
+function 'interpret' which is called from the program's main function.
+This section does not go in detail on the following stages, see their own sections.
+
+The 'interpret' function calls the parser to generate a syntax-tree from tokens retrieved
+from the tokenizer implemented in src/interpreter/parser.c and 
+src/interpreter/tokenizer.c respectively.
+
+After that, variables with names are 'localized', meaning their names are
+replaced by addresses where their value is stored by src/interpreter/localizer.c.
+The advantage of performing this step so early is that mapping variable names
+to memory is a rather resource intensive task with time complexity of maximally 
+O(log n), n being the amount of different variables.
+
+The syntax tree could now be interpreted directly, but is instead converted
+to an intermediary internal bytecode format by src/interpreter/bytecode.c.
+This step is done so that code that is ran multiple times does not convey
+the problem of time overhead when traversing the syntax tree, but the current
+implementation does not take advantage of this.
+
+The final step is to process or execute said bytecode. This step is performed
+by src/interpreter/runtime.c.
+
+\subsubsection{The Tokenizer}
+The tokenizer is implemented in src/interpreter/tokenizer.c. Its job is to
+take source code in plain-text format as input and output so-called tokens.
+These tokens represent groups of characters that belong together. In this paper's
+implementation, each token has a strict type and a text content.
+The different types of tokens and other thins are defined in the header file
+src/interpreter/tokenizer.h.
+
+Here is an example of tokenization:
+An input of 'std.test==23.4' would result in the following tokens according
+to the tokenizer implementation of this paper:
+\begin{enumerate}
+    \item Token of type FIELD with content 'std.text'.
+    \item Token of type SYMBOL with content '=='.
+    \item Token of type NUMBER with content '23.4'.
+\end{enumerate}
+FIELD type tokens are later replaced by REFERENCES during the stage of localization
+and SYMBOL type tokens are mapped to EXPR by src/implementation/mappings/mapop.c
+during parsing. NUMBER type tokens are replaced by an actual number type, which
+is C's 'long double' type as specified in src/interpreter/bytecode.h.
+
+The tokenizer used in this paper is a simple finite-state machine, reading
+character by character and determining the token type as it goes.
+
+These tokens are then directly consumed by the parser as described in the next
+section.
+
+\subsubsection{The Parser}
+The parser, implemented in src/interpreter/parser.c, generates a syntax-tree
+from tokens. The algorithm used is inspired by the Pratt Parsing\footcite{pratt}
+algorithm first described by Vaughan Pratt in 1973, which is a kind of precedence
+parser based on recursive descent. There is a great simple explanation of the algorithm
+by Jonathan Apodaca on dev.io\footcite{devio} linked in the references on page 
+\pageref{bibliography} which this paper's parser takes inspiration from.
+
+The syntax tree in the implementation of \name consists of 'stnode' type
+pointers, as defined in src/interpreter/parser.h. Each such node depending
+on its 'nodetype', declared in src/interpreter/tokenizer.h,
+is either a value-node storing a pointer to some data, e.g. a number or text, or a
+parent-node referencing two child nodes and an operator, e.g. two numbers as
+children and a +-operator to signify an addition.
+
+The difficult part of implementing a parser is precedence. Presedence and
+associativity define the order of execution of statements. A simple example
+would be to perform multiplication before addition, e.g. "2+3*4" would
+result in 14 and is not the same as "(2+3)*4". Therefore, each operator is
+assigned a precedence or priority, as well as an associativity, which is
+either 'Left to Right' or 'Right to Left'. An example of associativity is
+'20 / 10 / 2'. Both in C as well as in \name, the division operator is
+left-to-right associative, meaning the stated expression is the same as
+'(20 / 10) / 2' and not as '20 / (10 / 2)'. Both precedence and associativity
+of each operator are defined in the file mapop.gperf.
+
+The parser implementation in src/interpreter/parser.c may be difficult to
+read and understand, which is why the most important functions are explained here:
+\begin{itemize}
+    \item \emph{advance.} This function reads a new token from the tokenizer.
+    \item \emph{secondary.} The 'secondary' function deals with parsing single,
+        simple values that make up the start of an expression, such as numbers,
+        fields, strings and it handles brackets, such as indexing with square
+        brackets, functions or code blocks with curly braces and sub-expressions
+        in standard brackets.
+    \item \emph{expr.} The 'expr' function calls 'secondary' which acts
+        as the basis for a new expression. It then repeatedly checks
+        if an operator follows the secondary token and creates a tree of
+        EXPR type stnodes, each having children which are recursively parsed
+        and information about the operator.
+    \item \emph{parse.} The parse function is a small wrapper which only
+        calls the 'expr' function, initiating the parsing process.
+\end{itemize}
+
+Following is a piece of pseudo-code to better illustrate the inner workings of the
+parser which is based on a Pratt-parser. 
+This is only an example and not completely accurate to the actual parser used
+by this project.
+TODO: validate code
+\code{pseudocode/parser.c}{1}{999}
+
 \section{Results}
+\subsection{Limitation}
+Token input size etc.
+Single threaded
+
 \section{Discussion}
 
 \subsection{Interesting Ideas untouched}
@@ -103,16 +408,16 @@ Python for this purpose, can be used to load and call such foreign functions.
 
 \subsubsection{Reflection}
 Reflection\footcite{reflection}, also called reflective programming, describes
-the ability of a program to examine and modify its own structure and behaviour 
+the ability of a program to examine and modify its own structure and behavior 
 at runtime. An example would be self-modifying code. This can easily be
-achieved in assembly language, which inherently does not differenciate between
+achieved in assembly language, which inherently does not differentiate between
 data and instructions.
 Another example is Java, providing methods and classes in the java.lang.reflect
 package that enable developers to examine and change properties or functions
 of objects.
 The advantage of reflection over not having it is that it allows for non-static
 programs and program flows, effectively making smaller executables and more
-resource efficient programs, as those programs can adjust themselfs to run
+resource efficient programs, as those programs can adjust themselves to run
 differently under different conditions at runtime.
 The easiest and simplest way to go about implementing Reflection in \name is
 certainly to allow the interpretation of strings at runtime. That way, strings
@@ -123,10 +428,11 @@ holding program instructions can be created and modified and later executed.
 \section{Declaration of Autonomy}
 Hereby I, Florian Donnelly, declare to have written this paper, also including
 the entire source code of \name by myself using resources listed under the
-references section.
+'references' section on page \pageref{bibliography}.
 
 \section{Appendix}
 
-\newpage\printbibliography[heading=bibintoc]
+\newpage\printbibliography[heading=bibintoc]\label{bibliography}
 
+TODO: check correctness of all file paths!! e.g. src/...
 \end{document}
