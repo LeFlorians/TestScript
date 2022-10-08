@@ -33,7 +33,7 @@
 \maketitle\tableofcontents\newpage
 
 % the name of the programming language
-\newcommand{\name}{-the language- }
+\newcommand{\name}{\emph{TestScript }}
 
 \section{Introduction}
 \subsection{Relevance of the Topic}
@@ -119,8 +119,8 @@ such components could be the following:
 \begin{enumerate}\label{simple interpreter}
     \item Create meaningful groups of characters from the input string. This
         process is called tokenizing and is done with the component called
-        tokenizer or lexer. As an example, the string "aa+  bb" could result
-        in three tokens, namely "aa", "+" and "bb", in case space characters
+        tokenizer or lexer. As an example, the string 'aa+  bb' could result
+        in three tokens, namely 'aa', '+' and 'bb', in case space characters
         are considered unimportant.
     \item Ordering the tokens into a so-called parse-tree or syntax-tree.
         Creating an order is important, as some calculations depend on others, e.g. multiplication
@@ -220,9 +220,7 @@ The syntax of \name is not specified in a formal programming language grammar,
 but rather implemented from scratch in the files src/interpreter/tokenizer.c 
 and src/interpreter/parser.c.
 
-Source code can be found on GitHub TODO: insert link
-
-\subsubsection{The Entry Point}
+\subsubsection{The Entry-Point}
 The entry point of the project lies in the src/main.c file.
 The file implements the C main function, which is the entry-point of any
 C application in general. Since the file is so small, here is its source code:
@@ -260,7 +258,7 @@ writing and compiling C code. One such example is the article 'The C Beginner's
 Handbook' provided by freeCodeCamp.org linked in the sources\footcite{freeCodeCamp}
 on page \pageref{bibliography}.
 
-Here is a summary of what happens in the src/main.c file: the src/interpreter/interpreter.h
+Here is a very quick summary of what happens in the src/main.c file: the src/interpreter/interpreter.h
 header file is included. In the main function, the program decides to either
 read a program from the standard input or from a file. Then, the interpret function
 from the said included header is called with the selected input.
@@ -278,7 +276,7 @@ src/interpreter/tokenizer.c respectively.
 After that, variables with names are 'localized', meaning their names are
 replaced by addresses where their value is stored by src/interpreter/localizer.c.
 The advantage of performing this step so early is that mapping variable names
-to memory is a rather resource intensive task with time complexity of maximally 
+to memory is a rather resource-intensive task with time complexity of maximally 
 O(log n), n being the amount of different variables.
 
 The syntax tree could now be interpreted directly, but is instead converted
@@ -295,7 +293,7 @@ The tokenizer is implemented in src/interpreter/tokenizer.c. Its job is to
 take source code in plain-text format as input and output so-called tokens.
 These tokens represent groups of characters that belong together. In this paper's
 implementation, each token has a strict type and a text content.
-The different types of tokens and other thins are defined in the header file
+The different types of tokens and other things are defined in the header file
 src/interpreter/tokenizer.h.
 
 Here is an example of tokenization:
@@ -306,7 +304,7 @@ to the tokenizer implementation of this paper:
     \item Token of type SYMBOL with content '=='.
     \item Token of type NUMBER with content '23.4'.
 \end{enumerate}
-FIELD type tokens are later replaced by REFERENCES during the stage of localization
+FIELD type tokens are later replaced by REFERENCE tokens during the stage of localization
 and SYMBOL type tokens are mapped to EXPR by src/implementation/mappings/mapop.c
 during parsing. NUMBER type tokens are replaced by an actual number type, which
 is C's 'long double' type as specified in src/interpreter/bytecode.h.
@@ -330,18 +328,19 @@ pointers, as defined in src/interpreter/parser.h. Each such node depending
 on its 'nodetype', declared in src/interpreter/tokenizer.h,
 is either a value-node storing a pointer to some data, e.g. a number or text, or a
 parent-node referencing two child nodes and an operator, e.g. two numbers as
-children and a +-operator to signify an addition.
+children and a plus-operator to signify an addition.
 
-The difficult part of implementing a parser is precedence. Presedence and
+The difficult part of implementing a parser is precedence. Precedence and
 associativity define the order of execution of statements. A simple example
-would be to perform multiplication before addition, e.g. "2+3*4" would
-result in 14 and is not the same as "(2+3)*4". Therefore, each operator is
-assigned a precedence or priority, as well as an associativity, which is
+would be to perform multiplication before addition, e.g. '2+3*4' would
+result in 14 and is not the same as '(2+3)*4'. Therefore, each operator is
+assigned a precedence, or priority, as well as an associativity, which is
 either 'Left to Right' or 'Right to Left'. An example of associativity is
-'20 / 10 / 2'. Both in C as well as in \name, the division operator is
+\emph{'20 / 10 / 2'}. Both in C as well as in \name, the division operator is
 left-to-right associative, meaning the stated expression is the same as
-'(20 / 10) / 2' and not as '20 / (10 / 2)'. Both precedence and associativity
-of each operator are defined in the file mapop.gperf.
+\emph{'(20 / 10) / 2'} and not as \emph{'20 / (10 / 2)'}. Both precedence 
+and associativity are properties that are defined in the file mapop.gpref for
+each operator.
 
 The parser implementation in src/interpreter/parser.c may be difficult to
 read and understand, which is why the most important functions are explained here:
@@ -361,24 +360,171 @@ read and understand, which is why the most important functions are explained her
         calls the 'expr' function, initiating the parsing process.
 \end{itemize}
 
-Following is a piece of pseudo-code to better illustrate the inner workings of the
+Following is a piece of pseudocode to better illustrate the inner workings of the
 parser which is based on a Pratt-parser. 
 This is only an example and not completely accurate to the actual parser used
 by this project.
 TODO: validate code
 \code{pseudocode/parser.c}{1}{999}
 
+\subsubsection{The Bytecode Compiler}
+The bytecode compiler is part of the interpreter. Its job is to create a list
+of byte-sized instructions and data from the syntax-tree the parser created.
+Having such an intermediary bytecode format, instead of directly interpreting
+the parse-tree can be beneficial. This is the case when the same piece of code
+has to be run several times. Instead of generating a time and memory overhead 
+having to walk along tree-nodes recursively, only the list of instructions in
+the bytecode can be traversed, which is much faster. 
+
+Not to be confused with machine-native bytecode, the bytecode compiler in \name
+generates byte-sequences in an internal format, that are then interpreted. A
+JIT compiler would instead compile the AST down to machine-native bytecode, which
+could run directly on the system's hardware and would not have to be interpreted.
+
+To generate such a sequence of bytes, \name recursively reads through the
+binary tree created by the parser and pushes found instructions onto a stack,
+which is in this case used similarly to a variable-sized list.
+The algorithm used is inspired by Edsger Dijkstra's 'Shunting yard 
+algorithm'\footcite{shunting_yard}, traversing the tree post-order to create
+a prefix notation. 
+
+A prefix notation is a way to write down mathematical expressions, except
+operators precede their operands, in contrast to the more common infix notation,
+where operands surround the operator.
+
+In src/interpreter/bytecode.c we can see, that first, the left operand and then
+the right operand are added onto the stack of bytecode. Therefore, when
+popping from the stack and evaluating instructions, the operands will have to
+be read in reverse.
+Here is an example:
+\begin{enumerate}
+    \item Assume the following mathematical expression in infix notation:
+        \begin{center}
+            \emph{'1 - 2 * 4 / (5 + 6)'}
+        \end{center}
+    \item In common prefix notation, also called Polish notation, the
+        operators would now precede the operands as such:
+        \begin{center}
+            \emph{'- 1 (/ (* 2 4) (+ 5 6))'}
+        \end{center}
+    \item But in \name the operands are pushed onto the stack is reverse order.
+        This would look like the following:
+        \begin{center}
+            \emph{'- (/ (+ 6 5) (* 4 2)) 1'}
+        \end{center}
+    \item The brackets are not needed, because for every operator, the amount
+        of operands is known. This is the case as e.g. the subtraction operator
+        and the negative operator, which are both a minus sign, are distinguished
+        beforehand. This means the above statement would look like this:
+        \begin{center}
+            \emph{'- / + 6 5 * 4 2 1'}
+        \end{center} 
+        This is an ideal abstraction of how data 
+        is represented internally in \name.
+\end{enumerate}
+
+\subsubsection{The Runtime}
+This is the last stage of interpreting program code as implemented in \name.
+The runtime steps through the intermediary bytecode created by the bytecode
+compiler and evaluates expressions by plugging in the provided values.
+All available expressions are implemented in 
+src/interpreter/processing/implementations.c.
+
+The evaluation of expressions also works in a recursive manner. Here is an 
+example of \name's bytecode notation and how it would be evaluated at runtime:
+\begin{itemize}
+    \item Assume the input in \name's bytecode to resemble the following expression: 
+        \begin{center}
+            \emph{'- 6 * 3 4'}
+        \end{center}
+        In infix notation, this would be equivalent to 
+        \begin{center}
+            \emph{'(4 * 3) - 6'}.
+        \end{center}
+    \item The runtime will read through the bytecode left-to-right. First it will
+        notice the subtraction-operator and accordingly assume that two
+        operands must follow.
+    \item The processing function will call itsself
+        and notice the 6, a number, and therefore a value. The function simply returns the 6
+        to the subtraction expression. This 6 will be the right-hand operator
+        of the subtraction.
+    \item The subtraction will then call the processing function again to find
+        the left operand. As the processing function reads a multiplication operator,
+        it now recursively reads through that expression's right and then left
+        operator, which would be 3 and for respectively and compute and return
+        the result of the multiplication, which is 12.
+    \item Now the subtraction knows its right- and left-hand operators, 6 and 12,
+        and again, calculate and return the result, which is 6.
+\end{itemize}
+
+That's it! With all the possible expressions available, entire programs
+can now be interpreted without a problem.
+
 \section{Results}
 \subsection{Limitation}
-Token input size etc.
-Single threaded
+\name is a programming language without a doubt. But it is not perfect in any
+way. There are limitations that make it practically unusable for actual
+professional projects. In this section, a few shortcomings of \name are listed
+and reasoned over.
+
+\subsubsection{Memory Leaks}
+Memory leaks happen, when a program reserves memory to store some data, but
+never frees up the space for use for other programs, even though the data
+has long been discarded and is of no further use.
+In \name, memory leaks are a major problem. Even though barely noticable for small
+programs it interprets, \name does not have proper setups in place to free up
+all used memory that is not used any longer.
+
+Other programming languages, notably object-oriented languages such as Java,
+use Garbage-Collection, which automatically tracks unused allocated memory and
+frees it up automaticadlly. While this is also the case with \name, there are
+many internal flaws that have nothing to do with variables used in a \name
+program, but rather internally. 
+
+A major reason for the memory leaks, but not an excuse, is the nature of the
+C programming language the \name interpreter was written in. The C language and
+compiler do not keep track of states in which certain blocks of memory are
+forgotten about and warn the developer, instead, memory leaks happen.
+More modern C alternatives such as Rust have a ownership-system in place,
+in which any allocated memory has a function as an owner, and when the function
+is done processing, the memory is automatically freed. Such systems are a
+helpful tool for developers to create better programs with low mental overhead,
+and are what programming language design should be all about.
+
+\subsubsection{Single-Threaded}
+The \name interpreter does not implement any multi-threaded, meaning parallel
+running, programs as most other languages do. Instead, any \name program can
+only be interpreted and run sequentially. Since most modern computer processors
+are equipped with a handful of processing cores and threads, not being able to
+make use of those is a major downside and in itsself a reason not to use this
+language.
+
+\subsubsection{Token input size}
+In the current iteration, each token's content's size is limited to 256 bytes,
+which makes it impossible to use e.g. variable names longer thatn 256 ASCII
+characters. This would probably be the easyest thing to fix of here-listed 
+problems of \name, but since 256 characters are long enough for 
+illustration purposes, fixing this is not worth spending time on.
+
+\subsubsection{Lack of a Development Environment}
+This is certainly the greatest problem of \name, aside the countless smaller
+bothering aspects.
+
+Pretty much any good, modern programming language does not only consist
+of it's specification and a compiler or interpreter, but of many more
+tools surrounding it.
+Such tools often include a package-manager, with which people around the world
+can share code. Examples would be npm\footcite{npm} or cargo\footcite{cargo}, 
+the 'Node Package Manager' for JavaScript applications and and Rust's package 
+manager respectively.
 
 \section{Discussion}
 
 \subsection{Interesting Ideas untouched}
 Creating the ideal programming language takes a lot of planning and sketching
 out. This section of the paper gives insight on interesting ideas or concepts
-that are used in other programming languages, not \name.
+that are great to have and are used in other programming languages, but not 
+could not be implemented into \name.
 
 \subsubsection{Foreign Function Interfaces}
 A foreign function interface\footcite{FFI} often abbreviated as FFI,
