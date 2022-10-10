@@ -60,7 +60,8 @@ static inline void advance(cache *cache) {
             default: {
                 char *popped;
 
-                if((popped = (char *)pop(cache->bracketstack, &cache->bracketstack_offset, 1)) == NULL) {
+                if((popped = (char *)pop(cache->bracketstack,
+                                &cache->bracketstack_offset, 1)) == NULL) {
                     // Throw error, no closing bracket expected
                     throw(EP_INVALID_CLOSING_BRACKET, &cache->info);
 

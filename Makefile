@@ -35,9 +35,13 @@ test: all
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
-paper: paper.tex
-	pdflatex paper.tex && biber paper \
-		&& pdflatex paper.tex && pdflatex paper.tex
+paper: clean paper.tex
+	@(git ls-tree -r main --name-only |\
+		grep -E "\.h$$|\.c$$|Makefile$$|\.gperf$$|.gitignore$$|\.md$$" |\
+		tr '\n' ',' | sed '$$s/,$$//' > files.txt &&\
+		pdflatex paper.tex && biber paper &&\
+		pdflatex paper.tex && pdflatex paper.tex) > /dev/null
+	@echo 'Done!'
 
 # target to generate mapop.c
 # requires gperf to be installed
@@ -45,6 +49,7 @@ mapop:
 	gperf --output-file=./src//interpreter/mappings/mapop.c ./mapop.gperf
 
 clean:
-	rm -f -- paper.toc paper.aux paper.run.xml paper.log paper.bcf \
+	@rm -f -- paper.toc paper.aux paper.run.xml paper.log paper.bcf \
 		paper.bbl paper.blg paper.out paper.pdf paper.tex.bbl paper.tex.blg \
+		files.txt \
 		$(TARGET) $(TARGET).exe gmon.out $(call rwildcard,src/,*.o)

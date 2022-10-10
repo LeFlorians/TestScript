@@ -158,8 +158,8 @@ mementry *_bnot(opargs *args) {
 #define a (*(number *)lo->value)
 #define b (*(number *)ro->value)
 #define CALCULATE(calculation)\
-    mementry *ro = _recursiveprocess(args, DEREFERENCE); /* Load right operand into tmp mementry */\
-    mementry *lo = _recursiveprocess(args, DEREFERENCE); /* Load left operand into dst mementry */\
+    mementry *ro = _recursiveprocess(args, DEREFERENCE); /* Load right into tmp mementry */\
+    mementry *lo = _recursiveprocess(args, DEREFERENCE); /* Load left into dst mementry */\
     \
     /* make sure only to calculate numbers */\
     if(ro->type != NUMBER || lo->type != NUMBER) {\
@@ -177,7 +177,8 @@ mementry *_bnot(opargs *args) {
         dst = malloc(sizeof(mementry));\
         dst->value = malloc(sizeof(number));\
         dst->type = NUMBER;\
-        dst->flags = (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};\
+        dst->flags = \
+        (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};\
     }\
     \
     number *valdst = dst->flags.value_synthetic ? dst->value : malloc(sizeof(number));\
@@ -216,8 +217,8 @@ mementry *_grt(opargs *args){ CALCULATE(a > b) }
 mementry *_geq(opargs *args){ CALCULATE(a >= b) }
 
 mementry *_equ(opargs *args){
-    mementry *ro = _recursiveprocess(args, DEREFERENCE); /* Load right operand into tmp mementry */
-    mementry *lo = _recursiveprocess(args, DEREFERENCE); /* Load left operand into dst mementry */
+    mementry *ro = _recursiveprocess(args, DEREFERENCE); /* Load right into tmp mementry */
+    mementry *lo = _recursiveprocess(args, DEREFERENCE); /* Load left into dst mementry */
     
     /* determine the dst entry (or allocate a new one if ro and lo are not synthetics) */
     mementry *dst = NULL;
@@ -229,7 +230,8 @@ mementry *_equ(opargs *args){
         dst = malloc(sizeof(mementry));
         dst->value = malloc(sizeof(number));
         dst->type = NUMBER;
-        dst->flags = (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
+        dst->flags = 
+            (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
     }
     
     number *valdst = dst->flags.value_synthetic ? dst->value : malloc(sizeof(number));
@@ -391,7 +393,8 @@ mementry *_pos(opargs *args){
         dst = malloc(sizeof(mementry));
         dst->value = malloc(sizeof(number));
         dst->type = NUMBER;
-        dst->flags = (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
+        dst->flags = 
+            (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
     }
     
     if(dst != o) {
@@ -412,7 +415,7 @@ mementry *_neg(opargs *args){
 }
 
 mementry *_call(opargs *args){
-    mementry *params = _recursiveprocess(args, DEREFERENCE); // Load function arguments
+    mementry *params = _recursiveprocess(args, DEREFERENCE); // Load arguments
     mementry *fun = _recursiveprocess(args, DEREFERENCE); // Load function
 
     // mementry for the result
@@ -436,7 +439,7 @@ mementry *_call(opargs *args){
             // create a stack pointer, starting at the end
             new_args.offset = new_args.code->elements;
 
-            // iterate over each functional instruction, as long as the stack is not empty
+            // iterate over each functional instruction, as long as stack not empty
             while(new_args.offset != 0) {
                 if(dst != NULL)
                     _free_synth(dst);

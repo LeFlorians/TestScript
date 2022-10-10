@@ -3,6 +3,7 @@
 \usepackage{setspace}
 \usepackage{hyperref}
 \usepackage{dirtree}
+\usepackage{catchfile}
 \usepackage{times} % Use Times New Roman font
 \usepackage[style=apa]{biblatex}
 
@@ -16,16 +17,26 @@
     This is an abstract...
 }
 
-% Defining custom commands
+% Read contents of files.txt into \files
+\CatchFileDef{\files}{files.txt}{\endlinechar=-1}
 
-% include C code from file #1 from lines #2 to #3
+% Include C code from file #1 from lines #2 to #3
 \newcommand{\code}[3] {
     \lstset{language=C,numbers=left,basicstyle=\scriptsize,
-        frame=single,caption=#1,keywordstyle=\color{blue},
+        frame=single,title=#1,keywordstyle=\color{blue},stepnumber=5,
         stringstyle=\color{green},commentstyle=\color{gray},
         morecomment=[l][\color{magenta}]{\#}}
     \lstinputlisting[firstnumber=#2,firstline=#2,lastline=#3]{#1}
 }
+
+% Center text on newline
+\newcommand{\expr}[1] {
+    \begin{center}
+        #1
+    \end{center}
+}
+
+\newcommand{\pagelabel}[1]{\phantomsection\label{#1}}
 
 \begin{document}
 
@@ -116,7 +127,7 @@ to create an abstraction. This is also the case when building a programming
 language interpreter. Like that, an interpreter is often times subdivided into several
 components, each solving a discrete problem. One way to define
 such components could be the following:
-\begin{enumerate}\label{simple interpreter}
+\begin{enumerate}\pagelabel{simple interpreter}
     \item Create meaningful groups of characters from the input string. This
         process is called tokenizing and is done with the component called
         tokenizer or lexer. As an example, the string 'aa+  bb' could result
@@ -124,7 +135,7 @@ such components could be the following:
         are considered unimportant.
     \item Ordering the tokens into a so-called parse-tree or syntax-tree.
         Creating an order is important, as some calculations depend on others, e.g. multiplication
-        is always done before addition. TODO:example
+        is always done before addition. % TODO:example
     \item Technically, the parse tree could now be interpreted directly, and
         an output could be produced, as the interpreter know knows what to do
         and in what order to perform computations.
@@ -139,57 +150,60 @@ respective next stage.
 Here is a file tree overview of the project which will be referenced
 several times in the following sections of this paper. In the depicted file tree
 only source files are shown, no build files or executables.
-\small{\setlength{\DTbaselineskip}{10pt}\dirtree{%
-    .1 project root.
-    .2 .gitignore.
-    .2 README.md.
-    .2 LICENSE.
-    .2 Makefile.
-    .2 mapop.gperf.
-    .2 paper.tex.
-    .2 bibliography.bib.
-    .2 pseudocode
-        .3 parser.c
-    .2 src.
-        .3 main.c.
-        .3 interpreter.
-            .4 bytecode.c.
-            .4 bytecode.h.
-            .4 error.
-                .5 error.c.
-                .5 error.h.
-            .4 interpreter.c.
-            .4 interpreter.h.
-            .4 libraries.
-                .5 libraries.c.
-                .5 libraries.h.
-                .5 stdlib.
-                    .6 stdlib.c.
-                    .6 stdlib.h.
-            .4 localizer.c.
-            .4 localizer.h.
-            .4 mappings.
-                .5 operations.c.
-                .5 operations.h.
-                .5 mapop.c.
-                .5 mapop.h.
-            .4 memory.
-                .5 hashtable.c.
-                .5 hashtable.h.
-                .5 array.c.
-                .5 array.h.
-                .5 stack.c.
-                .5 stack.h.
-            .4 parser.c.
-            .4 parser.h.
-            .4 processing.
-                .5 implementations.c.
-                .5 implementations.h.
-            .4 runtime.c.
-            .4 runtime.h.
-            .4 tokenizer.c.
-            .4 tokenizer.h.
-}}
+\begin{flushleft}
+    \small\setlength{\DTbaselineskip}{10pt}
+    \dirtree{%
+        .1 project root.
+        .2 .gitignore.
+        .2 README.md.
+        .2 LICENSE.
+        .2 Makefile.
+        .2 mapop.gperf.
+        .2 paper.tex.
+        .2 bibliography.bib.
+        .2 pseudocode.
+            .3 src/interpreter/parser.c.
+        .2 src.
+            .3 main.c.
+            .3 interpreter.
+                .4 bytecode.c.
+                .4 bytecode.h.
+                .4 error.
+                    .5 error.c.
+                    .5 error.h.
+                .4 interpreter.c.
+                .4 interpreter.h.
+                .4 libraries.
+                    .5 libraries.c.
+                    .5 libraries.h.
+                    .5 stdlib.
+                        .6 stdlib.c.
+                        .6 stdlib.h.
+                .4 localizer.c.
+                .4 localizer.h.
+                .4 mappings.
+                    .5 operations.c.
+                    .5 operations.h.
+                    .5 mapop.c.
+                    .5 mapop.h.
+                .4 memory.
+                    .5 hashtable.c.
+                    .5 hashtable.h.
+                    .5 array.c.
+                    .5 array.h.
+                    .5 stack.c.
+                    .5 stack.h.
+                .4 parser.c.
+                .4 parser.h.
+                .4 processing.
+                    .5 implementations.c.
+                    .5 implementations.h.
+                .4 runtime.c.
+                .4 runtime.h.
+                .4 tokenizer.c.
+                .4 tokenizer.h.
+    }
+\end{flushleft}
 
 As visible in the file tree, most of the source-code files, ending in .c,
 have a corresponding header file ending in .h. This is due to the nature
@@ -198,7 +212,7 @@ the interpreter of \name is written in.
 Each header file contains only information about functions, types or variables
 available to other source or header files. The actual implementations or values
 are stored in the respective .c files.
-TODO:explain C compilation or link example
+% TODO:explain C compilation or link example
 
 The pseudocode directory contains only examples used in this paper, no acutal,
 working code. The paper is written in \LaTeX and BibLaTeX and compiled with
@@ -211,9 +225,10 @@ like '==' or '+' to a simpler number representation in constant time.
 
 \subsubsection{Interpreter Construction}
 This section will explain the process of constructing and the inner workings of
-the \name interpreter. It is therefore the most complicated yet detailed section
+the \name interpreter. It is therefore the most complicated and detailed section
 in this paper. Examples will be made with both pseudo code and actual source
-code from the project to further illustrate the approaches made. File paths
+code from the project to further illustrate the decisions made during
+interpreter design. File paths
 used are relative to the project's root directory.
 
 The syntax of \name is not specified in a formal programming language grammar,
@@ -234,26 +249,34 @@ explanation of the basic syntax of the C language based on the src/main.c file:
         Preprocessing is what the compiler does before actually compiling the
         code.
 
-        The most important preprocessor instructions are '\#include <header.h>'
-        to include various definitions from a header file and '\#define A B' to
-        define A as an alias for B.
+        The most common preprocessor instructions are the following.
+        On one hand there is \expr{\#include <header.h>}
+        to include various definitions from a header file, i.e. to paste
+        its content at where the 'include' statement lies.
+        On the other hand exists \expr{\#define A B} used to
+        define A as an alias for B and replace every following occurrence of A
+        with B.
+
     \item \emph{Functions.} Functions in C are defined the following way:
-        '<return type> <function name>([arguments]) { <function body> }'.
+        \expr{<return type> <function name>([arguments]) { <function body> }}
+        or with a concrete, working example:
+        \expr{int myFunction(int *arg) \{ printf("arg: \%p, arg); \}.}
         In main.c there is one function. The function's name is 'main', its
         return type is 'int', it has two arguments 'argc' and 'argv' and a
         function body containing what the function does.
+
     \item \emph{Pointers.} Pointers are variables that store memory addresses
         of data. In C-like syntax they are defined with the star (*) symbol.
         An example from src/main.c is 'FILE *input;'. That means that input is not
         actually a FILE, but rather the memory address to where a FILE is.
 
-        To dereference the pointer, meaning to actually retrieve the value stored
+        To dereference the pointer, i.e. to actually retrieve the value stored
         at the memory address it contains, another star could be used as such:
         'FILE value = *input;'.
 \end{itemize}
 
 For those who are further interested in the C programming language, there are
-many internet articles or tutorials going about reading and understanding or
+many internet articles or tutorials about reading and understanding or
 writing and compiling C code. One such example is the article 'The C Beginner's
 Handbook' provided by freeCodeCamp.org linked in the sources\footcite{freeCodeCamp}
 on page \pageref{bibliography}.
@@ -364,7 +387,7 @@ Following is a piece of pseudocode to better illustrate the inner workings of th
 parser which is based on a Pratt-parser. 
 This is only an example and not completely accurate to the actual parser used
 by this project.
-TODO: validate code
+% TODO: validate code
 \code{pseudocode/parser.c}{1}{999}
 
 \subsubsection{The Bytecode Compiler}
@@ -399,26 +422,18 @@ be read in reverse.
 Here is an example:
 \begin{enumerate}
     \item Assume the following mathematical expression in infix notation:
-        \begin{center}
-            \emph{'1 - 2 * 4 / (5 + 6)'}
-        \end{center}
+        \expr{\emph{'1 - 2 * 4 / (5 + 6)'}}
     \item In common prefix notation, also called Polish notation, the
         operators would now precede the operands as such:
-        \begin{center}
-            \emph{'- 1 (/ (* 2 4) (+ 5 6))'}
-        \end{center}
+        \expr{\emph{'- 1 (/ (* 2 4) (+ 5 6))'}}
     \item But in \name the operands are pushed onto the stack is reverse order.
         This would look like the following:
-        \begin{center}
-            \emph{'- (/ (+ 6 5) (* 4 2)) 1'}
-        \end{center}
+        \expr{\emph{'- (/ (+ 6 5) (* 4 2)) 1'}}
     \item The brackets are not needed, because for every operator, the amount
         of operands is known. This is the case as e.g. the subtraction operator
         and the negative operator, which are both a minus sign, are distinguished
         beforehand. This means the above statement would look like this:
-        \begin{center}
-            \emph{'- / + 6 5 * 4 2 1'}
-        \end{center} 
+        \expr{\emph{'- / + 6 5 * 4 2 1'}}
         This is an ideal abstraction of how data 
         is represented internally in \name.
 \end{enumerate}
@@ -434,13 +449,9 @@ The evaluation of expressions also works in a recursive manner. Here is an
 example of \name's bytecode notation and how it would be evaluated at runtime:
 \begin{itemize}
     \item Assume the input in \name's bytecode to resemble the following expression: 
-        \begin{center}
-            \emph{'- 6 * 3 4'}
-        \end{center}
+        \expr{\emph{'- 6 * 3 4'}}
         In infix notation, this would be equivalent to 
-        \begin{center}
-            \emph{'(4 * 3) - 6'}.
-        \end{center}
+        \expr{\emph{'(4 * 3) - 6'}.}
     \item The runtime will read through the bytecode left-to-right. First it will
         notice the subtraction-operator and accordingly assume that two
         operands must follow.
@@ -576,9 +587,14 @@ Hereby I, Florian Donnelly, declare to have written this paper, also including
 the entire source code of \name by myself using resources listed under the
 'references' section on page \pageref{bibliography}.
 
-\section{Appendix}
+\newpage\printbibliography[heading=bibintoc]\pagelabel{bibliography}
 
-\newpage\printbibliography[heading=bibintoc]\label{bibliography}
+% TODO: check correctness of all file paths!! e.g. src/...
 
-TODO: check correctness of all file paths!! e.g. src/...
+\newpage\section{Appendix}
+The appendix contains the complete source code of \name.
+
+% Append all soruce files
+\foreach \f in \files{\pagelabel{\f}\code{\f}{1}{9999}}
+
 \end{document}

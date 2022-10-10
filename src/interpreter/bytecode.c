@@ -8,7 +8,8 @@
 #define DOUBLE(string) (number) strtod(string, NULL)
 
 static inline mementry *_register(bytecode *code, stackptr ptr, typing type) {
-    mementry *ret = *(mementry **)push(code, ptr, sizeof(mementry *)) = malloc(sizeof(mementry));
+    mementry *ret = 
+        *(mementry **)push(code, ptr, sizeof(mementry *)) = malloc(sizeof(mementry));
     ret->type = type;
     return ret;
 }
@@ -74,7 +75,8 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree) {
                 _register(dst, ptr, UNDEFINED);
 
             // then push operation onto the stack
-            _register(dst, ptr, EXPR)->value = implementationof(subtree->data.parent.op->opcode);
+            _register(dst, ptr, EXPR)->value = 
+                implementationof(subtree->data.parent.op->opcode);
             break;
 
         case MEMBER: {

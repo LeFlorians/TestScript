@@ -42,7 +42,8 @@ typedef struct {
         // set if this mementry is a mutable field (mutable entry in hashtable)
         unsigned char mutable: 1;
 
-        // > used by implementations.c < to see if a mementry only exists during expression-evaluation
+        // > used by implementations.c < to see if
+        // a mementry only exists during expression-evaluation
         unsigned char synthetic: 1; 
         // used to check if the value this mementry is pointing to is synthetic
         // this will only be set, if synthetic is set as well

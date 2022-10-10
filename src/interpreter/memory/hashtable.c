@@ -103,7 +103,8 @@ void ht_down(hashtable *table) {
     // decrease level
     table->level--;
 
-    while((stackptr = pop(s, &table->offset, sizeof(tableentry **))) != NULL && (entryptr = *stackptr) != NULL) {
+    while((stackptr = pop(s, &table->offset, 
+                    sizeof(tableentry **))) != NULL && (entryptr = *stackptr) != NULL) {
         // copy the entry
         entry = *entryptr; // never null
 
@@ -199,13 +200,15 @@ static inline tableentry *_find(hashtable *table, char *key) {
             bottom_value = value->hash;
 
             // the new range is now ]index, top[
-            index = (top - index -1) * (hash - value->hash) / (top_value - value->hash) + index +1;
+            index = (top - index -1) * 
+                (hash - value->hash) / (top_value - value->hash) + index +1;
         } else if(value->hash > hash) {
             top = index;
             top_value = value->hash;
 
             // the new range is now [bottom, index[
-            index = (index - bottom) * (hash - bottom_value) / (value->hash - bottom_value) + bottom;
+            index = (index - bottom) *
+                (hash - bottom_value) / (value->hash - bottom_value) + bottom;
         } else {
 
         #else
@@ -236,7 +239,8 @@ static inline tableentry *_find(hashtable *table, char *key) {
                     value->alternative = new_value = malloc(sizeof(tableentry));
 
                     // register into stack
-                    *(tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **)) = &value->alternative;
+                    *(tableentry ***)push(table->stack, &table->offset,
+                            sizeof(tableentry **)) = &value->alternative;
 
                     // initialize entry
                     goto init_entry;
@@ -254,9 +258,11 @@ static inline tableentry *_find(hashtable *table, char *key) {
                 *source = malloc(sizeof(tableentry));
 
                 // put it onto the stack
-                // since the entry to be shadowed already exists, it will be removed from stack after this,
+                // since the entry to be shadowed already exists, 
+                // it will be removed from stack after this
                 // so ht_down is actually safe
-                *(tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **)) = source;
+                *(tableentry ***)push(table->stack, &table->offset,
+                        sizeof(tableentry **)) = source;
 
                 // set the alternative
                 (*source)->alternative = value;
@@ -292,7 +298,8 @@ static inline tableentry *_find(hashtable *table, char *key) {
     // check if a new element fits
     if(slice->size + 1 > slice->size_allocated) {
         // allocate new slice
-        tableslice *newslice = malloc(sizeof(tableslice) + slice->size_allocated * 2 * sizeof(tableentry *));
+        tableslice *newslice =
+            malloc(sizeof(tableslice) + slice->size_allocated * 2 * sizeof(tableentry *));
         newslice->size_allocated = slice->size_allocated * 2;
         newslice->size = slice->size + 1;
 
@@ -317,16 +324,19 @@ static inline tableentry *_find(hashtable *table, char *key) {
         newslice->array[index] = new_value = malloc(sizeof(tableentry));
 
         // push address stack
-        *(tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **)) = &newslice->array[index];
+        *(tableentry ***)push(table->stack, &table->offset,
+                sizeof(tableentry **)) = &newslice->array[index];
     } else {
         // move everything after index one to the right
-        memcpy(slice->array + (index + 1), slice->array + index, (slice->size - index) * sizeof(tableentry *));
+        memcpy(slice->array + (index + 1), slice->array + index,
+                (slice->size - index) * sizeof(tableentry *));
 
         // insert at index into array
         slice->array[index] = (new_value = malloc(sizeof(tableentry)));
 
         // push address stack
-        *(tableentry ***)push(table->stack, &table->offset, sizeof(tableentry **)) = &slice->array[index];
+        *(tableentry ***)push(table->stack, &table->offset,
+                sizeof(tableentry **)) = &slice->array[index];
 
         // increment slice size
         slice->size++;
@@ -345,7 +355,8 @@ static inline tableentry *_find(hashtable *table, char *key) {
     (new_value->entry = malloc(sizeof(mementry)))->type = UNDEFINED;
     new_value->entry->value = NULL;
     new_value->entry->level = table->level;
-    new_value->entry->flags = (struct s_mementry_flags) {.mutable=1, .synthetic=0, .value_synthetic=0};
+    new_value->entry->flags = 
+        (struct s_mementry_flags) {.mutable=1, .synthetic=0, .value_synthetic=0};
 
     // register entry in cache
     table->cache[hash % table->cache_size] = new_value;

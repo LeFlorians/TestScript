@@ -81,7 +81,8 @@ void interpret(FILE *stream, char* filename) {
     printf("Reached EOF\n");
     // Print unmatched brackets
     if(cac.bracketstack_offset != 0) {
-        printf("\nNot all brackets matched, %u left!\n", (unsigned int) cac.bracketstack_offset);
+        printf("\nNot all brackets matched, %u left!\n", 
+                (unsigned int) cac.bracketstack_offset);
         printf("Assuming: ");
         while(cac.bracketstack_offset != 0)
             putchar(*(char *)pop(cac.bracketstack, &cac.bracketstack_offset, 1));

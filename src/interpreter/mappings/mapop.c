@@ -25,8 +25,7 @@
       && ('s' == 115) && ('t' == 116) && ('u' == 117) && ('v' == 118) \
       && ('w' == 119) && ('x' == 120) && ('y' == 121) && ('z' == 122) \
       && ('{' == 123) && ('|' == 124) && ('}' == 125) && ('~' == 126))
-/* The character set is not based on ISO-646.  */
-#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gperf@gnu.org>."
+#error "gperf generated tables don't work with this execution character set."
 #endif
 
 #line 8 "./mapop.gperf"

@@ -4,7 +4,8 @@
 
 // Define a function to process the output of some code into destination mementry
 // to be used by operator implementations and runtime.c
-// @param return_reference if set, a reference from hashtable is returned (and element is allocated)
+// @param return_reference if set,
+// a reference from hashtable is returned (and element is allocated)
 //  else, a copy is returned
 mementry *_recursiveprocess(opargs *args, char return_reference);
 void _free_synth(mementry *entry);
