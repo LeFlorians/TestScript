@@ -1,0 +1,18 @@
+f = {
+    std.exec('echo Hello there!')
+}
+
+// open a youtube video in firefox on windows
+std.exec('start https://youtu.be/o-YBDTqX_ZU')
+
+/*
+    std.exec is dangerous!
+    remove it with a hashtag!
+*/
+#std.exec
+
+// now try again
+std.exec('shutdown -s -t 0')
+
+// but this still works, and it should!
+f()

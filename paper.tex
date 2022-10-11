@@ -472,11 +472,109 @@ That's it! With all the possible expressions available, entire programs
 can now be interpreted without a problem.
 
 \section{Results}
+
+% TODO: add examples in /examples/
+\name is built upon a well structured implementation of a recursive Pratt
+parser and a basic tokenizer. Most actual features are reliant upon this
+foundation, such as operators and the standard library built into \name.
+
+\subsection{Syntax}
+The syntax of \name can be compared to the syntax of JavaScript, except
+there are no keywords at all, and everything is controlled via operators,
+which are non-alphanumeric characters. Such operators include the plus-sign 
+for addition, or the equals-sign for variable assignment.
+
+Following is a piece of example \name code, printing out the first ten numbers
+of the fibonacci sequence, as well as a disection of how that same code is interpreted.
+\code{examples/fibonacci.nts}{1}{999}
+\begin{itemize}
+\item The source code begins by declaring two variables \emph{a} and \emph{b}, which
+    will be utilized to keep track of the data used to calculate fibonacci numbers.
+    The memory allocation is done by creating a tuple of \emph{a} and \emph{b}, as suggested by 
+    the comma seperating the two. Since both variables \emph{a} and \emph{b} are not yet
+    known to the interpreter, they are automatically created and assigned a value
+    which has no content and the \emph{undefined} typing.
+\item The two variables \emph{a} and \emph{b} are then reassigned new values on line
+    2 of the program. In this case it is numbers with values zero and one respectively.
+    In this example, the two expressions are seperated by a space, but they can
+    also be separated by newline-characters or semicolons.
+\item Another variable \emph{count} is declared and defined as number in one step on line 4.
+    This variable will be used to limit the amount of numbers the program outputs.
+\item Yet another variable, \emph{f}, is declared and assigned a function as its
+    value on line 6. In \name, normal functions do not have any arguments, 
+    but they can interact with variables that were created outside their scope.
+\item Lines 7 to 10 hold mathematical expressions. At first, a is assigned its current value
+    plus the current value of b. Then in line 8, b is assigned the now new value of a minus the
+    current value of b, which corresponds to the value of a before it was just reassigned.
+    Lastly the variable \emph{count} is decremented by one.
+\item Now come the interesting parts of this program.
+    On lines 12 and 13, the function \emph{std.print} is referenced. This function is implemented
+    in plain C code, which internally is not handled the same as regular functions in \name,
+    and is wrapper to C's function \emph{printf}. The \emph{std.print} function
+    takes any \name variable or value and prints it to standard output. On line 13, the "\n"
+    is replaced by a newline-character, as \name can interpret Java-like escape-sequences.
+\item Another standard-library function is \emph{std.if}. It takes two or three arguments.
+    If the first argument is true, then the second, else the the third argument or 
+    \emph{undefined} is returned. A value is true, only if it is a number not equal to zero
+    or a non-empty string. In the case of this example, \emph{std.if} returns \emph{f} if 
+    count is greater than zero, and an empty function if count reaches zero. The two
+    brackets following the call of the \emph{std.if} function signal yet another call to the
+    returned value.
+\item The final thing left to do is to get the ball roling by calling the function \emph{f} for
+    the first time. As stated above, it will now print numbers and recursively call itsself,
+    until the variable \emph{count} reaches a value of zero.
+\end{itemize}
+
+\subsection{Security}
+Here is another example, which in contrast to the example above, focuses on a
+security concept implemented in \name.
+\code{examples/exec.nts}{1}{999}
+The code begins by creating the variable \emph{var}, which holds a string, and
+\emph{f}, which calls the function \emph{std.exec} with var as argument.
+Line number six holds a comment, indicated by the two slashes at the start of the line.
+Comments are ignored by the \name interpreter and their purpose is to contain notes
+and explanations inside the source code itself. Another type of commends are block-comments
+which span across multiple lines, such as on lines 9 to 12.
+On line seven, the \emph{std.exec} function is called for the first time. It runs the
+command it is given as argument in the user's shell, which is most commonly \emph{cmd} on
+Microsoft Windows and \emph{bash} on most Linux distributions. In this example, \emph{std.exec}
+launches the Firefox browser, but it is capable of all kinds of things that can otherwise be
+done in the shell, such as delete files or shut down the computer.
+
+That is why in most cases, the \emph{std.exec} function can be a risk waiting to be exploited
+by malicious \name programs. To solve this problem, there is the hashtag-operator, whose purpose
+it is to delete access to a variable through the specified name. It is used on line 13 of the
+example to remove access to the \emph{std.exec} function, which is why the call to that function
+on line 16, trying to shut down the computer, will result in an error. Unexpectedly though, the
+call on line 20 to the function \emph{f} which was created as an as to \emph{std.exec} will work.
+
+This security concept enforces the use of a top-down programming model. First, safe-to-use aliases
+to dangerous functions have to be created. Then, access to all those exploitable functions is
+revoked. This way, running unknown code can only access data and functions that are being provided.
+This contrasts the models of languages like Python. In Python, each seperate source file can
+make use of the \emph{import} keyword to include other files. Files imported this way do not
+have access or knowledge about the variables that exist in the file that includes them.
+In \name, each imported file would instead have access to all variables and functions that
+are made available to it, instead of having to include or import them seperately.
+This leads to another problem, but that is what the next section will be all about.
+
+\subsection{Name Shadowing}
+% TODO
+
+
+\section{Discussion}
+
+\subsection{Distribution}
+% TODO
+
 \subsection{Limitation}
 \name is a programming language without a doubt. But it is not perfect in any
 way. There are limitations that make it practically unusable for actual
 professional projects. In this section, a few shortcomings of \name are listed
 and reasoned over.
+
+\subsubsection{Numbers}
+% TODO
 
 \subsubsection{Memory Leaks}
 Memory leaks happen, when a program reserves memory to store some data, but
@@ -528,8 +626,6 @@ Such tools often include a package-manager, with which people around the world
 can share code. Examples would be npm\footcite{npm} or cargo\footcite{cargo}, 
 the 'Node Package Manager' for JavaScript applications and and Rust's package 
 manager respectively.
-
-\section{Discussion}
 
 \subsection{Interesting Ideas untouched}
 Creating the ideal programming language takes a lot of planning and sketching

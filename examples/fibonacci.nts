@@ -1,0 +1,17 @@
+a, b
+a = 0 b = 1
+
+count = 10
+
+f = {
+    a = a + b
+    b = a - b
+
+    count = count - 1
+
+    std.print(a)
+    std.print("\n")
+    std.if(count, f, {})()
+}
+
+f()
