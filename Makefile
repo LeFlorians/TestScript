@@ -40,7 +40,7 @@ paper: clean paper.tex
 		grep -E "\.h$$|\.c$$|Makefile$$|\.gperf$$|.gitignore$$|\.md$$" |\
 		tr '\n' ',' | sed '$$s/,$$//' > files.txt &&\
 		pdflatex paper.tex && biber paper &&\
-		pdflatex paper.tex && pdflatex paper.tex) > /dev/null
+		pdflatex paper.tex && pdflatex paper.tex)
 	@echo 'Done!'
 
 # target to generate mapop.c

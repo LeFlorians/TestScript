@@ -1,21 +1,13 @@
-\documentclass[12pt,a4paper,man]{apa7}
-\usepackage{listings}
-\usepackage{setspace}
-\usepackage{hyperref}
-\usepackage{dirtree}
-\usepackage{catchfile}
+\documentclass[12pt,a4paper]{report}
+\usepackage{listings,xcolor,setspace,hyperref,dirtree}
+\usepackage{catchfile,pgffor}
 \usepackage{times} % Use Times New Roman font
-\usepackage[style=apa]{biblatex}
+\usepackage[style=alphabetic,backend=biber]{biblatex}
 
 \addbibresource{bibliography.bib}
 
 \author{Florian Donnelly}
 \title{The Creation of a Programming Language}
-\authorsaffiliations{Gymnasium Burgdorf}
-\shorttitle{Creation of a Programming Language}
-\abstract{
-    This is an abstract...
-}
 
 % Read contents of files.txt into \files
 \CatchFileDef{\files}{files.txt}{\endlinechar=-1}
@@ -29,6 +21,11 @@
     \lstinputlisting[firstnumber=#2,firstline=#2,lastline=#3]{#1}
 }
 
+% Cite text
+\newcommand{\cte}[1] {
+    \cite{#1}
+}
+
 % Center text on newline
 \newcommand{\expr}[1] {
     \begin{center}
@@ -38,10 +35,16 @@
 
 \newcommand{\pagelabel}[1]{\phantomsection\label{#1}}
 
+% Set line spacing
+\onehalfspacing
+
 \begin{document}
 
-\onehalfspacing
 \maketitle\tableofcontents\newpage
+
+\abstract{
+    This is an abstract...
+}
 
 % the name of the programming language
 \newcommand{\name}{\emph{TestScript }}
@@ -52,12 +55,18 @@
 
 \section{Theory}
 \subsection{What this is and what this is not}
-The final product in the process of creating this programming language will 
-not be perfect, or in fact, be used or adopted by anyone at all, and it is not
-intended to be. Creating a good, or even usable, programming language 
-implementation by today's  standards means to create an entire ecosystem of 
-tools, not only including a compiler or interpreter, but also a package manager
-for dealing with dependencies and a platform for people to share their work.
+The programming language and the tools that surround it are not meant to be
+viable options for real-world projects. Instead, the final product, \name,
+should be a programming language interpreter which includes techniques and
+algorithms already present in other, well known interpreters.
+The goal of this paper is to further understand the inner workings of
+interpreters, transforming a human-readable programming language
+into a computer-executable program.
+
+Modern programming languages often times include additional tools, aside from
+the interpreter or compiler. This includes dependency management tools to
+easily create projects exdending upon existing ones, or a web-plattform for
+people to share their code.
 
 The process used in this paper is more so a very core implementation of what
 a programming language, only containing the very necessary features.
@@ -73,7 +82,7 @@ Here are some examples and their use-cases:
         behave somewhat close to optimally for a given use-case. Today, this 
         technique is often used instead of classical interpreters, as
         JIT-compilers come with only advantages. The most popular example of
-        a JIT-compiler would be Google's V8\footcite{V8} JavaScript engine used
+        a JIT-compiler would be Google's V8\cte{V8} JavaScript engine used
         in NodeJS and any Chromium browsers.
     \item \emph{Bytecode Interpreter.} Such interpret the bytecode that was
         output by a bytecode compiler from a given piece of code. The bytecode
@@ -81,7 +90,7 @@ Here are some examples and their use-cases:
         both compilation and interpretation. Such an intermediary bytecode is
         useful for ensuring platform independence or portability, as it will be
         the same across any machine, the only difference being the interpreter.
-        The most popular example would be the Java Virtual Machine\footcite{jvm},
+        The most popular example would be the Java Virtual Machine\cte{jvm},
         a bytecode interpreter for java bytecode, also used by many other languages
         such as Kotlin, Scala or Groovy.
     \item \emph{Abstract Syntax Tree interpreter.} Source code can be
@@ -101,66 +110,82 @@ Here are some examples and their use-cases:
         Self-interpreters are closely related to self-hosting compilers. These
         are in turn compilers which are written in the language they compile.
         An example of a compiler written in itself is rustc, the Rust
-        compiler\footcite{rustc}, which was bootstrapped by the OCaml language.
+        compiler\cte{rustc}, which was bootstrapped by the OCaml language.
 \end{itemize}
 This paper will implement a mixture form of an AST compiler and bytecode
-interpreter in-one.
+interpreter. This is not practical in terms of improving \name, but serves
+the purpose of combining different features of different interpreters into one
+and therefore extending the scope of the project.
+
 
 \section{Implementation}
 \subsection{Used Software}
-At the heart of creating a program in C stands the C compiler. This project uses
+At the heart of making any project in the C programming language
+stands the C compiler. This project uses
 \emph{gcc}, the GNU Compiler Collection, which, as the name suggests, also 
-supports different languages than C. Substantiating the development process is 
+supports more languages than solely C. Substantiating the development process is 
 \emph{GNU Make}, a general-purpose build system. It handles tasks like building
-the executable step-by-step from the project source code and directory clean-up.
-The C ecosystem is very easy to use and fundamentally supported by 
+the final executable program step-by-step from the project source code and directory clean-up.
+The C ecosystem is very easy to use on and fundamentally supported by 
 \emph{GNU+Linux}, the operating system used to program on.
-The main code editor used was \emph{Microsoft Visual Studio Code}, providing great
-features like built-in git integration.
+The code editor used was \emph{Microsoft Visual Studio Code}, providing great
+help with built-in git integration and auto-completion features.
 \emph{Git} is the project management and tracking software used to back up and share
-the project files on \emph{GitHub.com}, a Microsoft hosted git repository server to
-store and collaborate on source code.
+the project files on \emph{GitHub.com}, a Microsoft hosted git repository and
+web front-end to store and collaborate on source code.
 
 \subsection{The Art of Abstraction}
-When dealing with problems in general, a helpful method of going about can be
-to create an abstraction. This is also the case when building a programming
-language interpreter. Like that, an interpreter is often times subdivided into several
-components, each solving a discrete problem. One way to define
-such components could be the following:
+When dealing with problems in general, it is helpful to map out and think about
+the way of approaching the problem first. A common approach is to distill the
+problem situation down to a simpler one and extending the solution to take into
+account all important aspects later.
+
+The problem to solve in this paper is concisely to make a computer understand
+human-written and -readable text, called source code, and follow the instructions
+it proposes.
+Most interpreters follow a plain scheme to go about this problem, but the
+actual implementation of each of the steps can be heavily customized.
+Here is the problem, broken down into three steps as commonly done in other
+popular programming languages:
 \begin{enumerate}\pagelabel{simple interpreter}
-    \item Create meaningful groups of characters from the input string. This
-        process is called tokenizing and is done with the component called
-        tokenizer or lexer. As an example, the string 'aa+  bb' could result
-        in three tokens, namely 'aa', '+' and 'bb', in case space characters
-        are considered unimportant.
-    \item Ordering the tokens into a so-called parse-tree or syntax-tree.
+    \item To create meaningful groups of characters from the input string. This
+        process is called 'tokenization' and is done with the component called
+        tokenizer or lexer. As an example, the string 'aa + bb' could result
+        in three tokens, namely 'aa', '+' and 'bb'. In this case, space characters
+        are ignored. 
+        This is only an example and the grouping of characters could be done 
+        in any thinkable, logical way.
+    \item To order the tokens into parse-tree, also called syntax-tree, as
+        specified by rules. These rules are called a grammar.
         Creating an order is important, as some calculations depend on others, e.g. multiplication
-        is always done before addition. % TODO:example
-    \item Technically, the parse tree could now be interpreted directly, and
-        an output could be produced, as the interpreter know knows what to do
-        and in what order to perform computations.
+        is always done before addition. An IT data structure that can accommodate
+        such requirements is the binary tree. A binary tree consists of tree-nodes
+        that each have a maximum of two other tree nodes as their children, and
+        a tree node whose child they are, the parent node.
+    \item To interpret the parse tree, traversing through it and following the
+        instructions each of the tree-nodes represent. The outcome
+        will be the result of the computation the program describes.
 \end{enumerate}
+
 As seen above, these components, or stages as they will be called in this paper,
 each input and output data, where the output of one stage is the input of the
 respective next stage.
 
 \subsection{A Project Overview}
 
-\newpage\subsubsection{File Structure}
+\subsubsection{File Structure}
 Here is a file tree overview of the project which will be referenced
 several times in the following sections of this paper. In the depicted file tree
-only source files are shown, no build files or executables.
+only source files are shown. No build files, executable files or files that
+are of no further importance are depicted.
 \begin{flushleft}
-    \small\setlength{\DTbaselineskip}{10pt}
+    \scriptsize\singlespacing\setlength{\DTbaselineskip}{9pt}
     \dirtree{%
         .1 project root.
         .2 .gitignore.
         .2 README.md.
-        .2 LICENSE.
         .2 Makefile.
         .2 mapop.gperf.
-        .2 paper.tex.
-        .2 bibliography.bib.
         .2 pseudocode.
             .3 src/interpreter/parser.c.
         .2 src.
@@ -207,21 +232,18 @@ only source files are shown, no build files or executables.
 
 As visible in the file tree, most of the source-code files, ending in .c,
 have a corresponding header file ending in .h. This is due to the nature
-of the compilation process of the C language, which is the host language
-the interpreter of \name is written in.
+of the compilation process of the C language\cte{c_compilation}, which is the host language
+the \name interpreter is written in.
 Each header file contains only information about functions, types or variables
-available to other source or header files. The actual implementations or values
-are stored in the respective .c files.
+available to other source or header files. The actual implementations or 
+variable values are stored in the respective .c files.
 % TODO:explain C compilation or link example
 
-The pseudocode directory contains only examples used in this paper, no acutal,
-working code. The paper is written in \LaTeX and BibLaTeX and compiled with
-the tools pdflatex and biber. The paper's source files are paper.tex and
-bibliography.bib.
-
-The file mapop.gperf is a file to generate a perfect-hash-function\footcite{hash}
-with the GNU gperf tool. The generated mapop.c file is used to map string operators
-like '==' or '+' to a simpler number representation in constant time.
+The file mapop.gperf is also a source file. It is used in conjunction with the GNU gperf
+tool. The tool creates a perfect hash function\cte{hash}, which is output to the file
+src/interpreter/mappings/mapop.c. The perfect hash function is used to translate
+single- or multi-character symbols, such as '!=' and '+', to their respective
+interpreter internal representation in constant time.
 
 \subsubsection{Interpreter Construction}
 This section will explain the process of constructing and the inner workings of
@@ -278,7 +300,7 @@ explanation of the basic syntax of the C language based on the src/main.c file:
 For those who are further interested in the C programming language, there are
 many internet articles or tutorials about reading and understanding or
 writing and compiling C code. One such example is the article 'The C Beginner's
-Handbook' provided by freeCodeCamp.org linked in the sources\footcite{freeCodeCamp}
+Handbook' provided by freeCodeCamp.org linked in the sources\cte{freeCodeCamp}
 on page \pageref{bibliography}.
 
 Here is a very quick summary of what happens in the src/main.c file: the src/interpreter/interpreter.h
@@ -340,10 +362,10 @@ section.
 
 \subsubsection{The Parser}
 The parser, implemented in src/interpreter/parser.c, generates a syntax-tree
-from tokens. The algorithm used is inspired by the Pratt Parsing\footcite{pratt}
+from tokens. The algorithm used is inspired by the Pratt Parsing\cte{pratt}
 algorithm first described by Vaughan Pratt in 1973, which is a kind of precedence
 parser based on recursive descent. There is a great simple explanation of the algorithm
-by Jonathan Apodaca on dev.io\footcite{devio} linked in the references on page 
+by Jonathan Apodaca on dev.io\cte{devio} linked in the references on page 
 \pageref{bibliography} which this paper's parser takes inspiration from.
 
 The syntax tree in the implementation of \name consists of 'stnode' type
@@ -408,7 +430,7 @@ To generate such a sequence of bytes, \name recursively reads through the
 binary tree created by the parser and pushes found instructions onto a stack,
 which is in this case used similarly to a variable-sized list.
 The algorithm used is inspired by Edsger Dijkstra's 'Shunting yard 
-algorithm'\footcite{shunting_yard}, traversing the tree post-order to create
+algorithm'\cte{shunting_yard}, traversing the tree post-order to create
 a prefix notation. 
 
 A prefix notation is a way to write down mathematical expressions, except
@@ -474,7 +496,7 @@ can now be interpreted without a problem.
 \section{Results}
 
 % TODO: add examples in /examples/
-\name is built upon a well structured implementation of a recursive Pratt
+\name is built upon the implementation of a recursive Pratt
 parser and a basic tokenizer. Most actual features are reliant upon this
 foundation, such as operators and the standard library built into \name.
 
@@ -511,7 +533,7 @@ of the fibonacci sequence, as well as a disection of how that same code is inter
     On lines 12 and 13, the function \emph{std.print} is referenced. This function is implemented
     in plain C code, which internally is not handled the same as regular functions in \name,
     and is wrapper to C's function \emph{printf}. The \emph{std.print} function
-    takes any \name variable or value and prints it to standard output. On line 13, the "\n"
+    takes any \name variable or value and prints it to standard output. On line 13, the "\\n"
     is replaced by a newline-character, as \name can interpret Java-like escape-sequences.
 \item Another standard-library function is \emph{std.if}. It takes two or three arguments.
     If the first argument is true, then the second, else the the third argument or 
@@ -623,7 +645,7 @@ Pretty much any good, modern programming language does not only consist
 of it's specification and a compiler or interpreter, but of many more
 tools surrounding it.
 Such tools often include a package-manager, with which people around the world
-can share code. Examples would be npm\footcite{npm} or cargo\footcite{cargo}, 
+can share code. Examples would be npm\cte{npm} or cargo\cte{cargo}, 
 the 'Node Package Manager' for JavaScript applications and and Rust's package 
 manager respectively.
 
@@ -634,7 +656,7 @@ that are great to have and are used in other programming languages, but not
 could not be implemented into \name.
 
 \subsubsection{Foreign Function Interfaces}
-A foreign function interface\footcite{FFI} often abbreviated as FFI,
+A foreign function interface\cte{FFI} often abbreviated as FFI,
 is a mechanism by which one programming language can call functions written 
 in another. This makes a language more attractive, as it can be used with
 existing libraries from another language, instead of functions having to be
@@ -644,8 +666,8 @@ directly interact with system libraries or the operating system itsself.
 Foreign function interfaces are available in many modern languages.
 Examples are Java, Python and Rust.
 Java enables users to call C, C++ and even assembly code with the Java Native
-Interface\footcite{JNI}, JNI for short, whereas within Python C function can
-be run with the standard ctypes\footcite{ctypes} library.
+Interface\cte{JNI}, JNI for short, whereas within Python C function can
+be run with the standard ctypes\cte{ctypes} library.
 
 Foreign function interfaces are specially difficult to implement, or implement
 right. Let us assume a programming language interpreter \name written in C that
@@ -656,11 +678,11 @@ is by the way where the term foreign functions originates from. This is why the
 \name developer would have to provide that information by re-declaring the
 function inside \name, so that, with some trickery, data can be passed to and
 received from the function in the correct format, preventing a segmentation
-fault. The libffi\footcite{libffi} C-library, which is also used by Java and
+fault. The libffi\cte{libffi} C-library, which is also used by Java and
 Python for this purpose, can be used to load and call such foreign functions.
 
 \subsubsection{Reflection}
-Reflection\footcite{reflection}, also called reflective programming, describes
+Reflection\cte{reflection}, also called reflective programming, describes
 the ability of a program to examine and modify its own structure and behavior 
 at runtime. An example would be self-modifying code. This can easily be
 achieved in assembly language, which inherently does not differentiate between
@@ -683,7 +705,8 @@ Hereby I, Florian Donnelly, declare to have written this paper, also including
 the entire source code of \name by myself using resources listed under the
 'references' section on page \pageref{bibliography}.
 
-\newpage\printbibliography[heading=bibintoc]\pagelabel{bibliography}
+\newpage\section{Bibliography}
+\pagelabel{bibliography}\printbibliography[heading=none]
 
 % TODO: check correctness of all file paths!! e.g. src/...
 
