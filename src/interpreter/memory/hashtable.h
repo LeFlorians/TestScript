@@ -52,6 +52,9 @@ typedef struct {
 
 } mementry;
 
+// function to allocate mementry
+mementry *_alloc_mementry();
+
 // internally used hash types
 typedef uint32_t _H_HASH;
 #define _H_MAX_VALUE UINT32_MAX

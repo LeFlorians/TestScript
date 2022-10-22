@@ -1,8 +1,11 @@
+#include <math.h>
+
 #include "stdlib.h"
 #include "../../processing/implementations.h"
 #include "../../error/error.h"
 #include "../../bytecode.h"
 #include "../../memory/array.h"
+#include "../../memory/hashtable.h"
 
 #define ALLOC 1
 
@@ -34,9 +37,7 @@ void _print(mementry *args, mementry *dst, errorinfo *info) {
 
         // if anything else is passed, return 0
         default:
-            dst->type = NUMBER;
-            dst->value = malloc(sizeof(number));
-            *((number *)dst->value) = (number) 0;
+            dst->type = UNDEFINED;
             return;
     }
 
@@ -48,16 +49,15 @@ void _print(mementry *args, mementry *dst, errorinfo *info) {
 
 // execute a system shell comand (sh on UNIX, cmd on Windows)
 void _exec(mementry *args, mementry *dst, errorinfo *info) {
-    dst->type = NUMBER;
-    dst->value = malloc(sizeof(number));
-
     if(args->type != STRING){
-        *((number *)dst->value) = (number) 0;
+        dst->type = UNDEFINED;
         return;
     }
     
     system((char*) args->value);
     
+    dst->type = NUMBER;
+    dst->value = malloc(sizeof(number));
     *((number *)dst->value) = (number) 1;
 }
 
@@ -102,14 +102,12 @@ void _repeat(mementry *args, mementry *dst, errorinfo *info) {
     if(args->type == REFERENCE)
         args = args->value;
     if(args->type != FUNCTION) {
-        dst->type = NUMBER;
-        dst->value = malloc(sizeof(number));
-        *((number *)dst->value) = (number) 0;
+        dst->type = UNDEFINED;
         return; 
     }
 
     // prepare undefined mementry
-    mementry *params = malloc(sizeof(mementry));
+    mementry *params = _alloc_mementry();
     params->type = UNDEFINED;
 
     // call function
@@ -136,6 +134,9 @@ void _len(mementry *args, mementry *dst, errorinfo *info) {
         case ARRAY:
             num = ((array *) args->value)->size;
             break;
+        default:
+            dst->type = UNDEFINED;
+            return;
     }
 
     dst->value = malloc(sizeof(number));
@@ -144,6 +145,38 @@ void _len(mementry *args, mementry *dst, errorinfo *info) {
     return;
 }
 
+void _round(mementry *args, mementry *dst, errorinfo *info) {
+    if(args->type != NUMBER) {
+        dst->type = UNDEFINED;
+        return;
+    }
+    dst->type = NUMBER;
+    number res = roundl(*(number *)args->value);
+    *((number *) (dst->value = malloc(sizeof(number)))) = res;
+    return;
+}
+
+void _floor(mementry *args, mementry *dst, errorinfo *info) {
+    if(args->type != NUMBER) {
+        dst->type = UNDEFINED;
+        return;
+    }
+    dst->type = NUMBER;
+    number res = ceill(*(number *)args->value);
+    *((number *) (dst->value = malloc(sizeof(number)))) = res;
+    return;
+}
+
+void _ceil(mementry *args, mementry *dst, errorinfo *info) {
+    if(args->type != NUMBER) {
+        dst->type = UNDEFINED;
+        return;
+    }
+    dst->type = NUMBER;
+    number res = floorl(*(number *)args->value);
+    *((number *) (dst->value = malloc(sizeof(number)))) = res;
+    return;
+}
 // -----
 
 void loadstd(hashtable *table){
@@ -157,7 +190,10 @@ void loadstd(hashtable *table){
         // --- Array of all functions and their names in the stdlib
 
         { _repeat,"repeat" },
+        { _round, "round" },
+        { _floor, "floor" },
         { _print, "print" },
+        { _ceil,  "ceil" },
         { _type,  "type" },
         { _exec,  "exec" },
         { _len,   "len" },

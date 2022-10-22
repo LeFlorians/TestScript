@@ -1,0 +1,61 @@
+// width and height in terminal (generally 8:20)
+width = 150
+height = 40
+
+// square of the boundary that has to be crossed
+limit2 = 4
+// max number of iterations
+max_iter = 200
+
+plane_x = -3
+plane_y = -2
+plane_width = 6  
+plane_height = 4
+
+// iteration function
+mandelbrot = {
+    // initialize variables
+    cr = @[0] * plane_width / width + plane_x
+    ci = @[1] * plane_height / height + plane_y
+
+    zr = 0; zi = 0
+    iter = 0
+
+    // iteration
+    std.repeat({
+        tr = zr * zr - zi * zi + cr
+        zi = 2 * zi * zr + ci
+        zr = tr
+
+        // increase count
+        iter = iter + 1
+
+        // check
+        (zi * zi + zr * zr <= 4) && (iter < max_iter)
+    }) 
+    
+    // return amount of iterations needed (not finished if max_iter)
+    (iter)
+}
+
+// function to map value to ASCII character
+characters = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+characters_len = std.len(characters)
+ascii = {
+    characters[(std.ceil(@[0] / max_iter * (characters_len - 1)))]
+}
+
+// iterate over all pixels
+y = 0
+std.repeat({
+    x = 0
+    std.repeat({
+        value = mandelbrot(x, y)
+        std.print(ascii(value)) 
+        x = x + 1
+        (x < width)
+    })
+    std.print("\n")  
+    y = y + 1
+    (y < height)
+})

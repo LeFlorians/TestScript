@@ -10,6 +10,7 @@ static inline stnode *allocate_stnode() {
 static inline stnode *allocate_typed(nodetype type) {
     stnode *node = (stnode *)malloc(sizeof(stnode));
     node->type = type;
+    node->data.parent.right = NULL;
     return node;
 }
 

@@ -49,7 +49,7 @@ mementry *_recursiveprocess(opargs *args, char flags) {
     // check if NULL
     if(memptr == NULL){
         // return undefined instead 
-        memptr = malloc(sizeof(mementry));
+        memptr = _alloc_mementry();
         memptr->type = UNDEFINED;
         memptr->value = NULL;
         memptr->flags = (struct s_mementry_flags) {.mutable = 0, .synthetic = 1, .value_synthetic = 0};
@@ -177,7 +177,7 @@ mementry *_bnot(opargs *args) {
     else if(ro->flags.synthetic)\
         dst = ro;\
     else {\
-        dst = malloc(sizeof(mementry));\
+        dst = _alloc_mementry();\
         dst->value = malloc(sizeof(number));\
         dst->type = NUMBER;\
         dst->flags = \
@@ -212,7 +212,7 @@ mementry *_add(opargs *args){
     mementry *lo = _recursiveprocess(args, DEREFERENCE); /* Load left into dst mementry */
     
     /* make sure only to add numbers or strings (concat) */
-    if(ro->type != NUMBER && ro->type != STRING || lo->type != ro->type) {
+    if((ro->type != NUMBER && ro->type != STRING) || lo->type != ro->type) {
         throw(EI_WRONG_TYPE, args->info);
         return NULL; 
     }
@@ -224,7 +224,7 @@ mementry *_add(opargs *args){
     else if(ro->flags.synthetic)
         dst = ro;
     else {
-        dst = malloc(sizeof(mementry));
+        dst = _alloc_mementry();
         dst->value = malloc(sizeof(number));
         dst->type = ro->type;
         dst->flags = 
@@ -275,7 +275,7 @@ mementry *_equ(opargs *args){
     else if(ro->flags.synthetic)
         dst = ro;
     else {
-        dst = malloc(sizeof(mementry));
+        dst = _alloc_mementry();
         dst->value = malloc(sizeof(number));
         dst->type = NUMBER;
         dst->flags = 
@@ -409,7 +409,7 @@ mementry *_list(opargs *args){
         set_element(arr, right, 1);
 
         // create new mementry for array
-        mementry *ret = malloc(sizeof(mementry));
+        mementry *ret = _alloc_mementry();
         ret->type = TUPLE;
         ret->value = arr;
         return ret;
@@ -440,7 +440,7 @@ mementry *_pos(opargs *args){
     if(o->flags.synthetic)
         dst = o;
     else {
-        dst = malloc(sizeof(mementry));
+        dst = _alloc_mementry();
         dst->value = malloc(sizeof(number));
         dst->type = NUMBER;
         dst->flags = 
@@ -492,7 +492,7 @@ mementry *call(mementry *fun, mementry *params, errorinfo *info){
             if(params->type != TUPLE) {
                 array *arr = create_array(1);
 
-                _g_params = malloc(sizeof(mementry));
+                _g_params = _alloc_mementry();
                 _g_params->type = TUPLE;
                 _g_params->value = arr;
                 _g_params->flags = 
@@ -529,7 +529,7 @@ mementry *call(mementry *fun, mementry *params, errorinfo *info){
                 dst = fun;
             else {
                 // type and value will be set by the called function
-                dst = malloc(sizeof(mementry));
+                dst = _alloc_mementry();
                 dst->flags = (struct s_mementry_flags) 
                     {.mutable=0, .synthetic=1, .value_synthetic=1};
             }
@@ -580,7 +580,7 @@ mementry *_index(opargs *args){
             if(val->flags.value_synthetic)
                 dst = val;
             else
-                (dst = malloc(sizeof(mementry)))->type = STRING;
+                (dst = _alloc_mementry())->type = STRING;
 
             // create new substring
             char *substring = malloc(2);
@@ -604,8 +604,8 @@ mementry *_index(opargs *args){
                 throw(EI_INDEX_OOB, args->info);
                 return NULL;
             }
-            _free_synth(val);
-            return get((array *)val->value, i);
+            mementry * res = get((array *)val->value, i);
+            return res;
         }
     }
     throw(EI_WRONG_TYPE, args->info);
@@ -629,7 +629,7 @@ mementry *_array(opargs *args){
     set_element(arr, content, 0);
 
     // create new mementry for array
-    mementry *ret = malloc(sizeof(mementry));
+    mementry *ret = _alloc_mementry();
     ret->type = ARRAY;
     ret->value = arr;
     return ret;

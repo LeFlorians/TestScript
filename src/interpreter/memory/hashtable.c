@@ -15,6 +15,15 @@ static inline _H_HASH _hash(char* key) {
     return hash;
 }
 
+// return new mementry with default values
+mementry *_alloc_mementry() {
+    mementry *ret = malloc(sizeof(mementry));
+    ret->flags =
+        (struct s_mementry_flags) 
+        {.mutable = 0, .synthetic = 0, .value_synthetic = 0};
+    return ret;
+}
+
 hashtable *create_hashtable(size_t width, size_t cache_size) {
     hashtable *ret = (hashtable *) malloc(sizeof(hashtable) + width * sizeof(tableslice *));
 
