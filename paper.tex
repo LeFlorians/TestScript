@@ -1,6 +1,7 @@
-\documentclass[12pt,a4paper]{report}
+\documentclass[12pt,a4paper]{article}
 \usepackage{listings,xcolor,setspace,hyperref,dirtree}
 \usepackage{catchfile,pgffor}
+\usepackage[margin=2.5cm]{geometry} % Set page margin to 2.5cm
 \usepackage{times} % Use Times New Roman font
 \usepackage[style=alphabetic,backend=biber]{biblatex}
 
@@ -40,38 +41,78 @@
 
 \begin{document}
 
-\maketitle\tableofcontents\newpage
+\begin{titlepage}\begin{center}
+
+    \vspace*{2.5cm}
+    \Huge
+    \textbf{The Creation of a Programming Language}
+
+    \Large
+
+    \vspace{1.5cm}
+    Matura Paper by\\ \textbf{Florian Donnelly}
+    
+    \vspace{0.5cm}
+    With Supervision of\\ \textbf{Adrian Lüthi}
+
+    \vfill
+    Gymnasium Burgdorf\\ October 31, 2022
+
+\end{center}\end{titlepage}
 
 \abstract{
     This is an abstract...
 }
 
+\tableofcontents\newpage
+
 % the name of the programming language
 \newcommand{\name}{\emph{TestScript }}
 
 \section{Introduction}
-\subsection{Relevance of the Topic}
+The importance of computers in today's world is unquestioned.
+But computers are not just the metals and semiconductors they are built from,
+but would be unusable without any programs running on them.
+Creating such programs, no matter if games, web browsers or even operating systems,
+involve the use of programming languages.
+Those serve as a bridge between the human mind and its imagination, and
+the capabilities of computer hardware and are a huge time-saver when compared
+to writing machine-native code, i.e. not using a programming language.
+
+Since the year 1973, when the first programming language was invented, the
+research in programming languages has fastly advanced. But the goal has stayed
+the same, to make programming as intuitive and easy, yet fast and efficient as
+possible.
+
+A programming language is itself only a description or specification, i.e. a
+set of grammar rules defining how single instructions and entire programs
+can be written. Source code, which is a program written in a certain language,
+has to be understood by the computer hardware in order to run. It can either
+be translated to machine-native bytecode with the help of a compiler, or
+read line-by-line and interpreted by another program known as interpreter.
+Such compilers or interpreters are programs on their own that are classified
+as programming language implementation. The focus of this paper will be to
+create such a programming language implementation, more specific an interpreter
+of the custom-made \name language.
+
 \subsection{Goals}
+The focus of this project is learning about the internal design of interpreters
+by creating a custom interpreter named \name interpreter, building upon
+known strategies and algorithms used in existing programming languages.
+The goal of this paper is to further understand the inner workings of
+interpreters, stepping through human-readable source code and computing
+desired results.
+
+Modern programming languages often times provide additional tools aside from
+the implementation. This includes dependency management tools to
+easily create projects extending upon existing ones, or a web platforms for
+people to share their code, all of which is not subject of this paper.
+The \name implementation will also not include many features seen in modern
+languages, as those are often created in years of time spent planning and
+programming.
 
 \section{Theory}
-\subsection{What this is and what this is not}
-The programming language and the tools that surround it are not meant to be
-viable options for real-world projects. Instead, the final product, \name,
-should be a programming language interpreter which includes techniques and
-algorithms already present in other, well known interpreters.
-The goal of this paper is to further understand the inner workings of
-interpreters, transforming a human-readable programming language
-into a computer-executable program.
-
-Modern programming languages often times include additional tools, aside from
-the interpreter or compiler. This includes dependency management tools to
-easily create projects exdending upon existing ones, or a web-plattform for
-people to share their code.
-
-The process used in this paper is more so a very core implementation of what
-a programming language, only containing the very necessary features.
-
-\subsection{Different types of interpreters}
+\subsection{Different Types of Interpreters}
 In computing, there are several types of interpreters that behave differently.
 Here are some examples and their use-cases:
 \begin{itemize}
@@ -714,6 +755,6 @@ the entire source code of \name by myself using resources listed under the
 The appendix contains the complete source code of \name.
 
 % Append all soruce files
-\foreach \f in \files{\pagelabel{\f}\code{\f}{1}{9999}}
+% \foreach \f in \files{\pagelabel{\f}\code{\f}{1}{9999}}
 
 \end{document}
