@@ -9,7 +9,7 @@
 // ----- stdlib implementations -----
 
 // return type-string of given argument
-void _type(mementry *args, mementry *dst) {
+void _type(mementry *args, mementry *dst, errorinfo *info) {
     static const char* typeNames[] = {
         "number", "string", "undefined", "array", "tuple",
         "object", "function", "cfunction", "reference", 
@@ -22,7 +22,7 @@ void _type(mementry *args, mementry *dst) {
 }
 
 // print a value to the console
-void _print(mementry *args, mementry *dst) {
+void _print(mementry *args, mementry *dst, errorinfo *info) {
     switch(args->type) {
         case NUMBER:
             printf("%Lg", *((number *)args->value));
@@ -47,7 +47,7 @@ void _print(mementry *args, mementry *dst) {
 }
 
 // execute a system shell comand (sh on UNIX, cmd on Windows)
-void _exec(mementry *args, mementry *dst) {
+void _exec(mementry *args, mementry *dst, errorinfo *info) {
     dst->type = NUMBER;
     dst->value = malloc(sizeof(number));
 
@@ -124,6 +124,26 @@ void _repeat(mementry *args, mementry *dst, errorinfo *info) {
     free(params);
 }
 
+// get lenght of arrays, tuples, strings
+void _len(mementry *args, mementry *dst, errorinfo *info) {
+    number num = -1;
+    switch(args->type) {
+        case STRING:
+            num = strlen((char *)args->value);
+            break;
+
+        case TUPLE:
+        case ARRAY:
+            num = ((array *) args->value)->size;
+            break;
+    }
+
+    dst->value = malloc(sizeof(number));
+    dst->type = NUMBER;
+    *((number *)dst->value) = num;
+    return;
+}
+
 // -----
 
 void loadstd(hashtable *table){
@@ -136,10 +156,11 @@ void loadstd(hashtable *table){
 
         // --- Array of all functions and their names in the stdlib
 
+        { _repeat,"repeat" },
         { _print, "print" },
         { _type,  "type" },
         { _exec,  "exec" },
-        { _repeat,"repeat" },
+        { _len,   "len" },
         { _if,    "if" },
 
         // ---
