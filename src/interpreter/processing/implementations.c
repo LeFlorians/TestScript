@@ -547,11 +547,6 @@ mementry *call(mementry *fun, mementry *params, errorinfo *info){
             return NULL;
     }
 
-
-    // free arguments
-    if(dst != fun)
-        _free_synth(fun);
-
     return dst;
 }
 
