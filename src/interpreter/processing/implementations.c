@@ -40,7 +40,6 @@ void _free_synth(mementry *entry) {
     }
 }
 
-
 mementry *_recursiveprocess(opargs *args, char flags) {
     // get the next mementry from the bytecode
     mementry *memptr = *(mementry **)pop(args->code, &args->offset, sizeof(mementry *));
@@ -372,6 +371,10 @@ mementry *_ass(opargs *args){
     // create value reference
     dst->value = src->value;
 
+    // reset flags
+    dst->flags = 
+        (struct s_mementry_flags) {.mutable = 0, .synthetic = 0, .value_synthetic = 0};
+
     // free src if synthetic
     if(src->flags.synthetic)
         free(src);
@@ -463,6 +466,15 @@ mementry *_neg(opargs *args){
     return res;
 }
 
+
+// global args object used for function calls
+mementry *_g_params = NULL;
+
+mementry *_args(opargs *args) {
+    // used in functions to retreive current function arguments
+    return _g_params;
+}
+
 mementry *_call(opargs *args){
     mementry *params = _recursiveprocess(args, DEREFERENCE); // Load arguments
     mementry *fun = _recursiveprocess(args, DEREFERENCE); // Load function
@@ -480,7 +492,20 @@ mementry *_call(opargs *args){
             // reference the function code stack
             new_args.code = (bytecode *)fun->value;
 
-            // TODO: put arguments into table
+            // register arguments, assert tuple 
+            mementry *reset = _g_params;
+            if(params->type != TUPLE) {
+                array *arr = create_array(1);
+
+                _g_params = malloc(sizeof(mementry));
+                _g_params->type = TUPLE;
+                _g_params->value = arr;
+                _g_params->flags = 
+                    (struct s_mementry_flags) {.mutable = 0, .synthetic = 1, .value_synthetic = 0};
+
+                set_element(arr, params, 0);
+            } else
+                _g_params = params;
 
             // copy debug info
             new_args.info = args->info;
@@ -494,6 +519,10 @@ mementry *_call(opargs *args){
                     _free_synth(dst);
                 dst = _recursiveprocess(&new_args, 0);
             }
+
+            // reset arguments to parent function
+            // ? _free_synth(_g_params);
+            _g_params = reset;
 
             break;
         }
@@ -519,15 +548,14 @@ mementry *_call(opargs *args){
         default:
             // Throw an error if its not a function
             throw(EI_NOT_CALLABLE, args->info);
-            break;
+            _free_synth(fun);
+            return NULL;
     }
 
 
     // free arguments
     if(dst != fun)
         _free_synth(fun);
-    if(dst != params)
-        _free_synth(params);
 
     return dst;
 }

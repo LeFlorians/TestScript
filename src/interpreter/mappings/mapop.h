@@ -17,7 +17,7 @@ typedef enum {
     OP_BAND, OP_BXOR, OP_BOR, OP_LAND, OP_LOR, 
     OP_LAMBDA, OP_ASS, OP_HARDSET,
     OP_MULASS, OP_DIVASS, OP_MODASS, 
-    OP_LIST, OP_END,
+    OP_LIST, OP_END, OP_ARGS,
 
     // Special prefix operators
     OP_PREINCR, OP_PREDECR, OP_POS, OP_NEG,

@@ -41,6 +41,7 @@ operation implementationof(opcode code) {
             [OP_POS]       = _pos,
             [OP_NEG]       = _neg,
 
+            [OP_ARGS]       = _args,
             [OP_CALL]      = _call,
             [OP_INDEX]     = _index,
             [OP_ARRAY]     = _array,

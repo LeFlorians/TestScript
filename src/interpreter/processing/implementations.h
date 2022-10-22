@@ -43,6 +43,7 @@ mementry *_predecr(opargs *args);
 mementry *_pos(opargs *args);
 mementry *_neg(opargs *args);
 
+mementry *_args(opargs *args);
 mementry *_call(opargs *args);
 mementry *_index(opargs *args);
 mementry *_array(opargs *args);

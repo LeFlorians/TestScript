@@ -26,6 +26,7 @@ struct s_op;
 ++\   OP_INCR,    POSTFIX, LTR, 14    /*  Increment                 */
 --\   OP_DECR,    POSTFIX, LTR, 14    /*  Decrement                 */
 !\    OP_LNOT,    PREFIX,  RTL, 13    /*  Logical NOT               */
+@\    OP_ARGS,    PREFIX,  RTL, 13    /*  Function args (special)   */
 ~\    OP_BNOT,    PREFIX,  RTL, 13    /*  Bitwise NOT               */
 *\    OP_MUL,     INFIX,   LTR, 12    /*  Multiply                  */
 /\    OP_DIV,     INFIX,   LTR, 12    /*  Divide                    */

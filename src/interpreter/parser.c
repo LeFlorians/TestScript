@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "tokenizer.h"
 
 // helper function to allocate an stnode
 static inline stnode *allocate_stnode() {
@@ -351,8 +352,16 @@ stnode *secondary(cache *cache, unsigned char rbp){
                 ret->type = FILE_END;
                 return ret;
             }
+
             // advance to unload operator
             advance(cache);
+
+            // the args operator does not need any actual argument
+            if(ret->data.parent.op->opcode == OP_ARGS) {
+                // use FILE_END because left child is required
+                ret->data.parent.left = allocate_typed(FILE_END);
+                return ret;
+            }
 
             break;
 

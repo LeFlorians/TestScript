@@ -17,8 +17,8 @@ void _type(mementry *args, mementry *dst) {
         "block", "block_end", "member", "expr"
     };
 
-    dst->type = STRING;
     dst->value = strdup(typeNames[args->type]);
+    dst->type = STRING;
 }
 
 // print a value to the console
@@ -40,9 +40,9 @@ void _print(mementry *args, mementry *dst) {
             return;
     }
 
-    dst->type = NUMBER;
     dst->value = malloc(sizeof(number));
     *((number *)dst->value) = (number) 1;
+    dst->type = NUMBER;
     return;
 }
 

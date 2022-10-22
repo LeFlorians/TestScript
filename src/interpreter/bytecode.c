@@ -72,7 +72,7 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree) {
                 _recursiveconsume(dst, ptr, subtree->data.parent.right);
             // make sure to provide a right-hand argument if it's a function call
             else if(subtree->data.parent.op->opcode == OP_CALL)
-                _register(dst, ptr, UNDEFINED);
+                _register(dst, ptr, UNDEFINED)->value = NULL;
 
             // then push operation onto the stack
             _register(dst, ptr, EXPR)->value = 
@@ -116,7 +116,7 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree) {
 
         case FILE_END:
             // Do not push anything
-            break;;
+            break;
     }
     
     // free the subtree node
