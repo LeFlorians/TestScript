@@ -49,8 +49,12 @@ mementry *_recursiveprocess(opargs *args, char flags) {
 
     // check if NULL
     if(memptr == NULL){
-        // return NULL
-        return NULL;
+        // return undefined instead 
+        memptr = malloc(sizeof(mementry));
+        memptr->type = UNDEFINED;
+        memptr->value = NULL;
+        memptr->flags = (struct s_mementry_flags) {.mutable = 0, .synthetic = 1, .value_synthetic = 0};
+        return memptr;
     }
 
     // TODO: handle other cases
@@ -338,7 +342,7 @@ mementry *_ass(opargs *args){
     mementry *src = _recursiveprocess(args, 0); // Load right operand into src
     mementry *dst = _recursiveprocess(args, 0); // Load left operand into dst
 
-    if(dst == NULL || dst->type != REFERENCE) {
+    if(dst->type != REFERENCE) {
         throw(EI_REQ_MUTABLE, args->info);
         return NULL;
     }
@@ -532,8 +536,6 @@ mementry *_index(opargs *args){
     mementry *index = _recursiveprocess(args, DEREFERENCE);
     mementry *arr = _recursiveprocess(args, DEREFERENCE);
 
-
-    printf("arr type: %i\n", arr->type);
     if(arr->type != ARRAY && arr->type != TUPLE || index->type != NUMBER) {
         throw(EI_WRONG_TYPE, args->info);
         return NULL;

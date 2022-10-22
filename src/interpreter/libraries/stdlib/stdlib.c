@@ -23,7 +23,6 @@ void _type(mementry *args, mementry *dst) {
 
 // print a value to the console
 void _print(mementry *args, mementry *dst) {
-
     switch(args->type) {
         case NUMBER:
             printf("%Lg", *((number *)args->value));
@@ -44,6 +43,7 @@ void _print(mementry *args, mementry *dst) {
     dst->type = NUMBER;
     dst->value = malloc(sizeof(number));
     *((number *)dst->value) = (number) 1;
+    return;
 }
 
 // execute a system shell comand (sh on UNIX, cmd on Windows)
