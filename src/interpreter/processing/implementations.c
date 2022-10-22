@@ -204,7 +204,52 @@ mementry *_div(opargs *args){ CALCULATE(a / b) }
 
 mementry *_mod(opargs *args){ CALCULATE( MOD(a, b) ) }
 
-mementry *_add(opargs *args){ CALCULATE(a + b) }
+mementry *_add(opargs *args){
+    mementry *ro = _recursiveprocess(args, DEREFERENCE); /* Load right into tmp mementry */
+    mementry *lo = _recursiveprocess(args, DEREFERENCE); /* Load left into dst mementry */
+    
+    /* make sure only to add numbers or strings (concat) */
+    if(ro->type != NUMBER && ro->type != STRING || lo->type != ro->type) {
+        throw(EI_WRONG_TYPE, args->info);
+        return NULL; 
+    }
+    
+    /* determine the dst entry (or allocate a new one if ro and lo are not synthetics) */
+    mementry *dst = NULL;
+    if(lo->flags.synthetic)
+        dst = lo;
+    else if(ro->flags.synthetic)
+        dst = ro;
+    else {
+        dst = malloc(sizeof(mementry));
+        dst->value = malloc(sizeof(number));
+        dst->type = ro->type;
+        dst->flags = 
+        (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
+    }
+    
+    char *valdst = dst->flags.value_synthetic ? dst->value : 
+        malloc(ro->type == STRING ? strlen((char *)ro->value)+strlen((char *)lo->value) + 1 : sizeof(number));
+    
+    /* perform the requested calculation */
+    if(ro->type == STRING){
+        strcpy(valdst, (char *) lo->value);
+        strcat(valdst, (char *) ro->value);
+    } else
+        *(number *)valdst = a + b;
+    
+    if(!dst->flags.value_synthetic){
+        dst->flags.value_synthetic = 1;
+        dst->value = valdst;
+    }
+    
+    /* free right operand if it's not the entry to be returned */
+    if(dst != ro)
+        _free_synth(ro);
+    
+    return dst;
+
+}
 
 mementry *_sub(opargs *args){ CALCULATE(a - b) }
 
