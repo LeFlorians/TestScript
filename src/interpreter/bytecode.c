@@ -1,4 +1,5 @@
 #include "bytecode.h"
+#include "memory/hashtable.h"
 #include "processing/implementations.h"
 
 #define INITIAL_DATA_SIZE 32
@@ -9,7 +10,7 @@
 
 static inline mementry *_register(bytecode *code, stackptr ptr, typing type) {
     mementry *ret = 
-        *(mementry **)push(code, ptr, sizeof(mementry *)) = malloc(sizeof(mementry));
+        *(mementry **)push(code, ptr, sizeof(mementry *)) = _alloc_mementry();
     ret->type = type;
     return ret;
 }
