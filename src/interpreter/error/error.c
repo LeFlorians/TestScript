@@ -19,7 +19,7 @@ static const char *errformats[] = {
     "Token unmatched",
 
     "Missing argument(s) for given operator",
-    "The specified operator cannot be used on of given type(s)",
+    "The specified operator cannot be used on given type(s)",
     "The specified operand is not a function, therefore it cannot be called",
     "The specified operand must be mutable",
     "You can only assign the value from one field to another, if the source "
