@@ -5,7 +5,7 @@
 #include "error/error.h"
 #include "memory/stack.h"
 
-#define MAX_CONTENT 256
+#define MAX_CONTENT 1024 
 
 /*
 * The Tokenizer takes a string and converts it to easy-to-understand tokens

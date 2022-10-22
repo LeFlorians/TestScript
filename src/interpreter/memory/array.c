@@ -82,7 +82,7 @@ char set_element(array *arr, mementry *element, size_t index) {
 }
 
 mementry *get(array *arr, size_t index) {
-    if(index >= arr->size)
+    if(arr == NULL || index >= arr->size)
         return NULL;
     return *(arr->arr + index);
 }

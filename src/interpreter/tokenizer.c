@@ -113,7 +113,7 @@ void readtkn(cache *cache) {
                     if(cur == '\\'){
                         // read next character
                         cur = next(cache);
-                        if(!cur || cur == quotation)
+                        if(!cur)
                             break;
 
                         switch (cur) {
