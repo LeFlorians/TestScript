@@ -30,6 +30,7 @@ enum errorformat {
     EI_INDEX_OOB,
 
     // Foreign function errors
+    EF_IF_STATEMENT,
     EF_DL_LOADING_FAILED,
     EF_FF_LOADING_FAILED,
     EF_FFI_ERROR,

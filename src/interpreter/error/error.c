@@ -26,6 +26,7 @@ static const char *errformats[] = {
         "field was created in a scope equal or lower than the destination field",
     "Index out of bounds",
 
+    "Error during execution of if-statement",
     "Loading of a shared object failed",
     "Loading of foreign function failed",
     "An error occured within libffi when creating a typed foreign function",

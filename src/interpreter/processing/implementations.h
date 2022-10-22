@@ -11,6 +11,8 @@ mementry *_recursiveprocess(opargs *args, char return_reference);
 void _free_synth(mementry *entry);
 char truth_of(mementry *entry);
 
+mementry *call(mementry *fun, mementry *params, errorinfo *info);
+
 // ----- Declarations -----
 mementry *_incr(opargs *args);
 mementry *_decr(opargs *args);

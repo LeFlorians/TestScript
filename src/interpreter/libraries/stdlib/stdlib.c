@@ -61,7 +61,7 @@ void _exec(mementry *args, mementry *dst) {
     *((number *)dst->value) = (number) 1;
 }
 
-void _if(mementry *args, mementry *dst) {
+void _if(mementry *args, mementry *dst, errorinfo *info) {
     if(args->type == TUPLE){
         array *arr = ((array *)args->value);
         mementry *fun = NULL;
@@ -94,7 +94,34 @@ void _if(mementry *args, mementry *dst) {
         }
     }
     // error during if statement
-    printf("[error during execution of if-statement]\n");
+    throw(EF_IF_STATEMENT, info);
+}
+
+// while loop
+void _repeat(mementry *args, mementry *dst, errorinfo *info) {
+    if(args->type == REFERENCE)
+        args = args->value;
+    if(args->type != FUNCTION) {
+        dst->type = NUMBER;
+        dst->value = malloc(sizeof(number));
+        *((number *)dst->value) = (number) 0;
+        return; 
+    }
+
+    // prepare undefined mementry
+    mementry *params = malloc(sizeof(mementry));
+    params->type = UNDEFINED;
+
+    // call function
+    mementry *tmp;
+    do {
+        tmp = call(args, params, info);
+        dst->type = tmp->type;
+        dst->value = tmp->value;
+    } while(truth_of(dst));
+    
+    // free params
+    free(params);
 }
 
 // -----
@@ -112,6 +139,7 @@ void loadstd(hashtable *table){
         { _print, "print" },
         { _type,  "type" },
         { _exec,  "exec" },
+        { _repeat,"repeat" },
         { _if,    "if" },
 
         // ---

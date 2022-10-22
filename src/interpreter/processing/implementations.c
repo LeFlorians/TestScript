@@ -475,10 +475,7 @@ mementry *_args(opargs *args) {
     return _g_params;
 }
 
-mementry *_call(opargs *args){
-    mementry *params = _recursiveprocess(args, DEREFERENCE); // Load arguments
-    mementry *fun = _recursiveprocess(args, DEREFERENCE); // Load function
-
+mementry *call(mementry *fun, mementry *params, errorinfo *info){
     // mementry for the result
     mementry *dst = NULL;
 
@@ -508,7 +505,7 @@ mementry *_call(opargs *args){
                 _g_params = params;
 
             // copy debug info
-            new_args.info = args->info;
+            new_args.info = info;
 
             // create a stack pointer, starting at the end
             new_args.offset = new_args.code->elements;
@@ -540,14 +537,14 @@ mementry *_call(opargs *args){
             }
 
             // call function from shared object
-            callfunc((cfunction *) fun->value, params, dst);
+            callfunc((cfunction *) fun->value, params, dst, info);
 
             // return the result that's stored in dst now
             break;
 
         default:
             // Throw an error if its not a function
-            throw(EI_NOT_CALLABLE, args->info);
+            throw(EI_NOT_CALLABLE, info);
             _free_synth(fun);
             return NULL;
     }
@@ -558,6 +555,13 @@ mementry *_call(opargs *args){
         _free_synth(fun);
 
     return dst;
+}
+
+mementry *_call(opargs *args){
+    mementry *params = _recursiveprocess(args, DEREFERENCE); // Load arguments
+    mementry *fun = _recursiveprocess(args, DEREFERENCE); // Load function
+
+    return call(fun, params, args->info);
 }
 
 mementry *_index(opargs *args){
