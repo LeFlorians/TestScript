@@ -564,21 +564,53 @@ mementry *_call(opargs *args){
 
 mementry *_index(opargs *args){
     mementry *index = _recursiveprocess(args, DEREFERENCE);
-    mementry *arr = _recursiveprocess(args, DEREFERENCE);
+    mementry *val = _recursiveprocess(args, DEREFERENCE);
+  
+    if(index->type == NUMBER) {
+        size_t i = (size_t) *(number *)index->value;
 
-    if(arr->type != ARRAY && arr->type != TUPLE || index->type != NUMBER) {
-        throw(EI_WRONG_TYPE, args->info);
-        return NULL;
-    }
+        if(val->type == STRING) {
+            if(i < 0 || i >= strlen((char *)val->value)) {
+                throw(EI_INDEX_OOB, args->info);
+                return NULL;
+            }
+           
+            // create destination register
+            mementry *dst;
+            if(val->flags.value_synthetic)
+                dst = val;
+            else
+                (dst = malloc(sizeof(mementry)))->type = STRING;
 
-    size_t i = (size_t) *(number *)index->value;
-    if(i < 0 || i >= ((array *)arr->value)->size) {
-        throw(EI_INDEX_OOB, args->info);
-        return NULL;
+            // create new substring
+            char *substring = malloc(2);
+
+            // load substring
+            substring[0] = *((char *)val->value + i);
+            substring[1] = '\0';
+
+            // allocate previous string
+            if(dst == val){
+                if(val->flags.value_synthetic)
+                    free(val->value);
+            } else
+                _free_synth(dst);
+
+            // set and return substring
+            dst->value = substring;
+            return dst; 
+        } else {
+            if(i < 0 || i >= ((array *)val->value)->size) {
+                throw(EI_INDEX_OOB, args->info);
+                return NULL;
+            }
+            _free_synth(val);
+            return get((array *)val->value, i);
+        }
     }
-   
-    return get((array *)arr->value, i);
-}
+    throw(EI_WRONG_TYPE, args->info);
+    return NULL;
+ }
 
 mementry *_array(opargs *args){
     // array of references
