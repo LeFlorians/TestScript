@@ -327,11 +327,9 @@ mementry *_bxor(opargs *args){
 mementry *_bor(opargs *args){
     CALCULATE( (number) ((long long)a | (long long) b) ) }
 
-mementry *_land(opargs *args){
-}
+mementry *_land(opargs *args){ CALCULATE(a && b) }
 
-mementry *_lor(opargs *args){
-}
+mementry *_lor(opargs *args){ CALCULATE(a || b) }
 
 mementry *_lambda(opargs *args){
 

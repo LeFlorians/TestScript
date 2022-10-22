@@ -105,6 +105,7 @@ char in_expression; // does not work for multi-thread
 stnode *expr(cache *cache, unsigned char rbp) {
 
     stnode *left = secondary(cache, rbp);
+   
     in_expression = 1;
 
     // If secondary is done, just return
@@ -362,6 +363,9 @@ stnode *secondary(cache *cache, unsigned char rbp){
                 ret->data.parent.left = allocate_typed(FILE_END);
                 return ret;
             }
+
+            // make sure to initialize right child
+            ret->data.parent.right = NULL;
 
             break;
 
