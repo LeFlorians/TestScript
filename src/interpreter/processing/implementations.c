@@ -385,8 +385,8 @@ mementry *_hardset(opargs *args) {
 }
 
 mementry *_list(opargs *args){
-    mementry *right = _recursiveprocess(args, 0);
-    mementry *left = _recursiveprocess(args, 0);
+    mementry *right = _recursiveprocess(args, DEREFERENCE);
+    mementry *left = _recursiveprocess(args, DEREFERENCE);
 
     if(left->type == TUPLE) {
         if(right->type == TUPLE) {
@@ -614,7 +614,7 @@ mementry *_index(opargs *args){
 
 mementry *_array(opargs *args){
     // array of references
-    mementry *content = _recursiveprocess(args, 0);
+    mementry *content = _recursiveprocess(args, DEREFERENCE);
 
     // if tuple, just make array
     if(content->type == TUPLE){

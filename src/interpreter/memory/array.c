@@ -46,7 +46,7 @@ char set(array *arr, array *element, size_t index) {
     memcpy(arr->arr + index, element->arr, sizeof(mementry *) * element->size);
 
     // increase size
-    arr->size++;
+    arr->size += element->size;
     return 1;
 }
 
