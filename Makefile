@@ -7,6 +7,10 @@ CC := gcc
 LIBS := -lm
 CFLAGS := -Wall -pg -Og -g -Wno-switch -Wno-return-type
 
+# paper flags
+JOBNAME := paper
+paper_raw: JOBNAME := paper_raw
+
 # apply optimizations for the release target
 release: CFLAGS := -Wall -O3
 
@@ -35,12 +39,14 @@ test: all
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
-paper: clean paper.tex
+paper_raw: paper 
+
+paper: clean paper.tex paper/bibliography.bib
 	@(git ls-tree -r main --name-only |\
 		grep -E "\.h$$|\.c$$|Makefile$$|\.gperf$$|.gitignore$$|\.md$$" |\
 		tr '\n' ',' | sed '$$s/,$$//' > paper/files.txt &&\
-		pdflatex paper.tex && biber paper &&\
-		pdflatex paper.tex && pdflatex paper.tex)
+		pdflatex -jobname=$(JOBNAME) paper.tex && biber $(JOBNAME) &&\
+		pdflatex -jobname=$(JOBNAME) paper.tex && pdflatex -jobname=$(JOBNAME) paper.tex)
 	@echo 'Done!'
 
 # target to generate mapop.c
@@ -49,7 +55,7 @@ mapop:
 	gperf --output-file=./src//interpreter/mappings/mapop.c ./mapop.gperf
 
 clean:
-	@rm -f -- paper.toc paper.aux paper.run.xml paper.log paper.bcf \
-		paper.bbl paper.blg paper.out paper.pdf paper.tex.bbl paper.tex.blg \
-		paper/files.txt paper.lof \
+	@rm -f -- *.toc *.aux *.run.xml *.log *.bcf \
+		*.bbl *.blg *.out *.pdf *.tex.bbl *.tex.blg \
+		paper/files.txt *.lof \
 		$(TARGET) $(TARGET).exe gmon.out $(call rwildcard,src/,*.o)

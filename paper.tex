@@ -2,6 +2,7 @@
 \usepackage{listings,xcolor,setspace,hyperref,dirtree}
 \usepackage{catchfile,pgffor,graphicx,float,caption}
 \usepackage[margin=2.5cm]{geometry} % Set page margin to 2.5cm
+\usepackage{etoolbox}
 \usepackage{times} % Use Times New Roman font
 \usepackage[style=alphabetic,backend=biber]{biblatex}
 
@@ -10,17 +11,26 @@
 \author{Florian Donnelly}
 \title{The Creation of a Programming Language}
 
+% Specify the version
+\newcommand{\ver}[1]{
+    \expandafter\ifstrequal\expandafter{\jobname}{paper}
+    {#1}{\begin{center}-Removed, see full version-\end{center}}
+}
+
 % Read contents of files.txt into \files
 \CatchFileDef{\files}{paper/files.txt}{\endlinechar=-1}
 
 % Include C code from file #1 from lines #2 to #3
 \newcommand{\code}[3] {
+    \ver{
     \lstset{basicstyle=\scriptsize,keywordstyle=\color{blue},stepnumber=5,
         stringstyle=\color[rgb]{.3,.5,.1},commentstyle=\color{gray},
-        morecomment=[l][\color{magenta}]{\#}}
-    \lstinputlisting[language=C,numbers=left,
+        morecomment=[l][\color{magenta}]{\#},
+        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}}
+    \lstinputlisting[language=C,numbers=left,breaklines=true,
         frame=single,title=#1,
         firstnumber=#2,firstline=#2,lastline=#3]{#1}
+    }
 }
 
 % remove heading from lof
@@ -58,6 +68,9 @@
 
 % Set line spacing
 \onehalfspacing
+
+
+
 
 \begin{document}
 
@@ -247,14 +260,14 @@ respective next stage.
 In the following paragraphs, the project in its entirety will be briefly
 presented, giving an overview over files and correlations.
 
-\subsubsection{File Structure}
+\subsubsection{File Structure}\label{FileStructure}
 \begin{minipage}{\textwidth}
 
 Here is a file tree overview of the project which will be referenced
 several times in the following sections of this paper. In the depicted file tree
 only source files are shown. No build files, executable files or files that
 are of no further importance regarding \name are depicted.
-\begin{flushleft}
+\ver{\begin{flushleft}
     \scriptsize\setlength{\DTbaselineskip}{5pt}
     \dirtree{%
         .1 project root.
@@ -304,9 +317,10 @@ are of no further importance regarding \name are depicted.
                 .4 tokenizer.c.
                 .4 tokenizer.h.
     }
-\end{flushleft}
+\end{flushleft}}
 
 \end{minipage}
+\linebreak
 
 As visible in the file tree, most of the source-code files, ending in .c,
 have a corresponding header file ending in .h. This is due to the nature
@@ -315,7 +329,7 @@ the \name{} interpreter is written in.
 Each header file contains only information about functions, types or variables
 available to other source or header files. The actual implementations or 
 variable values are stored in the respective .c files.
-% TODO:explain C compilation or link example
+% TODO:explain C compilation or link example, fix hash citation below
 
 The file mapop.gperf is also a source file. It is used in conjunction with the GNU gperf
 tool. The tool creates a perfect hash function\cte{hash}, which is output to the file
@@ -325,12 +339,14 @@ interpreter internal representation in constant time.
 
 \subsubsection{Flowchart}
 
+\ver{
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.6\textwidth]{paper/Data Flow Diagram.png}
     \caption{A \name{} Data Flow Diagram}
     \label{f_diagram}
 \end{figure}
+}
 
 The above figure is a representation of how different components of the entire
 \name{} implementation interact and work together. Each next stage performs
@@ -794,13 +810,19 @@ can be found in the file examples/mandelbrot.nts.
 Figure \ref{f_diagram} was created using an online diagram creation tool available
 on app.diagrams.net \cte{drawio}.
 
+The entire source code can be found in the Appendix, section \ref{Appendix}.
+
 % TODO: check correctness of all file paths!! e.g. src/...
 
-\newpage\section{Appendix}
+\newpage\section{Appendix}\label{Appendix}
 The appendix contains the complete source code of \name{}.
+See the file tree under 'File Structure' in section \ref{FileStructure}
+to get an overview.
 
 % Append all soruce files
-% \foreach \f in \files{\pagelabel{\f}\code{\f}{1}{9999}}
+\ver{
+\foreach \f in \files{\pagelabel{\f}\code{\f}{1}{9999}}
+}
 
 \end{document}
 
