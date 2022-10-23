@@ -38,7 +38,7 @@ test: all
 paper: clean paper.tex
 	@(git ls-tree -r main --name-only |\
 		grep -E "\.h$$|\.c$$|Makefile$$|\.gperf$$|.gitignore$$|\.md$$" |\
-		tr '\n' ',' | sed '$$s/,$$//' > files.txt &&\
+		tr '\n' ',' | sed '$$s/,$$//' > paper/files.txt &&\
 		pdflatex paper.tex && biber paper &&\
 		pdflatex paper.tex && pdflatex paper.tex)
 	@echo 'Done!'
@@ -51,5 +51,5 @@ mapop:
 clean:
 	@rm -f -- paper.toc paper.aux paper.run.xml paper.log paper.bcf \
 		paper.bbl paper.blg paper.out paper.pdf paper.tex.bbl paper.tex.blg \
-		files.txt \
+		paper/files.txt paper.lof \
 		$(TARGET) $(TARGET).exe gmon.out $(call rwildcard,src/,*.o)

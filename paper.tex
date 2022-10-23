@@ -1,26 +1,37 @@
 \documentclass[12pt,a4paper]{article}
 \usepackage{listings,xcolor,setspace,hyperref,dirtree}
-\usepackage{catchfile,pgffor}
+\usepackage{catchfile,pgffor,graphicx,float,caption}
 \usepackage[margin=2.5cm]{geometry} % Set page margin to 2.5cm
 \usepackage{times} % Use Times New Roman font
 \usepackage[style=alphabetic,backend=biber]{biblatex}
 
-\addbibresource{bibliography.bib}
+\addbibresource{paper/bibliography.bib}
 
 \author{Florian Donnelly}
 \title{The Creation of a Programming Language}
 
 % Read contents of files.txt into \files
-\CatchFileDef{\files}{files.txt}{\endlinechar=-1}
+\CatchFileDef{\files}{paper/files.txt}{\endlinechar=-1}
 
 % Include C code from file #1 from lines #2 to #3
 \newcommand{\code}[3] {
-    \lstset{language=C,numbers=left,basicstyle=\scriptsize,
-        frame=single,title=#1,keywordstyle=\color{blue},stepnumber=5,
-        stringstyle=\color{green},commentstyle=\color{gray},
+    \lstset{basicstyle=\scriptsize,keywordstyle=\color{blue},stepnumber=5,
+        stringstyle=\color[rgb]{.3,.5,.1},commentstyle=\color{gray},
         morecomment=[l][\color{magenta}]{\#}}
-    \lstinputlisting[firstnumber=#2,firstline=#2,lastline=#3]{#1}
+    \lstinputlisting[language=C,numbers=left,
+        frame=single,title=#1,
+        firstnumber=#2,firstline=#2,lastline=#3]{#1}
 }
+
+% remove heading from lof
+\makeatletter
+\renewcommand\listoffigures{%
+        \@starttoc{lof}%
+}
+\makeatother
+
+% set caption width
+\captionsetup{width=.7\linewidth}
 
 % Cite text
 \newcommand{\cte}[1] {
@@ -34,6 +45,15 @@
     \end{center}
 }
 
+\newcommand{\paste}[1]{
+    \begin{tabular}{c}
+    \lstinputlisting[inputencoding=utf8,extendedchars=true,
+        basicstyle=\tiny\bfseries,language={}]{#1}
+    \end{tabular}
+}
+
+% the name of the programming language
+\newcommand{\name}{\emph{TestScript}}
 \newcommand{\pagelabel}[1]{\phantomsection\label{#1}}
 
 % Set line spacing
@@ -48,34 +68,15 @@
     \textbf{The Creation of a Programming Language}
 
     \vspace{1.5cm}
-    \tiny
-    \verb|                               ..............                               |\linebreak
-    \verb|                      ................................                      |\linebreak
-    \verb|                 ...........................',^............                 |\linebreak
-    \verb|             ...............................''`^``$............             |\linebreak
-    \verb|          ................................'''`"l"`''..............          |\linebreak
-    \verb|        ..............................'''''`,$$$$-,`''..............        |\linebreak
-    \verb|      ............................'''`'''```"$$$$$^```'''''^..........      |\linebreak
-    \verb|    ...........................''''^}mw";$$$$$$$$$$$$$"^^;"I"'..........    |\linebreak
-    \verb|   ..........................''''`"^,$$$$$$$$$$$$$$$$$$$$$l^''...........   |\linebreak
-    \verb|  ...............'``''''''''''''`^+$$$$$$$$$$$$$$$$$$$$$$$$^``'...........  |\linebreak
-    \verb| ...............'''`"_i`^i^"````:$$$$$$$$$$$$$$$$$$$$$$$$$$$"''............ |\linebreak
-    \verb| ..............'''^`,x$$$$$$$$""$$$$$$$$$$$$$$$$$$$$$$$$$$$$l`'............ |\linebreak
-    \verb| .......'''''''^^""l$$$$$$$$$$$l$$$$$$$$$$$$$$$$$$$$$$$$$$$$''............. |\linebreak
-    \verb|$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"`'''..............|\linebreak
-    \verb| .......'''''''^^""l$$$$$$$$$$$l$$$$$$$$$$$$$$$$$$$$$$$$$$$$''............. |\linebreak
-    \verb| ..............'''^`,x$$$$$$$$""$$$$$$$$$$$$$$$$$$$$$$$$$$$$l`'............ |\linebreak
-    \verb| ...............'''`"_i`^i^"````:$$$$$$$$$$$$$$$$$$$$$$$$$$$"''............ |\linebreak
-    \verb|  ...............'``''''''''''''`^+$$$$$$$$$$$$$$$$$$$$$$$$^``'...........  |\linebreak
-    \verb|   ..........................''''`"^,$$$$$$$$$$$$$$$$$$$$$l^''...........   |\linebreak
-    \verb|    ...........................''''^}mw";$$$$$$$$$$$$$"^^;"I"'..........    |\linebreak
-    \verb|      ............................'''`'''```"$$$$$^```'''''^..........      |\linebreak
-    \verb|        ..............................'''''`,$$$$-,`''..............        |\linebreak
-    \verb|          ................................'''`"l"`''..............          |\linebreak
-    \verb|             ...............................''`^``$............             |\linebreak
-    \verb|                 ...........................',^............                 |\linebreak
-    \verb|                      ................................                      |\linebreak
-    \verb|                               ..............                               |\linebreak
+
+    % Include Mandelbrot on title page
+    \begin{figure}[H]
+        \centering
+        \paste{paper/mandelbrot.tex}
+        \caption{ASCII representation of the Mandelbrot Set, generated with \name{}}
+        \label{f_mandelbrot}
+    \end{figure}
+
 
     \Large
     \vspace{1.5cm}
@@ -89,14 +90,13 @@
 
 \end{center}\end{titlepage}
 
+\normalsize
+
 \abstract{
     This is an abstract...
 }
 
 \tableofcontents\newpage
-
-% the name of the programming language
-\newcommand{\name}{\emph{TestScript }}
 
 \section{Introduction}
 The importance of computers in today's world is unquestioned.
@@ -122,11 +122,11 @@ read line-by-line and interpreted by another program known as interpreter.
 Such compilers or interpreters are programs on their own that are classified
 as programming language implementation. The focus of this paper will be to
 create such a programming language implementation, more specific an interpreter
-of the custom-made \name language.
+of the custom-made \name{} language.
 
 \subsection{Goals}
 The focus of this project is learning about the internal design of interpreters
-by creating a custom interpreter named \name interpreter, building upon
+by creating a custom interpreter named \name{} interpreter, building upon
 known strategies and algorithms used in existing programming languages.
 The goal of this paper is to further understand the inner workings of
 interpreters, stepping through human-readable source code and computing
@@ -136,7 +136,7 @@ Modern programming languages often times provide additional tools aside from
 the implementation. This includes dependency management tools to
 easily create projects extending upon existing ones, or a web platforms for
 people to share their code, all of which is not subject of this paper.
-The \name implementation will also not include many features seen in modern
+The \name{} implementation will also not include many features seen in modern
 languages, as those are often created in years of time spent planning and
 programming.
 
@@ -183,10 +183,12 @@ Here are some examples and their use-cases:
         compiler\cte{rustc}, which was bootstrapped by the OCaml language.
 \end{itemize}
 This paper will implement a mixture form of an AST compiler and bytecode
-interpreter. This is not practical in terms of improving \name, but serves
-the purpose of combining different features of different interpreters into one
-and therefore extending the scope of the project.
-
+interpreter. The advantage is that an AST carries along lots of information
+not needed in later stages of interpretation which can be discarded. The AST
+is converted to an intermediary bytecode format which only contains
+necessary information about the program. Such bytecode can then be cached,
+e.g. kept in memory, meaning it only has to be converted once and can be
+used many times, also leading to a performance benefit.
 
 \section{Implementation}
 \subsection{Used Software}
@@ -204,7 +206,7 @@ help with built-in git integration and auto-completion features.
 the project files on \emph{GitHub.com}, a Microsoft hosted git repository and
 web front-end to store and collaborate on source code.
 
-\subsection{The Art of Abstraction}
+\subsection{The Art of Simplification}
 When dealing with problems in general, it is helpful to map out and think about
 the way of approaching the problem first. A common approach is to distill the
 problem situation down to a simpler one and extending the solution to take into
@@ -242,14 +244,18 @@ each input and output data, where the output of one stage is the input of the
 respective next stage.
 
 \subsection{A Project Overview}
+In the following paragraphs, the project in its entirety will be briefly
+presented, giving an overview over files and correlations.
 
 \subsubsection{File Structure}
+\begin{minipage}{\textwidth}
+
 Here is a file tree overview of the project which will be referenced
 several times in the following sections of this paper. In the depicted file tree
 only source files are shown. No build files, executable files or files that
-are of no further importance are depicted.
+are of no further importance regarding \name are depicted.
 \begin{flushleft}
-    \scriptsize\singlespacing\setlength{\DTbaselineskip}{9pt}
+    \scriptsize\setlength{\DTbaselineskip}{5pt}
     \dirtree{%
         .1 project root.
         .2 .gitignore.
@@ -300,10 +306,12 @@ are of no further importance are depicted.
     }
 \end{flushleft}
 
+\end{minipage}
+
 As visible in the file tree, most of the source-code files, ending in .c,
 have a corresponding header file ending in .h. This is due to the nature
 of the compilation process of the C language\cte{c_compilation}, which is the host language
-the \name interpreter is written in.
+the \name{} interpreter is written in.
 Each header file contains only information about functions, types or variables
 available to other source or header files. The actual implementations or 
 variable values are stored in the respective .c files.
@@ -315,15 +323,28 @@ src/interpreter/mappings/mapop.c. The perfect hash function is used to translate
 single- or multi-character symbols, such as '!=' and '+', to their respective
 interpreter internal representation in constant time.
 
-\subsubsection{Interpreter Construction}
+\subsubsection{Flowchart}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{paper/Data Flow Diagram.png}
+    \caption{A \name{} Data Flow Diagram}
+    \label{f_diagram}
+\end{figure}
+
+The above figure is a representation of how different components of the entire
+\name{} implementation interact and work together. Each next stage performs
+operations on the output data of the proper. The src/interpreter/interpreter.c
+file, here depicted as 'Interpreter', chains all stages together.
+
+\subsection{Implementing \name{}}
 This section will explain the process of constructing and the inner workings of
-the \name interpreter. It is therefore the most complicated and detailed section
+the \name{} interpreter. It is therefore the most complicated and detailed section
 in this paper. Examples will be made with both pseudo code and actual source
 code from the project to further illustrate the decisions made during
-interpreter design. File paths
-used are relative to the project's root directory.
+interpreter design. The file paths used are relative to the project's root directory.
 
-The syntax of \name is not specified in a formal programming language grammar,
+The syntax of \name{} is not specified in a formal programming language grammar,
 but rather implemented from scratch in the files src/interpreter/tokenizer.c 
 and src/interpreter/parser.c.
 
@@ -380,23 +401,22 @@ from the said included header is called with the selected input.
 
 \subsubsection{The Interpreter}
 This section deals with the file src/interpreter/interpreter.c which guides
-input data through the various stages of the \name interpreter in its
-function 'interpret' which is called from the program's main function.
-This section does not go in detail on the following stages, see their own sections.
+input data through the various stages of the \name{} interpreter in its
+function 'interpret', which is called from the program's main function.
 
 The 'interpret' function calls the parser to generate a syntax-tree from tokens retrieved
 from the tokenizer implemented in src/interpreter/parser.c and 
 src/interpreter/tokenizer.c respectively.
 
 After that, variables with names are 'localized', meaning their names are
-replaced by addresses where their value is stored by src/interpreter/localizer.c.
-The advantage of performing this step so early is that mapping variable names
-to memory is a rather resource-intensive task with time complexity of maximally 
-O(log n), n being the amount of different variables.
+mapped to addresses in memory where their value is stored. Doing this before
+bytecode compilation has a performance benefit. 
+The mapping is done with a custom hashtable datastructure with average time
+complexity of O(log n), n being the amount of different variables.
 
-The syntax tree could now be interpreted directly, but is instead converted
-to an intermediary internal bytecode format by src/interpreter/bytecode.c.
-This step is done so that code that is ran multiple times does not convey
+The syntax tree could now be interpreted directly, but as said, is instead converted
+to an intermediate internal bytecode format by src/interpreter/bytecode.c.
+This step is done so that code that is run multiple times does not convey
 the problem of time overhead when traversing the syntax tree, but the current
 implementation does not take advantage of this.
 
@@ -438,7 +458,7 @@ parser based on recursive descent. There is a great simple explanation of the al
 by Jonathan Apodaca on dev.io\cte{devio} linked in the references on page 
 \pageref{bibliography} which this paper's parser takes inspiration from.
 
-The syntax tree in the implementation of \name consists of 'stnode' type
+The syntax tree in the implementation of \name{} consists of 'stnode' type
 pointers, as defined in src/interpreter/parser.h. Each such node depending
 on its 'nodetype', declared in src/interpreter/tokenizer.h,
 is either a value-node storing a pointer to some data, e.g. a number or text, or a
@@ -451,7 +471,7 @@ would be to perform multiplication before addition, e.g. '2+3*4' would
 result in 14 and is not the same as '(2+3)*4'. Therefore, each operator is
 assigned a precedence, or priority, as well as an associativity, which is
 either 'Left to Right' or 'Right to Left'. An example of associativity is
-\emph{'20 / 10 / 2'}. Both in C as well as in \name, the division operator is
+\emph{'20 / 10 / 2'}. Both in C as well as in \name{}, the division operator is
 left-to-right associative, meaning the stated expression is the same as
 \emph{'(20 / 10) / 2'} and not as \emph{'20 / (10 / 2)'}. Both precedence 
 and associativity are properties that are defined in the file mapop.gpref for
@@ -491,12 +511,12 @@ has to be run several times. Instead of generating a time and memory overhead
 having to walk along tree-nodes recursively, only the list of instructions in
 the bytecode can be traversed, which is much faster. 
 
-Not to be confused with machine-native bytecode, the bytecode compiler in \name
+Not to be confused with machine-native bytecode, the bytecode compiler in \name{}
 generates byte-sequences in an internal format, that are then interpreted. A
 JIT compiler would instead compile the AST down to machine-native bytecode, which
 could run directly on the system's hardware and would not have to be interpreted.
 
-To generate such a sequence of bytes, \name recursively reads through the
+To generate such a sequence of bytes, \name{} recursively reads through the
 binary tree created by the parser and pushes found instructions onto a stack,
 which is in this case used similarly to a variable-sized list.
 The algorithm used is inspired by Edsger Dijkstra's 'Shunting yard 
@@ -518,7 +538,7 @@ Here is an example:
     \item In common prefix notation, also called Polish notation, the
         operators would now precede the operands as such:
         \expr{\emph{'- 1 (/ (* 2 4) (+ 5 6))'}}
-    \item But in \name the operands are pushed onto the stack is reverse order.
+    \item But in \name{} the operands are pushed onto the stack is reverse order.
         This would look like the following:
         \expr{\emph{'- (/ (+ 6 5) (* 4 2)) 1'}}
     \item The brackets are not needed, because for every operator, the amount
@@ -527,20 +547,20 @@ Here is an example:
         beforehand. This means the above statement would look like this:
         \expr{\emph{'- / + 6 5 * 4 2 1'}}
         This is an ideal abstraction of how data 
-        is represented internally in \name.
+        is represented internally in \name{}.
 \end{enumerate}
 
 \subsubsection{The Runtime}
-This is the last stage of interpreting program code as implemented in \name.
+This is the last stage of interpreting program code as implemented in \name{}.
 The runtime steps through the intermediary bytecode created by the bytecode
 compiler and evaluates expressions by plugging in the provided values.
 All available expressions are implemented in 
 src/interpreter/processing/implementations.c.
 
 The evaluation of expressions also works in a recursive manner. Here is an 
-example of \name's bytecode notation and how it would be evaluated at runtime:
+example of \name{}'s bytecode notation and how it would be evaluated at runtime:
 \begin{itemize}
-    \item Assume the input in \name's bytecode to resemble the following expression: 
+    \item Assume the input in \name{}'s bytecode to resemble the following expression: 
         \expr{\emph{'- 6 * 3 4'}}
         In infix notation, this would be equivalent to 
         \expr{\emph{'(4 * 3) - 6'}.}
@@ -560,23 +580,23 @@ example of \name's bytecode notation and how it would be evaluated at runtime:
         and again, calculate and return the result, which is 6.
 \end{itemize}
 
-That's it! With all the possible expressions available, entire programs
-can now be interpreted without a problem.
+That is it. With all the expressions available, entire programs
+can now be interpreted.
 
 \section{Results}
 
 % TODO: add examples in /examples/
-\name is built upon the implementation of a recursive Pratt
+\name{} is built upon the implementation of a recursive Pratt
 parser and a basic tokenizer. Most actual features are reliant upon this
-foundation, such as operators and the standard library built into \name.
+foundation, such as operators and the standard library built into \name{}.
 
 \subsection{Syntax}
-The syntax of \name can be compared to the syntax of JavaScript, except
+The syntax of \name{} can be compared to the syntax of JavaScript, except
 there are no keywords at all, and everything is controlled via operators,
 which are non-alphanumeric characters. Such operators include the plus-sign 
 for addition, or the equals-sign for variable assignment.
 
-Following is a piece of example \name code, printing out the first ten numbers
+Following is a piece of example \name{} code, printing out the first ten numbers
 of the fibonacci sequence, as well as a disection of how that same code is interpreted.
 \code{examples/fibonacci.nts}{1}{999}
 \begin{itemize}
@@ -593,7 +613,7 @@ of the fibonacci sequence, as well as a disection of how that same code is inter
 \item Another variable \emph{count} is declared and defined as number in one step on line 4.
     This variable will be used to limit the amount of numbers the program outputs.
 \item Yet another variable, \emph{f}, is declared and assigned a function as its
-    value on line 6. In \name, normal functions do not have any arguments, 
+    value on line 6. In \name{}, normal functions do not have any arguments, 
     but they can interact with variables that were created outside their scope.
 \item Lines 7 to 10 hold mathematical expressions. At first, a is assigned its current value
     plus the current value of b. Then in line 8, b is assigned the now new value of a minus the
@@ -601,10 +621,10 @@ of the fibonacci sequence, as well as a disection of how that same code is inter
     Lastly the variable \emph{count} is decremented by one.
 \item Now come the interesting parts of this program.
     On lines 12 and 13, the function \emph{std.print} is referenced. This function is implemented
-    in plain C code, which internally is not handled the same as regular functions in \name,
+    in plain C code, which internally is not handled the same as regular functions in \name{},
     and is wrapper to C's function \emph{printf}. The \emph{std.print} function
-    takes any \name variable or value and prints it to standard output. On line 13, the "\\n"
-    is replaced by a newline-character, as \name can interpret Java-like escape-sequences.
+    takes any \name{} variable or value and prints it to standard output. On line 13, the "\\n"
+    is replaced by a newline-character, as \name{} can interpret Java-like escape-sequences.
 \item Another standard-library function is \emph{std.if}. It takes two or three arguments.
     If the first argument is true, then the second, else the the third argument or 
     \emph{undefined} is returned. A value is true, only if it is a number not equal to zero
@@ -617,14 +637,14 @@ of the fibonacci sequence, as well as a disection of how that same code is inter
     until the variable \emph{count} reaches a value of zero.
 \end{itemize}
 
-\subsection{Security}
+\subsection{Name Shadowing}
 Here is another example, which in contrast to the example above, focuses on a
-security concept implemented in \name.
+security concept implemented in \name{}.
 \code{examples/exec.nts}{1}{999}
 The code begins by creating the variable \emph{var}, which holds a string, and
 \emph{f}, which calls the function \emph{std.exec} with var as argument.
 Line number six holds a comment, indicated by the two slashes at the start of the line.
-Comments are ignored by the \name interpreter and their purpose is to contain notes
+Comments are ignored by the \name{} interpreter and their purpose is to contain notes
 and explanations inside the source code itself. Another type of commends are block-comments
 which span across multiple lines, such as on lines 9 to 12.
 On line seven, the \emph{std.exec} function is called for the first time. It runs the
@@ -634,7 +654,7 @@ launches the Firefox browser, but it is capable of all kinds of things that can 
 done in the shell, such as delete files or shut down the computer.
 
 That is why in most cases, the \emph{std.exec} function can be a risk waiting to be exploited
-by malicious \name programs. To solve this problem, there is the hashtag-operator, whose purpose
+by malicious \name{} programs. To solve this problem, there is the hashtag-operator, whose purpose
 it is to delete access to a variable through the specified name. It is used on line 13 of the
 example to remove access to the \emph{std.exec} function, which is why the call to that function
 on line 16, trying to shut down the computer, will result in an error. Unexpectedly though, the
@@ -646,23 +666,19 @@ revoked. This way, running unknown code can only access data and functions that 
 This contrasts the models of languages like Python. In Python, each seperate source file can
 make use of the \emph{import} keyword to include other files. Files imported this way do not
 have access or knowledge about the variables that exist in the file that includes them.
-In \name, each imported file would instead have access to all variables and functions that
+In \name{}, each imported file would instead have access to all variables and functions that
 are made available to it, instead of having to include or import them seperately.
 This leads to another problem, but that is what the next section will be all about.
-
-\subsection{Name Shadowing}
-% TODO
-
 
 \section{Discussion}
 
 \subsection{Distribution}
 % TODO
 
-\subsection{Limitation}
-\name is a programming language without a doubt. But it is not perfect in any
+\subsection{Limitations}
+\name{} is a programming language without a doubt. But it is not perfect in any
 way. There are limitations that make it practically unusable for actual
-professional projects. In this section, a few shortcomings of \name are listed
+professional projects. In this section, a few shortcomings of \name{} are listed
 and reasoned over.
 
 \subsubsection{Numbers}
@@ -672,18 +688,18 @@ and reasoned over.
 Memory leaks happen, when a program reserves memory to store some data, but
 never frees up the space for use for other programs, even though the data
 has long been discarded and is of no further use.
-In \name, memory leaks are a major problem. Even though barely noticable for small
-programs it interprets, \name does not have proper setups in place to free up
+In \name{}, memory leaks are a major problem. Even though barely noticable for small
+programs it interprets, \name{} does not have proper setups in place to free up
 all used memory that is not used any longer.
 
 Other programming languages, notably object-oriented languages such as Java,
 use Garbage-Collection, which automatically tracks unused allocated memory and
-frees it up automaticadlly. While this is also the case with \name, there are
-many internal flaws that have nothing to do with variables used in a \name
+frees it up automaticadlly. While this is also the case with \name{}, there are
+many internal flaws that have nothing to do with variables used in a \name{}
 program, but rather internally. 
 
 A major reason for the memory leaks, but not an excuse, is the nature of the
-C programming language the \name interpreter was written in. The C language and
+C programming language the \name{} interpreter was written in. The C language and
 compiler do not keep track of states in which certain blocks of memory are
 forgotten about and warn the developer, instead, memory leaks happen.
 More modern C alternatives such as Rust have a ownership-system in place,
@@ -693,28 +709,21 @@ helpful tool for developers to create better programs with low mental overhead,
 and are what programming language design should be all about.
 
 \subsubsection{Single-Threaded}
-The \name interpreter does not implement any multi-threaded, meaning parallel
-running, programs as most other languages do. Instead, any \name program can
+The \name{} interpreter does not implement any multi-threaded, meaning parallel
+running, programs as most other languages do. Instead, any \name{} program can
 only be interpreted and run sequentially. Since most modern computer processors
 are equipped with a handful of processing cores and threads, not being able to
 make use of those is a major downside and in itsself a reason not to use this
 language.
 
-\subsubsection{Token input size}
-In the current iteration, each token's content's size is limited to 256 bytes,
-which makes it impossible to use e.g. variable names longer thatn 256 ASCII
-characters. This would probably be the easyest thing to fix of here-listed 
-problems of \name, but since 256 characters are long enough for 
-illustration purposes, fixing this is not worth spending time on.
-
 \subsubsection{Lack of a Development Environment}
-This is certainly the greatest problem of \name, aside the countless smaller
+This is certainly the greatest problem of \name{}, aside the countless smaller
 bothering aspects.
 
-Pretty much any good, modern programming language does not only consist
-of it's specification and a compiler or interpreter, but of many more
-tools surrounding it.
-Such tools often include a package-manager, with which people around the world
+Most modern programming languages do not only consist
+of a language specification and a compiler or interpreter, but of many more
+tools surrounding them.
+Such tools can include a package-manager, with which people around the world
 can share code. Examples would be npm\cte{npm} or cargo\cte{cargo}, 
 the 'Node Package Manager' for JavaScript applications and and Rust's package 
 manager respectively.
@@ -723,7 +732,7 @@ manager respectively.
 Creating the ideal programming language takes a lot of planning and sketching
 out. This section of the paper gives insight on interesting ideas or concepts
 that are great to have and are used in other programming languages, but not 
-could not be implemented into \name.
+could not be implemented into \name{}.
 
 \subsubsection{Foreign Function Interfaces}
 A foreign function interface\cte{FFI} often abbreviated as FFI,
@@ -740,13 +749,13 @@ Interface\cte{JNI}, JNI for short, whereas within Python C function can
 be run with the standard ctypes\cte{ctypes} library.
 
 Foreign function interfaces are specially difficult to implement, or implement
-right. Let us assume a programming language interpreter \name written in C that
+right. Let us assume a programming language interpreter \name{} written in C that
 would like to call some functions that are part of yet another C program or
 library. The problem lies in the fact that at runtime, C does not know
 structure of the functions to be called, say return- or argument-types, which
 is by the way where the term foreign functions originates from. This is why the
-\name developer would have to provide that information by re-declaring the
-function inside \name, so that, with some trickery, data can be passed to and
+\name{} developer would have to provide that information by re-declaring the
+function inside \name{}, so that, with some trickery, data can be passed to and
 received from the function in the correct format, preventing a segmentation
 fault. The libffi\cte{libffi} C-library, which is also used by Java and
 Python for this purpose, can be used to load and call such foreign functions.
@@ -764,7 +773,7 @@ The advantage of reflection over not having it is that it allows for non-static
 programs and program flows, effectively making smaller executables and more
 resource efficient programs, as those programs can adjust themselves to run
 differently under different conditions at runtime.
-The easiest and simplest way to go about implementing Reflection in \name is
+The easiest and simplest way to go about implementing Reflection in \name{} is
 certainly to allow the interpretation of strings at runtime. That way, strings
 holding program instructions can be created and modified and later executed.
 
@@ -772,16 +781,23 @@ holding program instructions can be created and modified and later executed.
 \section{Closing Words}
 \section{Declaration of Autonomy}
 Hereby I, Florian Donnelly, declare to have written this paper, also including
-the entire source code of \name by myself using resources listed under the
+the entire source code of \name{} by myself using resources listed under the
 'references' section on page \pageref{bibliography}.
 
 \newpage\section{Bibliography}
 \pagelabel{bibliography}\printbibliography[heading=none]
 
+\section{List of Figures}\listoffigures
+\vspace{1cm}
+Figure \ref{f_mandelbrot} was generated using a \name{} program, the source code
+can be found in the file examples/mandelbrot.nts.
+Figure \ref{f_diagram} was created using an online diagram creation tool available
+on app.diagrams.net \cte{drawio}.
+
 % TODO: check correctness of all file paths!! e.g. src/...
 
 \newpage\section{Appendix}
-The appendix contains the complete source code of \name.
+The appendix contains the complete source code of \name{}.
 
 % Append all soruce files
 % \foreach \f in \files{\pagelabel{\f}\code{\f}{1}{9999}}

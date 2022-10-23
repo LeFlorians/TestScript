@@ -16,6 +16,7 @@ lang
 *.bbl
 *.bcf
 *.blg
+*.lof
 
 # VS Code
 .vscode
