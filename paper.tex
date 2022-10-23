@@ -17,19 +17,39 @@
     {#1}{\begin{center}-Removed, see full version-\end{center}}
 }
 
+% hyperref abbreviations
+\newcommand{\hr}[2]{\hyperref[#2]{#1}}
+\newcommand{\hrc}[1]{\hyperref[#1]{#1}}
+
 % Read contents of files.txt into \files
 \CatchFileDef{\files}{paper/files.txt}{\endlinechar=-1}
 
 % Include C code from file #1 from lines #2 to #3
-\newcommand{\code}[3] {
+\newcommand{\sourcecode}[3] {
     \ver{
     \lstset{basicstyle=\scriptsize,keywordstyle=\color{blue},stepnumber=5,
         stringstyle=\color[rgb]{.3,.5,.1},commentstyle=\color{gray},
         morecomment=[l][\color{magenta}]{\#},
         postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}}
     \lstinputlisting[language=C,numbers=left,breaklines=true,
-        frame=single,title=#1,
+        frame=single,title=#1,firstnumber=#2,firstline=#2,lastline=#3]{#1}
+    }
+}
+
+\newcommand{\code}[3] {
+    \ver{
+
+    \begin{minipage}{\linewidth}
+
+    \lstset{basicstyle=\scriptsize,keywordstyle=\color{blue},stepnumber=5,
+        stringstyle=\color[rgb]{.3,.5,.1},commentstyle=\color{gray},
+        morecomment=[l][\color{magenta}]{\#},
+        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}}
+    \lstinputlisting[language=C,numbers=left,breaklines=true,
+        frame=single,title=\hrc{#1},
         firstnumber=#2,firstline=#2,lastline=#3]{#1}
+
+    \end{minipage}
     }
 }
 
@@ -157,6 +177,9 @@ The \name{} implementation will also not include many features seen in modern
 languages, as those are often created in years of time spent planning and
 programming.
 
+One more goal is to learn and understand the C programming language, in which
+the interpreter of \name{} will be written in.
+
 \section{Theory}
 \subsection{Different Types of Interpreters}
 In computing, there are several types of interpreters that behave differently.
@@ -182,9 +205,8 @@ Here are some examples and their use-cases:
         such as Kotlin, Scala or Groovy.
     \item \emph{Abstract Syntax Tree interpreter.} Source code can be
         transformed into an AST or parse tree by a parser. A simple example
-        can be found under 
-        \hyperref[simple interpreter]{'Implementation/The Art of Abstraction'}
-        on page \pageref{simple interpreter}. Compared to bytecode interpreters
+        can be found in section \ref{simple_interpreter}
+        on page \pageref{simple_interpreter}. Compared to bytecode interpreters
         there is a large time overhead when performing syntax related computation
         or visiting tree nodes recursively.
     \item \emph{Self interpreter.} These are interpreters that interpret the
@@ -237,7 +259,7 @@ Most interpreters follow a plain scheme to go about this problem, but the
 actual implementation of each of the steps can be heavily customized.
 Here is the problem, broken down into three steps as commonly done in other
 popular programming languages:
-\begin{enumerate}\pagelabel{simple interpreter}
+\begin{enumerate}\pagelabel{simple_interpreter}
     \item To create meaningful groups of characters from the input string. This
         process is called 'tokenization' and is done with the component called
         tokenizer or lexer. As an example, the string 'aa + bb' could result
@@ -272,7 +294,6 @@ Here is a file tree overview of the project which will be referenced
 several times in the following sections of this paper. In the depicted file tree
 only source files are shown. No build files, executable files or files that
 are of no further importance regarding \name are depicted.
-\newcommand{\hr}[2]{\hyperref[#2]{#1}}
 \ver{\begin{flushleft}
     \scriptsize\setlength{\DTbaselineskip}{7pt}
     \dirtree{%
@@ -341,12 +362,14 @@ available to other source or header files. The actual implementations or
 variable values are stored in the respective .c files.
 % TODO:explain C compilation or link example, fix hash citation below
 
+% TODO: say sth about README.md and expand it
+
 The file mapop.gperf is also a source file. It is used in conjunction with the GNU gperf
 tool. The tool creates a perfect hash function, which is output to the file
 src/interpreter/mappings/mapop.c. The perfect hash function is used to translate
 single- or multi-character symbols, such as '!=' and '+', to their respective
 interpreter internal representation in constant time.
-[\cte{c_compilation}, \cte{hash}]
+[\cte{c_compilation}, \cte{gperf}]
 
 \subsubsection{Flowchart}
 
@@ -361,7 +384,7 @@ interpreter internal representation in constant time.
 
 The above figure is a representation of how different components of the entire
 \name{} implementation interact and work together. Each next stage performs
-operations on the output data of the proper. The src/interpreter/interpreter.c
+operations on the output data of the proper. The \hrc{src/interpreter/interpreter.c}
 file, here depicted as 'Interpreter', chains all stages together.
 
 \subsection{Implementing \name{}}
@@ -376,13 +399,14 @@ but rather implemented from scratch in the files src/interpreter/tokenizer.c
 and src/interpreter/parser.c.
 
 \subsubsection{The Entry-Point}
-The entry point of the project lies in the src/main.c file.
+The entry point of the project lies in the \hrc{src/main.c} file.
 The file implements the C main function, which is the entry-point of any
-C application in general. Since the file is so small, here is its source code:
+C application. Since the file is so small, here is its source code:
 \code{src/main.c}{1}{999}
 
 For the readers who do not know how to read source code, C in particular, here is a short
-explanation of the basic syntax of the C language based on the src/main.c file:
+explanation of the basic syntax of the C language taking the \hrc{src/main.c} file
+as an example:
 \begin{itemize}
     \item \emph{Preprocessor Instructions.} Lines beginning with hashtags are
         C preprocessor instructions, they are dealt with by the C preprocessor.
@@ -390,74 +414,86 @@ explanation of the basic syntax of the C language based on the src/main.c file:
         code.
 
         The most common preprocessor instructions are the following.
-        On one hand there is \expr{\#include <header.h>}
+        On one hand there is \expr{\#include $<$header.h$>$}
         to include various definitions from a header file, i.e. to paste
         its content at where the 'include' statement lies.
         On the other hand exists \expr{\#define A B} used to
         define A as an alias for B and replace every following occurrence of A
         with B.
 
-    \item \emph{Functions.} Functions in C are defined the following way:
-        \expr{<return type> <function name>([arguments]) { <function body> }}
-        or with a concrete, working example:
-        \expr{int myFunction(int *arg) \{ printf("arg: \%p, arg); \}.}
-        In main.c there is one function. The function's name is 'main', its
-        return type is 'int', it has two arguments 'argc' and 'argv' and a
-        function body containing what the function does.
+    \item \emph{Functions.} Every C function has a return type, a
+        function name, arguments and a function body in that order.
+        Here is an example of a C function:
+        \code{pseudocode/function.c}{1}{999}
+        This would be an example of a main function, similar to the one
+        in \hrc{src/main.c}. It returns a value
+        of type 'int', has two arguments, 'argc' and 'argv', and a function body
+        which, in the case of the example above, prints the value of the 'argc' argument.
 
     \item \emph{Pointers.} Pointers are variables that store memory addresses
-        of data. In C-like syntax they are defined with the star (*) symbol.
-        An example from src/main.c is 'FILE *input;'. That means that input is not
-        actually a FILE, but rather the memory address to where a FILE is.
-
-        To dereference the pointer, i.e. to actually retrieve the value stored
-        at the memory address it contains, another star could be used as such:
+        of data. In C-like syntax they are defined with the star '*' symbol.
+        An example from \hrc{src/main.c} is 'FILE *input;'. That means that input is not
+        actually a FILE, but rather a memory address pointing to a spot in memory where a FILE is.
+        To dereference the pointer, i.e. to copy the value stored
+        at the memory address into a variable on the stack, another star is used like this:
         'FILE value = *input;'.
 \end{itemize}
 
 For those who are further interested in the C programming language, there are
-many internet articles or tutorials about reading and understanding or
+countless internet articles or tutorials about reading and understanding or
 writing and compiling C code. One such example is the article 'The C Beginner's
 Handbook' provided by freeCodeCamp.org linked in the sources
 on page \pageref{bibliography}.
 
-Here is a very quick summary of what happens in the src/main.c file: the src/interpreter/interpreter.h
-header file is included. In the main function, the program decides to either
-read a program from the standard input or from a file. Then, the interpret function
+Following is a very quick summary of the few 
+things happening in the \hrc{src/main.c} file.
+First, the \hrc{src/interpreter/interpreter.h} header file is included. 
+The main function decides whether to
+read a program from the standard input or from a file. 
+Then, the interpret function
 from the said included header is called with the selected input.
 [\cte{freeCodeCamp}]
 
 \subsubsection{The Interpreter}
-This section deals with the file src/interpreter/interpreter.c which guides
-input data through the various stages of the \name{} interpreter in its
-function 'interpret', which is called from the program's main function.
+This section deals with the file 
+\hrc{src/interpreter/interpreter.c} which guides
+input data through the various stages of the \name{} interpreter as 
+seen in figure \ref{f_diagram} on page \pageref{f_diagram}.
+Following is a breakdown of the 'interpret' function from said file.
 
 The 'interpret' function calls the parser to generate a syntax-tree from tokens retrieved
-from the tokenizer implemented in src/interpreter/parser.c and 
-src/interpreter/tokenizer.c respectively.
+from the tokenizer implemented in \hrc{src/interpreter/parser.c} and 
+\hrc{src/interpreter/tokenizer.c} respectively.
 
 After that, variables with names are 'localized', meaning their names are
 mapped to addresses in memory where their value is stored. Doing this before
 bytecode compilation has a performance benefit. 
 The mapping is done with a custom hashtable datastructure with average time
 complexity of O(log n), n being the amount of different variables.
+The hashtable implementation used in \hrc{src/interpreter/memory/hashtable.c}
+uses binary search to locate elements variable-sized arrays in the hashtable's buckets.
+For collision detection, i.e. to circumvent problems arising when two keys have the
+same hash, separate chaining is used. In this approach, linked lists with
+key-value pairs are used for each array index and keys are compared directly
+to find exact matches.
+[\cte{separate_chaining}]
 
 The syntax tree could now be interpreted directly, but as said, is instead converted
-to an intermediate internal bytecode format by src/interpreter/bytecode.c.
+to an intermediate internal bytecode format by \hrc{src/interpreter/bytecode.c}.
 This step is done so that code that is run multiple times does not convey
 the problem of time overhead when traversing the syntax tree, but the current
 implementation does not take advantage of this.
 
 The final step is to process or execute said bytecode. This step is performed
-by src/interpreter/runtime.c.
+by \hrc{src/interpreter/runtime.c}.
 
 \subsubsection{The Tokenizer}
-The tokenizer is implemented in src/interpreter/tokenizer.c. Its job is to
+The tokenizer is implemented in \hrc{src/interpreter/tokenizer.c}. Its job is to
 take source code in plain-text format as input and output so-called tokens.
 These tokens represent groups of characters that belong together. In this paper's
 implementation, each token has a strict type and a text content.
 The different types of tokens and other things are defined in the header file
-src/interpreter/tokenizer.h.
+\hrc{src/interpreter/tokenizer.h}.
 
 Here is an example of tokenization:
 An input of 'std.test==23.4' would result in the following tokens according
@@ -467,10 +503,11 @@ to the tokenizer implementation of this paper:
     \item Token of type SYMBOL with content '=='.
     \item Token of type NUMBER with content '23.4'.
 \end{enumerate}
-FIELD type tokens are later replaced by REFERENCE tokens during the stage of localization
-and SYMBOL type tokens are mapped to EXPR by src/implementation/mappings/mapop.c
+FIELD type tokens are later replaced by REFERENCE tokens, effectively mapping
+variable names to addresses in memory.
+SYMBOL type tokens are mapped to operators such as plus or minux by \hrc{src/implementation/mappings/mapop.c}
 during parsing. NUMBER type tokens are replaced by an actual number type, which
-is C's 'long double' type as specified in src/interpreter/bytecode.h.
+is C's 'long double' type as specified in \hrc{src/interpreter/bytecode.h}.
 
 The tokenizer used in this paper is a simple finite-state machine, reading
 character by character and determining the token type as it goes.
@@ -479,34 +516,33 @@ These tokens are then directly consumed by the parser as described in the next
 section.
 
 \subsubsection{The Parser}
-The parser, implemented in src/interpreter/parser.c, generates a syntax-tree
+The parser, implemented in \hrc{src/interpreter/parser.c}, generates a syntax-tree
 from tokens. The algorithm used is inspired by the Pratt Parsing
 algorithm first described by Vaughan Pratt in 1973, which is a kind of precedence
-parser based on recursive descent. There is a great simple explanation of the algorithm
-by Jonathan Apodaca on dev.io linked in the references on page 
+parser based on recursive descent. There is an explanation of the algorithm
+written by Jonathan Apodaca on dev.io linked in the references on page 
 \pageref{bibliography} which this paper's parser takes inspiration from.
 [\cte{pratt}, \cte{devio}]
 
 The syntax tree in the implementation of \name{} consists of 'stnode' type
-pointers, as defined in src/interpreter/parser.h. Each such node depending
-on its 'nodetype', declared in src/interpreter/tokenizer.h,
-is either a value-node storing a pointer to some data, e.g. a number or text, or a
+pointers defined in \hrc{src/interpreter/parser.h}. Each such node depending
+on its 'nodetype', declared in \hrc{src/interpreter/tokenizer.h},
+is either a value-node storing a pointer to data, e.g. a number or text, or a
 parent-node referencing two child nodes and an operator, e.g. two numbers as
 children and a plus-operator to signify an addition.
 
-The difficult part of implementing a parser is precedence. Precedence and
-associativity define the order of execution of statements. A simple example
-would be to perform multiplication before addition, e.g. '2+3*4' would
-result in 14 and is not the same as '(2+3)*4'. Therefore, each operator is
-assigned a precedence, or priority, as well as an associativity, which is
-either 'Left to Right' or 'Right to Left'. An example of associativity is
-\emph{'20 / 10 / 2'}. Both in C as well as in \name{}, the division operator is
+The difficult part of implementing a parser is precedence. Precedence together
+with associativity define the order of execution of statements. A simple example
+would be to perform multiplication before addition, e.g. \emph{2+3*4} would
+result in \emph{14} and is not the same as \emph{(2+3)*4}.
+Assosiativity is either 'Left to Right' or 'Right to Left'. An example of associativity is
+\emph{20/10/2}. Both in C as well as in \name{}, the division operator is
 left-to-right associative, meaning the stated expression is the same as
-\emph{'(20 / 10) / 2'} and not as \emph{'20 / (10 / 2)'}. Both precedence 
-and associativity are properties that are defined in the file mapop.gpref for
+\emph{(20/10)/2} and not as \emph{20/(10/2)}. Both precedence 
+and associativity are properties that are defined in the file \hrc{mapop.gpref} for
 each operator.
 
-The parser implementation in src/interpreter/parser.c may be difficult to
+The parser implementation in \hrc{src/interpreter/parser.c} may be difficult to
 read and understand, which is why the most important functions are explained here:
 \begin{itemize}
     \item \emph{advance.} This function reads a new token from the tokenizer.
@@ -532,7 +568,8 @@ by this project.
 \code{pseudocode/parser.c}{1}{999}
 
 \subsubsection{The Bytecode Compiler}
-The bytecode compiler is part of the interpreter. Its job is to create a list
+The bytecode compiler is an internal part of the interpreter, located in the file
+\hrc{src/interpreter/bytecode.c}. Its job is to create a list
 of byte-sized instructions and data from the syntax-tree the parser created.
 Having such an intermediary bytecode format, instead of directly interpreting
 the parse-tree can be beneficial. This is the case when the same piece of code
@@ -557,7 +594,7 @@ A prefix notation is a way to write down mathematical expressions, except
 operators precede their operands, in contrast to the more common infix notation,
 where operands surround the operator.
 
-In src/interpreter/bytecode.c we can see, that first, the left operand and then
+In \hrc{src/interpreter/bytecode.c} we can see that first the left operand and then
 the right operand are added onto the stack of bytecode. Therefore, when
 popping from the stack and evaluating instructions, the operands will have to
 be read in reverse.
@@ -566,7 +603,7 @@ Here is an example:
     \item Assume the following mathematical expression in infix notation:
         \expr{\emph{'1 - 2 * 4 / (5 + 6)'}}
     \item In common prefix notation, also called Polish notation, the
-        operators would now precede the operands as such:
+        operators would now precede the operands in this manner:
         \expr{\emph{'- 1 (/ (* 2 4) (+ 5 6))'}}
     \item But in \name{} the operands are pushed onto the stack is reverse order.
         This would look like the following:
@@ -579,13 +616,14 @@ Here is an example:
         This is an ideal abstraction of how data 
         is represented internally in \name{}.
 \end{enumerate}
+[\cte{polish_notation}]
 
 \subsubsection{The Runtime}
 This is the last stage of interpreting program code as implemented in \name{}.
 The runtime steps through the intermediary bytecode created by the bytecode
 compiler and evaluates expressions by plugging in the provided values.
 All available expressions are implemented in 
-src/interpreter/processing/implementations.c.
+\hrc{src/interpreter/processing/implementations.c}.
 
 The evaluation of expressions also works in a recursive manner. Here is an 
 example of \name{}'s bytecode notation and how it would be evaluated at runtime:
@@ -597,9 +635,9 @@ example of \name{}'s bytecode notation and how it would be evaluated at runtime:
     \item The runtime will read through the bytecode left-to-right. First it will
         notice the subtraction-operator and accordingly assume that two
         operands must follow.
-    \item The processing function will call itsself
-        and notice the 6, a number, and therefore a value. The function simply returns the 6
-        to the subtraction expression. This 6 will be the right-hand operator
+    \item The processing function will call itself
+        and notice the 6, a number, and therefore a value. The function simply returns the six
+        to the subtraction expression. This six will be the right-hand operator
         of the subtraction.
     \item The subtraction will then call the processing function again to find
         the left operand. As the processing function reads a multiplication operator,
@@ -610,19 +648,21 @@ example of \name{}'s bytecode notation and how it would be evaluated at runtime:
         and again, calculate and return the result, which is 6.
 \end{itemize}
 
-That is it. With all the expressions available, entire programs
-can now be interpreted.
+That is it. With all expressions that are currently implemented, entire programs
+can be interpreted. Examples of such programs can be found in the \emph{examples} directory
+of the source code.
 
 \section{Results}
 
 % TODO: add examples in /examples/
 \name{} is built upon the implementation of a recursive Pratt
-parser and a basic tokenizer. Most actual features are reliant upon this
-foundation, such as operators and the standard library built into \name{}.
+parser and a basic tokenizer without which the entire \name{} implementation
+would be unusable.
 
 \subsection{Syntax}
-The syntax of \name{} can be compared to the syntax of JavaScript, except
-there are no keywords at all, and everything is controlled via operators,
+The syntax of \name{} is unlike most modern, common programming languages' syntax,
+but can be compared somone to that of JavaScript.
+In \name{}, there are no keywords at all and everything is controlled via operators,
 which are non-alphanumeric characters. Such operators include the plus-sign 
 for addition, or the equals-sign for variable assignment.
 
@@ -706,7 +746,7 @@ This leads to another problem, but that is what the next section will be all abo
 % TODO
 
 \subsection{Limitations}\label{Limitations}
-\name{} is a programming language without a doubt. But it is not perfect in any
+\name{} can be called a programming language without a doubt. But it is not perfect in any
 way. There are limitations that make it practically unusable for actual
 professional projects. In this section, a few shortcomings of \name{} are listed
 and reasoned over.
@@ -833,9 +873,9 @@ The entire source code of \name{} can be found in the Appendix, section \ref{App
 \subsection{List of Figures}\listoffigures
 \vspace{1cm}
 Figure \ref{f_mandelbrot} was generated using a \name{} program, the source code
-can be found in the file examples/mandelbrot.nts.
+can be found in the file \hrc{examples/mandelbrot.nts}.
 Figure \ref{f_diagram} was created using an online diagram creation tool available
-on app.diagrams.net.
+on \url{https://app.diagrams.net}.
 [\cte{drawio}]
 
 \section{Declaration of Autonomy}
@@ -851,7 +891,7 @@ to get an overview.
 
 % Append all soruce files
 \ver{
-\foreach \f in \files{\pagelabel{\f}\code{\f}{1}{9999}}
+\foreach \f in \files{\pagelabel{\f}\sourcecode{\f}{1}{9999}}
 }
 
 \end{document}
