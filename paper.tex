@@ -4,7 +4,7 @@
 \usepackage[margin=2.5cm]{geometry} % Set page margin to 2.5cm
 \usepackage{etoolbox}
 \usepackage{times} % Use Times New Roman font
-\usepackage[style=alphabetic,backend=biber]{biblatex}
+\usepackage[style=numeric,backend=biber]{biblatex}
 
 \addbibresource{paper/bibliography.bib}
 
@@ -43,10 +43,14 @@
 % set caption width
 \captionsetup{width=.7\linewidth}
 
+
 % Cite text
-\newcommand{\cte}[1] {
-    \cite{#1}
-}
+\DeclareCiteCommand{\cte}
+  {\usebibmacro{prenote}}
+  {\usebibmacro{citeindex}%
+   \usebibmacro{cite}}
+  {\multicitedelim}
+  {\usebibmacro{postnote}}
 
 % Center text on newline
 \newcommand{\expr}[1] {
@@ -165,7 +169,7 @@ Here are some examples and their use-cases:
         behave somewhat close to optimally for a given use-case. Today, this 
         technique is often used instead of classical interpreters, as
         JIT-compilers come with only advantages. The most popular example of
-        a JIT-compiler would be Google's V8\cte{V8} JavaScript engine used
+        a JIT-compiler would be Google's V8 JavaScript engine used
         in NodeJS and any Chromium browsers.
     \item \emph{Bytecode Interpreter.} Such interpret the bytecode that was
         output by a bytecode compiler from a given piece of code. The bytecode
@@ -173,7 +177,7 @@ Here are some examples and their use-cases:
         both compilation and interpretation. Such an intermediary bytecode is
         useful for ensuring platform independence or portability, as it will be
         the same across any machine, the only difference being the interpreter.
-        The most popular example would be the Java Virtual Machine\cte{jvm},
+        The most popular example would be the Java Virtual Machine,
         a bytecode interpreter for java bytecode, also used by many other languages
         such as Kotlin, Scala or Groovy.
     \item \emph{Abstract Syntax Tree interpreter.} Source code can be
@@ -193,7 +197,7 @@ Here are some examples and their use-cases:
         Self-interpreters are closely related to self-hosting compilers. These
         are in turn compilers which are written in the language they compile.
         An example of a compiler written in itself is rustc, the Rust
-        compiler\cte{rustc}, which was bootstrapped by the OCaml language.
+        compiler, which was bootstrapped by the OCaml language.
 \end{itemize}
 This paper will implement a mixture form of an AST compiler and bytecode
 interpreter. The advantage is that an AST carries along lots of information
@@ -202,6 +206,7 @@ is converted to an intermediary bytecode format which only contains
 necessary information about the program. Such bytecode can then be cached,
 e.g. kept in memory, meaning it only has to be converted once and can be
 used many times, also leading to a performance benefit.
+[\cte{V8}, \cte{jvm}, \cte{rustc}]
 
 \section{Implementation}
 \subsection{Used Software}
@@ -267,55 +272,60 @@ Here is a file tree overview of the project which will be referenced
 several times in the following sections of this paper. In the depicted file tree
 only source files are shown. No build files, executable files or files that
 are of no further importance regarding \name are depicted.
+\newcommand{\hr}[2]{\hyperref[#2]{#1}}
 \ver{\begin{flushleft}
-    \scriptsize\setlength{\DTbaselineskip}{5pt}
+    \scriptsize\setlength{\DTbaselineskip}{7pt}
     \dirtree{%
         .1 project root.
-        .2 .gitignore.
-        .2 README.md.
-        .2 Makefile.
-        .2 mapop.gperf.
+        .2 \hr{.gitignore}{.gitignore}.
+        .2 \hr{README.md}{README.md}.
+        .2 \hr{Makefile}{Makefile}.
+        .2 \hr{mapop.gperf}{mapop.gperf}.
         .2 pseudocode.
-            .3 src/interpreter/parser.c.
+            .3 \hr{parser.c}{pseudocode/parser.c}.
+        .2 examples.
+            .3 \hr{mandelbrot.nts}{examples/mandelbrot.nts}.
+            .3 \hr{fibonacci.nts}{examples/fibonacci.nts}.
+            .3 \hr{exec.nts}{examples/exec.nts}.
         .2 src.
-            .3 main.c.
+            .3 \hr{main.c}{src/main.c}.
             .3 interpreter.
-                .4 bytecode.c.
-                .4 bytecode.h.
+                .4 \hr{bytecode.c}{src/interpreter/bytecode.c}.
+                .4 \hr{bytecode.h}{src/interpreter/bytecode.h}.
                 .4 error.
-                    .5 error.c.
-                    .5 error.h.
-                .4 interpreter.c.
-                .4 interpreter.h.
+                    .5 \hr{error.c}{src/interpreter/error/error.c}.
+                    .5 \hr{error.h}{src/interpreter/error/error.h}.
+                .4 \hr{interpreter.c}{src/interpreter/interpreter.c}.
+                .4 \hr{interpreter.h}{src/interpreter/interpreter.h}.
                 .4 libraries.
-                    .5 libraries.c.
-                    .5 libraries.h.
+                    .5 \hr{libraries.c}{src/interpreter/libraries/libraries.c}.
+                    .5 \hr{libraries.h}{src/interpreter/libraries/libraries.h}.
                     .5 stdlib.
-                        .6 stdlib.c.
-                        .6 stdlib.h.
-                .4 localizer.c.
-                .4 localizer.h.
+                        .6 \hr{stdlib.c}{src/interpreter/libraries/stdlib/stdlib.c}.
+                        .6 \hr{stdlib.h}{src/interpreter/libraries/stdlib/stdlib.h}.
+                .4 \hr{localizer.c}{src/interpreter/localizer.c}.
+                .4 \hr{localizer.h}{src/interpreter/localizer.h}.
                 .4 mappings.
-                    .5 operations.c.
-                    .5 operations.h.
-                    .5 mapop.c.
-                    .5 mapop.h.
+                    .5 \hr{operations.c}{src/interpreter/mappings/operations.c}.
+                    .5 \hr{operations.h}{src/interpreter/mappings/operations.h}.
+                    .5 \hr{mapop.c}{src/interpreter/mappings/mapop.c}.
+                    .5 \hr{mapop.h}{src/interpreter/mappings/mapop.h}.
                 .4 memory.
-                    .5 hashtable.c.
-                    .5 hashtable.h.
-                    .5 array.c.
-                    .5 array.h.
-                    .5 stack.c.
-                    .5 stack.h.
-                .4 parser.c.
-                .4 parser.h.
+                    .5 \hr{hashtable.c}{src/interpreter/memory/hashtable.c}.
+                    .5 \hr{hashtable.h}{src/interpreter/memory/hashtable.h}.
+                    .5 \hr{array.c}{src/interpreter/memory/array.c}.
+                    .5 \hr{array.h}{src/interpreter/memory/array.h}.
+                    .5 \hr{stack.c}{src/interpreter/memory/stack.c}.
+                    .5 \hr{stack.h}{src/interpreter/memory/stack.h}.
+                .4 \hr{parser.c}{src/interpreter/parser.c}.
+                .4 \hr{parser.h}{src/interpreter/parser.h}.
                 .4 processing.
-                    .5 implementations.c.
-                    .5 implementations.h.
-                .4 runtime.c.
-                .4 runtime.h.
-                .4 tokenizer.c.
-                .4 tokenizer.h.
+                    .5 \hr{implementations.c}{src/interpreter/processing/implementations.c}.
+                    .5 \hr{implementations.h}{src/interpreter/processing/implementations.h}.
+                .4 \hr{runtime.c}{src/interpreter/runtime.c}.
+                .4 \hr{runtime.h}{src/interpreter/runtime.h}.
+                .4 \hr{tokenizer.c}{src/interpreter/tokenizer.c}.
+                .4 \hr{tokenizer.h}{src/interpreter/tokenizer.h}.
     }
 \end{flushleft}}
 
@@ -324,7 +334,7 @@ are of no further importance regarding \name are depicted.
 
 As visible in the file tree, most of the source-code files, ending in .c,
 have a corresponding header file ending in .h. This is due to the nature
-of the compilation process of the C language\cte{c_compilation}, which is the host language
+of the compilation process of the C language, which is the host language
 the \name{} interpreter is written in.
 Each header file contains only information about functions, types or variables
 available to other source or header files. The actual implementations or 
@@ -332,10 +342,11 @@ variable values are stored in the respective .c files.
 % TODO:explain C compilation or link example, fix hash citation below
 
 The file mapop.gperf is also a source file. It is used in conjunction with the GNU gperf
-tool. The tool creates a perfect hash function\cte{hash}, which is output to the file
+tool. The tool creates a perfect hash function, which is output to the file
 src/interpreter/mappings/mapop.c. The perfect hash function is used to translate
 single- or multi-character symbols, such as '!=' and '+', to their respective
 interpreter internal representation in constant time.
+[\cte{c_compilation}, \cte{hash}]
 
 \subsubsection{Flowchart}
 
@@ -407,13 +418,14 @@ explanation of the basic syntax of the C language based on the src/main.c file:
 For those who are further interested in the C programming language, there are
 many internet articles or tutorials about reading and understanding or
 writing and compiling C code. One such example is the article 'The C Beginner's
-Handbook' provided by freeCodeCamp.org linked in the sources\cte{freeCodeCamp}
+Handbook' provided by freeCodeCamp.org linked in the sources
 on page \pageref{bibliography}.
 
 Here is a very quick summary of what happens in the src/main.c file: the src/interpreter/interpreter.h
 header file is included. In the main function, the program decides to either
 read a program from the standard input or from a file. Then, the interpret function
 from the said included header is called with the selected input.
+[\cte{freeCodeCamp}]
 
 \subsubsection{The Interpreter}
 This section deals with the file src/interpreter/interpreter.c which guides
@@ -468,11 +480,12 @@ section.
 
 \subsubsection{The Parser}
 The parser, implemented in src/interpreter/parser.c, generates a syntax-tree
-from tokens. The algorithm used is inspired by the Pratt Parsing\cte{pratt}
+from tokens. The algorithm used is inspired by the Pratt Parsing
 algorithm first described by Vaughan Pratt in 1973, which is a kind of precedence
 parser based on recursive descent. There is a great simple explanation of the algorithm
-by Jonathan Apodaca on dev.io\cte{devio} linked in the references on page 
+by Jonathan Apodaca on dev.io linked in the references on page 
 \pageref{bibliography} which this paper's parser takes inspiration from.
+[\cte{pratt}, \cte{devio}]
 
 The syntax tree in the implementation of \name{} consists of 'stnode' type
 pointers, as defined in src/interpreter/parser.h. Each such node depending
@@ -536,8 +549,9 @@ To generate such a sequence of bytes, \name{} recursively reads through the
 binary tree created by the parser and pushes found instructions onto a stack,
 which is in this case used similarly to a variable-sized list.
 The algorithm used is inspired by Edsger Dijkstra's 'Shunting yard 
-algorithm'\cte{shunting_yard}, traversing the tree post-order to create
+algorithm', traversing the tree post-order to create
 a prefix notation. 
+[\cte{shunting_yard}]
 
 A prefix notation is a way to write down mathematical expressions, except
 operators precede their operands, in contrast to the more common infix notation,
@@ -691,7 +705,7 @@ This leads to another problem, but that is what the next section will be all abo
 \subsection{Distribution}
 % TODO
 
-\subsection{Limitations}
+\subsection{Limitations}\label{Limitations}
 \name{} is a programming language without a doubt. But it is not perfect in any
 way. There are limitations that make it practically unusable for actual
 professional projects. In this section, a few shortcomings of \name{} are listed
@@ -701,9 +715,9 @@ and reasoned over.
 % TODO
 
 \subsubsection{Memory Leaks}
-Memory leaks happen, when a program reserves memory to store some data, but
+Memory leaks happen when a program reserves memory to store data, but
 never frees up the space for use for other programs, even though the data
-has long been discarded and is of no further use.
+has long been forgotten about and will no longer be accessed.
 In \name{}, memory leaks are a major problem. Even though barely noticable for small
 programs it interprets, \name{} does not have proper setups in place to free up
 all used memory that is not used any longer.
@@ -740,9 +754,10 @@ Most modern programming languages do not only consist
 of a language specification and a compiler or interpreter, but of many more
 tools surrounding them.
 Such tools can include a package-manager, with which people around the world
-can share code. Examples would be npm\cte{npm} or cargo\cte{cargo}, 
+can share code. Examples would be npm or cargo, 
 the 'Node Package Manager' for JavaScript applications and and Rust's package 
 manager respectively.
+[\cte{npm}, \cte{cargo}]
 
 \subsection{Interesting Ideas untouched}
 Creating the ideal programming language takes a lot of planning and sketching
@@ -751,7 +766,7 @@ that are great to have and are used in other programming languages, but not
 could not be implemented into \name{}.
 
 \subsubsection{Foreign Function Interfaces}
-A foreign function interface\cte{FFI} often abbreviated as FFI,
+A foreign function interface often abbreviated as FFI,
 is a mechanism by which one programming language can call functions written 
 in another. This makes a language more attractive, as it can be used with
 existing libraries from another language, instead of functions having to be
@@ -761,8 +776,8 @@ directly interact with system libraries or the operating system itsself.
 Foreign function interfaces are available in many modern languages.
 Examples are Java, Python and Rust.
 Java enables users to call C, C++ and even assembly code with the Java Native
-Interface\cte{JNI}, JNI for short, whereas within Python C function can
-be run with the standard ctypes\cte{ctypes} library.
+Interface, JNI for short, whereas within Python C function can
+be run with the standard ctypes library.
 
 Foreign function interfaces are specially difficult to implement, or implement
 right. Let us assume a programming language interpreter \name{} written in C that
@@ -773,11 +788,12 @@ is by the way where the term foreign functions originates from. This is why the
 \name{} developer would have to provide that information by re-declaring the
 function inside \name{}, so that, with some trickery, data can be passed to and
 received from the function in the correct format, preventing a segmentation
-fault. The libffi\cte{libffi} C-library, which is also used by Java and
+fault. The libffi C-library, which is also used by Java and
 Python for this purpose, can be used to load and call such foreign functions.
+[\cte{FFI}, \cte{JNI}, \cte{ctypes}, \cte{libffi}]
 
 \subsubsection{Reflection}
-Reflection\cte{reflection}, also called reflective programming, describes
+Reflection, also called reflective programming, describes
 the ability of a program to examine and modify its own structure and behavior 
 at runtime. An example would be self-modifying code. This can easily be
 achieved in assembly language, which inherently does not differentiate between
@@ -792,26 +808,40 @@ differently under different conditions at runtime.
 The easiest and simplest way to go about implementing Reflection in \name{} is
 certainly to allow the interpretation of strings at runtime. That way, strings
 holding program instructions can be created and modified and later executed.
+[\cte{reflection}]
+
+\subsection{Conclution}
+Creating an interpreter was a challenge. From the beginning on, the project
+had to be planned and commented strictly, not to get lost in the complex web
+of source code later on. The final product is a success, a working interpreter
+hosting a custom programming language that can run human-readable programs.
+Although there are several limitations and shortcomings as stated in section \ref{Limitations}
+of this paper, the details of the implementation brought about unexpected 
+problems and solutions to profit from. The goal of this paper, to learn about 
+the inner workings of an interpreter, has therefore been achieved.
+
 
 \section{Index}
-\section{Closing Words}
-\section{Declaration of Autonomy}
-Hereby I, Florian Donnelly, declare to have written this paper, also including
-the entire source code of \name{} by myself using resources listed under the
-'references' section on page \pageref{bibliography}.
+This section contains a bibliography which links to all online articles
+this project could profit from, and the list of figures.
+The entire source code of \name{} can be found in the Appendix, section \ref{Appendix}.
 
-\newpage\section{Bibliography}
+\newpage\subsection{Bibliography}
+\renewcommand*{\bibfont}{\normalsize}
 \pagelabel{bibliography}\printbibliography[heading=none]
 
-\section{List of Figures}\listoffigures
+\subsection{List of Figures}\listoffigures
 \vspace{1cm}
 Figure \ref{f_mandelbrot} was generated using a \name{} program, the source code
 can be found in the file examples/mandelbrot.nts.
 Figure \ref{f_diagram} was created using an online diagram creation tool available
-on app.diagrams.net \cte{drawio}.
+on app.diagrams.net.
+[\cte{drawio}]
 
-The entire source code can be found in the Appendix, section \ref{Appendix}.
-
+\section{Declaration of Autonomy}
+Hereby I, Florian Donnelly, declare to have written this paper, also including
+the entire source code of \name{} by myself using resources listed under the
+'Bibliography' section on page \pageref{bibliography}.
 % TODO: check correctness of all file paths!! e.g. src/...
 
 \newpage\section{Appendix}\label{Appendix}

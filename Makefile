@@ -43,7 +43,7 @@ paper_raw: paper
 
 paper: clean paper.tex paper/bibliography.bib
 	@(git ls-tree -r main --name-only |\
-		grep -E "\.h$$|\.c$$|Makefile$$|\.gperf$$|.gitignore$$|\.md$$" |\
+		grep -E "\.h$$|\.c$$|\.nts$$|Makefile$$|\.gperf$$|.gitignore$$|\.md$$" |\
 		tr '\n' ',' | sed '$$s/,$$//' > paper/files.txt &&\
 		pdflatex -jobname=$(JOBNAME) paper.tex && biber $(JOBNAME) &&\
 		pdflatex -jobname=$(JOBNAME) paper.tex && pdflatex -jobname=$(JOBNAME) paper.tex)
