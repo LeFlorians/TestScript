@@ -162,7 +162,7 @@ void _floor(mementry *args, mementry *dst, errorinfo *info) {
         return;
     }
     dst->type = NUMBER;
-    number res = ceill(*(number *)args->value);
+    number res = floorl(*(number *)args->value);
     *((number *) (dst->value = malloc(sizeof(number)))) = res;
     return;
 }
@@ -173,7 +173,7 @@ void _ceil(mementry *args, mementry *dst, errorinfo *info) {
         return;
     }
     dst->type = NUMBER;
-    number res = floorl(*(number *)args->value);
+    number res = ceill(*(number *)args->value);
     *((number *) (dst->value = malloc(sizeof(number)))) = res;
     return;
 }
