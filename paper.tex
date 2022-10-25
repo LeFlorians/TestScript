@@ -245,6 +245,7 @@ help with built-in git integration and auto-completion features.
 \emph{Git} is the project management and tracking software used to back up and share
 the project files on \emph{GitHub.com}, a Microsoft hosted git repository and
 web front-end to store and collaborate on source code.
+% TODO: add gdb!
 
 \subsection{The Art of Simplification}
 When dealing with problems in general, it is helpful to map out and think about
@@ -571,20 +572,19 @@ by this project.
 The bytecode compiler is an internal part of the interpreter, located in the file
 \hrc{src/interpreter/bytecode.c}. Its job is to create a list
 of byte-sized instructions and data from the syntax-tree the parser created.
-Having such an intermediary bytecode format, instead of directly interpreting
+Using such an intermediary bytecode format instead of directly interpreting
 the parse-tree can be beneficial. This is the case when the same piece of code
 has to be run several times. Instead of generating a time and memory overhead 
 having to walk along tree-nodes recursively, only the list of instructions in
-the bytecode can be traversed, which is much faster. 
+the bytecode can be traversed, which takes less time overall. 
 
 Not to be confused with machine-native bytecode, the bytecode compiler in \name{}
-generates byte-sequences in an internal format, that are then interpreted. A
+generates byte-sequences in an internal format that are then interpreted. A
 JIT compiler would instead compile the AST down to machine-native bytecode, which
 could run directly on the system's hardware and would not have to be interpreted.
 
-To generate such a sequence of bytes, \name{} recursively reads through the
-binary tree created by the parser and pushes found instructions onto a stack,
-which is in this case used similarly to a variable-sized list.
+To generate the bytecode, \name{} recursively reads through the
+binary tree created by the parser and pushes found instructions onto a stack.
 The algorithm used is inspired by Edsger Dijkstra's 'Shunting yard 
 algorithm', traversing the tree post-order to create
 a prefix notation. 
@@ -601,20 +601,19 @@ be read in reverse.
 Here is an example:
 \begin{enumerate}
     \item Assume the following mathematical expression in infix notation:
-        \expr{\emph{'1 - 2 * 4 / (5 + 6)'}}
+        \expr{\emph{1 - 2 * 4 / (5 + 6)}}
     \item In common prefix notation, also called Polish notation, the
         operators would now precede the operands in this manner:
-        \expr{\emph{'- 1 (/ (* 2 4) (+ 5 6))'}}
+        \expr{\emph{- 1 (/ (* 2 4) (+ 5 6))}}
     \item But in \name{} the operands are pushed onto the stack is reverse order.
         This would look like the following:
-        \expr{\emph{'- (/ (+ 6 5) (* 4 2)) 1'}}
+        \expr{\emph{- (/ (+ 6 5) (* 4 2)) 1}}
     \item The brackets are not needed, because for every operator, the amount
         of operands is known. This is the case as e.g. the subtraction operator
         and the negative operator, which are both a minus sign, are distinguished
-        beforehand. This means the above statement would look like this:
-        \expr{\emph{'- / + 6 5 * 4 2 1'}}
-        This is an ideal abstraction of how data 
-        is represented internally in \name{}.
+        beforehand. The above statement would therefore look like this:
+        \expr{\emph{- / + 6 5 * 4 2 1}}
+        This is how expressions are represented in the bytecode of \name{}.
 \end{enumerate}
 [\cte{polish_notation}]
 
@@ -622,33 +621,34 @@ Here is an example:
 This is the last stage of interpreting program code as implemented in \name{}.
 The runtime steps through the intermediary bytecode created by the bytecode
 compiler and evaluates expressions by plugging in the provided values.
-All available expressions are implemented in 
+All available operators are implemented in 
 \hrc{src/interpreter/processing/implementations.c}.
 
 The evaluation of expressions also works in a recursive manner. Here is an 
-example of \name{}'s bytecode notation and how it would be evaluated at runtime:
+example of \name{}'s bytecode notation and how it is evaluated at runtime:
 \begin{itemize}
     \item Assume the input in \name{}'s bytecode to resemble the following expression: 
-        \expr{\emph{'- 6 * 3 4'}}
-        In infix notation, this would be equivalent to 
-        \expr{\emph{'(4 * 3) - 6'}.}
+        \expr{\emph{- 6 * 3 4}}
+        In common infix notation, this would be equivalent to 
+        \expr{\emph{(4 * 3) - 6}.}
+        The question arises, how can an algorithm compute the result of this
+        calculation? The answer is recursion.
     \item The runtime will read through the bytecode left-to-right. First it will
         notice the subtraction-operator and accordingly assume that two
         operands must follow.
-    \item The processing function will call itself
-        and notice the 6, a number, and therefore a value. The function simply returns the six
-        to the subtraction expression. This six will be the right-hand operator
-        of the subtraction.
-    \item The subtraction will then call the processing function again to find
-        the left operand. As the processing function reads a multiplication operator,
-        it now recursively reads through that expression's right and then left
-        operator, which would be 3 and for respectively and compute and return
-        the result of the multiplication, which is 12.
-    \item Now the subtraction knows its right- and left-hand operators, 6 and 12,
-        and again, calculate and return the result, which is 6.
+    \item The function recursively calls itself in order to evaluate the
+        right operand and notice the 6, a value. The function simply returns the six
+        to the subtraction expression.
+    \item Again, the function calls itself to find the next operand.
+        As it now reaches a multiplication operator,
+        it recursively reads through that sub-expression's right and then left
+        operator, which are 3 and 4 respectively.
+        The result is computed and returned.
+    \item Now the subtraction knows its right- and left-hand operators, 6 and 12.
+        The subtraction is performed and the result, 6, is returned.
 \end{itemize}
 
-That is it. With all expressions that are currently implemented, entire programs
+That is it. With all the operators and standard functions that have been implemented, entire programs
 can be interpreted. Examples of such programs can be found in the \emph{examples} directory
 of the source code.
 
@@ -656,8 +656,10 @@ of the source code.
 
 % TODO: add examples in /examples/
 \name{} is built upon the implementation of a recursive Pratt
-parser and a basic tokenizer without which the entire \name{} implementation
-would be unusable.
+parser and a basic tokenizer. It uses a hash table to map variable names to their
+memory addresses. There are no keywords, only a set of non-alphanumeric characters
+representing all possible operations. Extending upon that, there are some
+standard functions.
 
 \subsection{Syntax}
 The syntax of \name{} is unlike most modern, common programming languages' syntax,
@@ -708,10 +710,10 @@ of the fibonacci sequence, as well as a disection of how that same code is inter
 \end{itemize}
 
 \subsection{Name Shadowing}
-Here is another example, which in contrast to the example above, focuses on a
-security concept implemented in \name{}.
+Here is another example, which in contrast to the example above, focuses on an
+original security concept implemented in \name{}.
 \code{examples/exec.nts}{1}{999}
-The code begins by creating the variable \emph{var}, which holds a string, and
+The code begins by creating the variable \emph{var}, which holds a string and
 \emph{f}, which calls the function \emph{std.exec} with var as argument.
 Line number six holds a comment, indicated by the two slashes at the start of the line.
 Comments are ignored by the \name{} interpreter and their purpose is to contain notes
@@ -746,10 +748,9 @@ This leads to another problem, but that is what the next section will be all abo
 % TODO
 
 \subsection{Limitations}\label{Limitations}
-\name{} can be called a programming language without a doubt. But it is not perfect in any
-way. There are limitations that make it practically unusable for actual
+Unfortunately, there are limitations that make \name{} practically unusable for actual
 professional projects. In this section, a few shortcomings of \name{} are listed
-and reasoned over.
+and discussed.
 
 \subsubsection{Numbers}
 % TODO
@@ -764,39 +765,43 @@ all used memory that is not used any longer.
 
 Other programming languages, notably object-oriented languages such as Java,
 use Garbage-Collection, which automatically tracks unused allocated memory and
-frees it up automaticadlly. While this is also the case with \name{}, there are
+frees it up automatically. While this is also the case with \name{}, there are
 many internal flaws that have nothing to do with variables used in a \name{}
 program, but rather internally. 
 
-A major reason for the memory leaks, but not an excuse, is the nature of the
-C programming language the \name{} interpreter was written in. The C language and
-compiler do not keep track of states in which certain blocks of memory are
-forgotten about and warn the developer, instead, memory leaks happen.
-More modern C alternatives such as Rust have a ownership-system in place,
-in which any allocated memory has a function as an owner, and when the function
-is done processing, the memory is automatically freed. Such systems are a
-helpful tool for developers to create better programs with low mental overhead,
-and are what programming language design should be all about.
+One reason memory leaks is the nature of the
+C programming language, in which the \name{} interpreter was written in. The C language and
+compiler do not keep track of all possible states in which certain blocks of memory are
+forgotten about and do not warn the developer. Instead, memory leaks happen.
+More modern C alternatives such as Rust have an ownership-system in place,
+in which any allocated memory is owned by a function. When the function
+is done processing, the memory is automatically freed. Such a system
+is a helpful tool for developers to create better programs without having to get
+lost in the details.
+Inventing new ways to make the job of developers easier is what programming
+language design is all about.
 
 \subsubsection{Single-Threaded}
-The \name{} interpreter does not implement any multi-threaded, meaning parallel
-running, programs as most other languages do. Instead, any \name{} program can
-only be interpreted and run sequentially. Since most modern computer processors
+The \name{} interpreter does not implement any multi-threaded, i.e. in parallel
+running programs as most other languages do. Instead, any \name{} program can
+only run sequentially. Since most modern computer processors
 are equipped with a handful of processing cores and threads, not being able to
-make use of those is a major downside and in itsself a reason not to use this
-language.
+make use of this modern time's advantage is a major downside.
 
 \subsubsection{Lack of a Development Environment}
-This is certainly the greatest problem of \name{}, aside the countless smaller
-bothering aspects.
+This is certainly the greatest problem of \name{}.
 
-Most modern programming languages do not only consist
+Most modern programming languages not only consist
 of a language specification and a compiler or interpreter, but of many more
-tools surrounding them.
+tools that surround themn.
 Such tools can include a package-manager, with which people around the world
 can share code. Examples would be npm or cargo, 
 the 'Node Package Manager' for JavaScript applications and and Rust's package 
 manager respectively.
+Another example of a helpful tool is a debugger, helping developers
+find the cause of errors, so-called bugs, in their programs.
+This includes the tool gdb, the GNU Project Debugger, that was used in this
+project to find errors in the \name{} implementation.
 [\cte{npm}, \cte{cargo}]
 
 \subsection{Interesting Ideas untouched}
@@ -850,15 +855,18 @@ certainly to allow the interpretation of strings at runtime. That way, strings
 holding program instructions can be created and modified and later executed.
 [\cte{reflection}]
 
-\subsection{Conclution}
+\subsection{Conclusion}
 Creating an interpreter was a challenge. From the beginning on, the project
 had to be planned and commented strictly, not to get lost in the complex web
 of source code later on. The final product is a success, a working interpreter
 hosting a custom programming language that can run human-readable programs.
+Most parts of the source code are annotated with comments, giving interested
+reader direct explanations of what is going on.
 Although there are several limitations and shortcomings as stated in section \ref{Limitations}
 of this paper, the details of the implementation brought about unexpected 
-problems and solutions to profit from. The goal of this paper, to learn about 
-the inner workings of an interpreter, has therefore been achieved.
+problems and solutions. The goal of this paper to learn about 
+the inner workings of an interpreter has been achieved, as well as the goal
+to get to know the C language.
 
 
 \section{Index}
