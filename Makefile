@@ -9,10 +9,10 @@ CFLAGS := -Wall -pg -Og -g -Wno-switch -Wno-return-type
 
 # paper flags
 JOBNAME := paper
-paper_raw: JOBNAME := paper_raw
+paper_raw: JOBNAME := paper_raw -O2
 
 # apply optimizations for the release target
-release: CFLAGS := -Wall -O3
+release: CFLAGS := -Wall
 
 # activate debug output for test release
 test: CFLAGS += -DDEBUG
