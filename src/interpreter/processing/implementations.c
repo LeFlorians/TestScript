@@ -34,7 +34,7 @@ char truth_of(mementry *entry) {
 // free a synthetic mementry and its synthetic value
 void _free_synth(mementry *entry) {
     if(entry->flags.synthetic) {
-        if(entry->flags.value_synthetic)
+        if(entry->flags.value_synthetic && entry->type != UNDEFINED)
             free(entry->value);
         free(entry);
     }
@@ -546,6 +546,11 @@ mementry *call(mementry *fun, mementry *params, errorinfo *info){
             _free_synth(fun);
             return NULL;
     }
+
+
+    // free arguments
+    if(dst != fun)
+        _free_synth(fun);
 
     return dst;
 }

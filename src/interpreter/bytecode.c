@@ -19,7 +19,7 @@ static inline mementry *_register(bytecode *code, stackptr ptr, typing type) {
 table_level max_level;
 
 // see protocol specifications in header file
-void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree) {
+void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree, char member_as_block) {
     switch(subtree->type){
 
         case NUMBER:
@@ -66,11 +66,11 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree) {
 
         case EXPR:
             // process left child first
-            _recursiveconsume(dst, ptr, subtree->data.parent.left);
+            _recursiveconsume(dst, ptr, subtree->data.parent.left, 0);
 
             // if there is one, process right child next
             if(subtree->data.parent.right != NULL)
-                _recursiveconsume(dst, ptr, subtree->data.parent.right);
+                _recursiveconsume(dst, ptr, subtree->data.parent.right, 0);
             // make sure to provide a right-hand argument if it's a function call
             else if(subtree->data.parent.op->opcode == OP_CALL)
                 _register(dst, ptr, UNDEFINED)->value = NULL;
@@ -81,6 +81,22 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree) {
             break;
 
         case MEMBER: {
+            stnode *tree;
+            if(member_as_block){
+                _register(dst, ptr, EXPR)->value = _block_end;
+                while(subtree != NULL && subtree->data.parent.left != NULL) {
+                    _recursiveconsume(dst, ptr, subtree->data.parent.left, 1);
+
+                    // Reassign values for the loop
+                    tree = subtree;
+                    subtree = subtree->data.parent.right;
+
+                    // Free the MEMBER node
+                    free(tree);
+                }
+                _register(dst, ptr, EXPR)->value = _block;
+                break;
+            }
             // Create a new stack for the underlying function
             bytecode *function = create_stack(64);
 
@@ -90,10 +106,9 @@ void _recursiveconsume(bytecode *dst, stackptr ptr, stnode *subtree) {
             max_level = 0;
 
             // Consume a member chain into the stack
-            stnode *tree;
             while(subtree != NULL && subtree->data.parent.left != NULL) {
                 // Consume the left subtree
-                _recursiveconsume(function, (stackptr) &offset, subtree->data.parent.left);
+                _recursiveconsume(function, (stackptr) &offset, subtree->data.parent.left, 1);
 
                 // Reassign values for the loop
                 tree = subtree;
@@ -133,7 +148,7 @@ bytecode *consume(stnode *root) {
     size_t offset = 0;
 
     // post order traversal
-    _recursiveconsume(code, (stackptr) &offset, root);
+    _recursiveconsume(code, (stackptr) &offset, root, 0);
 
     // return code
     return code;
