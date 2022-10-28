@@ -13,6 +13,7 @@ plane_width = 6
 plane_height = 4
 
 // iteration function
+cr,ci,zr,zi,iter,tr
 mandelbrot = {
     // initialize variables
     cr = @[0] * plane_width / width + plane_x

@@ -18,6 +18,7 @@ static inline _H_HASH _hash(char* key) {
 // return new mementry with default values
 mementry *_alloc_mementry() {
     mementry *ret = malloc(sizeof(mementry));
+    ret->value = NULL;
     ret->flags =
         (struct s_mementry_flags) 
         {.mutable = 0, .synthetic = 0, .value_synthetic = 0};

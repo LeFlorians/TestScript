@@ -71,7 +71,7 @@ void _exec(mementry *args, mementry *dst, errorinfo *info) {
 void _if(mementry *args, mementry *dst, errorinfo *info) {
     if(args->type == TUPLE){
         array *arr = ((array *)args->value);
-        mementry *fun = NULL;
+        mementry *ret = NULL;
         // can be (condition, if) or (condition, if, else)
         if(arr->size == 2 || arr->size == 3) {
             mementry *cond = arr->arr[0];
@@ -81,21 +81,21 @@ void _if(mementry *args, mementry *dst, errorinfo *info) {
             }
             if(truth_of(cond)) {
                 // perform if case
-                fun = arr->arr[1];
+                ret = arr->arr[1];
             } else if(arr->size == 3) {
                 // perform else case 
-                fun = arr->arr[2];
+                ret = arr->arr[2];
             }
-            if(fun == NULL) {
+            if(ret == NULL) {
                 dst->type = UNDEFINED; 
             } else {
-                dst->type = fun->type;
-                dst->level = fun->level;
-                dst->value = fun->value;
+                dst->type = ret->type;
+                dst->level = ret->level;
+                dst->value = ret->value;
 
                 // free fun if synthetic, but not value
-                if(fun->flags.synthetic)
-                    free(fun);
+                if(ret->flags.synthetic)
+                    free(ret);
             }
             return;
         }

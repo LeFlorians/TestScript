@@ -530,8 +530,6 @@ mementry *call(mementry *fun, mementry *params, errorinfo *info){
             else {
                 // type and value will be set by the called function
                 dst = _alloc_mementry();
-                dst->flags = (struct s_mementry_flags) 
-                    {.mutable=0, .synthetic=1, .value_synthetic=1};
             }
 
             // call function from shared object
