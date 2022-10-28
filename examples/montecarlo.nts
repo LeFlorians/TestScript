@@ -1,0 +1,32 @@
+println = {std.print(@[0])std.print("\n")}
+
+rx = 5
+ry = 6.5
+n_iter = 50
+
+area_tot = rx * ry
+
+x,y,val,res
+count=0,under=0
+std.repeat({
+	
+	x = std.random() * rx
+	y = std.random() * ry
+	val = 5*x - x*x
+	res = y <= val && val >= 0
+	println(res)
+	std.print("result:")
+	under = under + std.if(res, 1,1)
+
+	// std.if(res, {std.print("yes")}, {std.print("no")})()
+	println(count)
+	println(under)
+
+	count = count + 1
+	count < n_iter
+})
+
+println("under curve: ")
+println(under)
+println("narea is: ")
+println((area_tot * hits / n_iter))
