@@ -24,6 +24,13 @@ void _type(mementry *args, mementry *dst, errorinfo *info) {
     dst->type = STRING;
 }
 
+void _random(mementry *args, mementry *dst, errorinfo *info) {
+    dst->value = malloc(sizeof(number));
+    *((number *)dst->value) = (number) rand() / (number) RAND_MAX;
+    dst->type = NUMBER;
+    return;
+}
+
 // print a value to the console
 void _print(mementry *args, mementry *dst, errorinfo *info) {
     switch(args->type) {
@@ -190,6 +197,7 @@ void loadstd(hashtable *table){
         // --- Array of all functions and their names in the stdlib
 
         { _repeat,"repeat" },
+        { _random,"random" },
         { _round, "round" },
         { _floor, "floor" },
         { _print, "print" },
