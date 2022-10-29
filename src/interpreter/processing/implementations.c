@@ -31,8 +31,9 @@ char truth_of(mementry *entry) {
 }
 
 // free a synthetic mementry and its synthetic value
-void _free_synth(mementry *entry) {
-    if(!entry->flags.from_ht) {
+void _free_synth(mementry *entry, char free_entry) {
+    if(!entry->flags.from_ht && !entry->flags.persistent) {
+
         if(entry->flags.val_tmp){
             switch(entry->type){
                 case UNDEFINED:
@@ -40,6 +41,9 @@ void _free_synth(mementry *entry) {
                 case ARRAY:
                 case TUPLE:
                     free_array((array *) entry->value);
+                    break;
+                case FUNCTION:
+                    free_stack((bytecode *)entry->value);
                     break;
                 default:
                     free(entry->value);
@@ -198,11 +202,10 @@ mementry *_bnot(opargs *args) {
     *valdst = calculation;\
     \
     /* free right operand if it's not the entry to be returned */\
-    if(dst != lo && ro != lo)\
-        _free_synth(lo);\
-    if(dst != ro){\
-        _free_synth(ro);\
-    }\
+    if(dst != lo && ro != lo && !lo->flags.from_ht)\
+        _free_synth(lo, lo != dst);\
+    if(dst != ro)\
+        _free_synth(ro, ro != dst);\
     \
     return dst;
 
@@ -248,10 +251,9 @@ mementry *_add(opargs *args){
        
     /* free right operand if it's not the entry to be returned */
     if(dst != lo && ro != lo)
-        _free_synth(lo);
-    if(dst != ro){
-        _free_synth(ro);
-    }
+        _free_synth(lo, lo != dst);
+    if(dst != ro)
+        _free_synth(ro, lo != dst);
     
     return dst;
 
@@ -303,12 +305,9 @@ mementry *_equ(opargs *args){
        
     /* free right operand if it's not the entry to be returned */
     if(dst != lo && !lo->flags.from_ht)
-        free(lo);
-    if(dst != ro){
-        _free_synth(ro);
-        if(!ro->flags.from_ht)
-            free(ro);
-    }
+        _free_synth(lo, lo != dst);
+    if(dst != ro)
+        _free_synth(ro, lo != dst);
     
     return dst;
 }
@@ -374,10 +373,6 @@ mementry *_ass(opargs *args){
     // reset flags
     dst->flags.val_tmp = 0;
 
-    // free src if synthetic
-    if(!src->flags.from_ht)
-        free(src);
-
     return dst;
 }
 
@@ -397,6 +392,10 @@ mementry *_list(opargs *args){
             // copy right without expanding it as a tuple
             set_element(left->value, right, ((array *)left->value)->size);
         }
+
+        // free right tuple
+        _free_synth(right, 1);
+
         return left;
     } else if (right->type == TUPLE){
         set_element(right->value, left, 0);
@@ -507,12 +506,12 @@ mementry *call(mementry *fun, mementry *params, errorinfo *info){
             // iterate over each functional instruction, as long as stack not empty
             while(new_args.offset != 0) {
                 if(dst != NULL)
-                    _free_synth(dst);
+                    _free_synth(dst, 1);
                 dst = _recursiveprocess(&new_args, 0);
             }
 
             // reset arguments to parent function
-            // ? _free_synth(_g_params);
+            _free_synth(_g_params, 1);
             _g_params = reset;
 
             break;
@@ -538,14 +537,14 @@ mementry *call(mementry *fun, mementry *params, errorinfo *info){
         default:
             // Throw an error if its not a function
             throw(EI_NOT_CALLABLE, info);
-            _free_synth(fun);
+            _free_synth(fun, 1);
             return NULL;
     }
 
 
     // free arguments
     if(dst != fun)
-        _free_synth(fun);
+        _free_synth(fun, 1);
 
     return dst;
 }
@@ -585,7 +584,7 @@ mementry *_index(opargs *args){
             substring[1] = '\0';
 
             // free val if synthetic
-            _free_synth(val);
+            _free_synth(val, val != dst);
 
             // set and return substring
             dst->value = substring;

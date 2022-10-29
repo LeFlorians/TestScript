@@ -122,6 +122,8 @@ void _repeat(mementry *args, mementry *dst, errorinfo *info) {
         dst->type = tmp->type;
         dst->value = tmp->value;
     } while(truth_of(dst));
+
+    free(params);
 }
 
 // get lenght of arrays, tuples, strings

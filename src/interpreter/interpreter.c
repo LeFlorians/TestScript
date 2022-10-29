@@ -78,6 +78,7 @@ void interpret(FILE *stream, char* filename) {
         // process bytecode, also passing debug information from parser
         process(code, &cac.info);
 
+        free_stack(code);
     };
 
     #if DEBUG

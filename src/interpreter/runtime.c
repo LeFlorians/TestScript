@@ -87,4 +87,6 @@ void process(bytecode *code, errorinfo *info) {
     _indent = 0;
     _print_value(dst);
     #endif
+
+    _free_synth(dst, 1);
 }

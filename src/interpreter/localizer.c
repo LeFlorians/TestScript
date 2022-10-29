@@ -34,7 +34,7 @@ void localize(stnode *subtree, hashtable *table, errorinfo *info) {
 
             if(subtree->data.parent.left != NULL) {
                 // change ht level
-                ht_up(table);
+                // ht_up(table);
 
                 // localize child first
                 if(subtree->data.parent.right != NULL)
@@ -44,7 +44,7 @@ void localize(stnode *subtree, hashtable *table, errorinfo *info) {
                 localize(subtree->data.parent.left, table, info);
                 
                 // reset ht level
-                ht_down(table);
+                // ht_down(table);
             }
 
             break;

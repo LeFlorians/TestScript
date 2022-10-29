@@ -11,6 +11,7 @@
 static inline mementry *_register(bytecode *code, stackptr ptr, typing type) {
     mementry *ret = 
         *(mementry **)push(code, ptr, sizeof(mementry *)) = _alloc_mementry();
+    ret->flags.persistent = 1;
     ret->type = type;
     return ret;
 }

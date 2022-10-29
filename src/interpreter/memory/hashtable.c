@@ -21,7 +21,7 @@ mementry *_alloc_mementry() {
     ret->value = NULL;
     ret->flags =
         (struct s_mementry_flags) 
-        {.from_ht= 0,.val_tmp=0};
+        {.from_ht= 0,.val_tmp=0,.persistent=0};
     return ret;
 }
 

@@ -8,7 +8,7 @@
 // a reference from hashtable is returned (and element is allocated)
 //  else, a copy is returned
 mementry *_recursiveprocess(opargs *args, char return_reference);
-void _free_synth(mementry *entry);
+void _free_synth(mementry *entry, char free_entry);
 char truth_of(mementry *entry);
 
 mementry *call(mementry *fun, mementry *params, errorinfo *info);

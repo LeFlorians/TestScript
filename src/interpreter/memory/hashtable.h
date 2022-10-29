@@ -43,6 +43,8 @@ typedef struct {
         unsigned char from_ht: 1;
         // check if value is temporary, can be discarded
         unsigned char val_tmp: 1;
+        // if it is part of the bytecode 
+        unsigned char persistent: 1;
     } flags;
 
 } mementry;
