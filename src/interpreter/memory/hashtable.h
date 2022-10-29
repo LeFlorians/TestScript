@@ -51,6 +51,9 @@ typedef struct {
 
 // function to allocate mementry
 mementry *_alloc_mementry();
+#define IGNORE_PERSISTENCE 2
+#define IGNORE_HASHTABLE 4
+void _free_synth(mementry *entry, char free_entry);
 
 // internally used hash types
 typedef uint32_t _H_HASH;

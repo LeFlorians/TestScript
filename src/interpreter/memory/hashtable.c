@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "hashtable.h"
+#include "array.h"
 #include "../bytecode.h"
 
 #define DEFAULT_ENTRY_SIZE 8
@@ -24,6 +25,32 @@ mementry *_alloc_mementry() {
         {.from_ht= 0,.val_tmp=0,.persistent=0};
     return ret;
 }
+
+// free a synthetic mementry and its synthetic value
+void _free_synth(mementry *entry, char free_entry) {
+    if((!entry->flags.from_ht || free_entry & IGNORE_HASHTABLE) 
+            && (!entry->flags.persistent || free_entry & IGNORE_PERSISTENCE)) {
+        if(entry->flags.val_tmp){
+            switch(entry->type){
+                case UNDEFINED:
+                    break;
+                case ARRAY:
+                case TUPLE:
+                    free_array((array *) entry->value);
+                    break;
+                case FUNCTION:
+                    free_bytecode((bytecode *)entry->value, IGNORE_PERSISTENCE | IGNORE_HASHTABLE);
+                    break;
+                default:
+                    free(entry->value);
+                    break; 
+            } 
+    if(free_entry)
+        free(entry);
+        }
+    }
+}
+
 
 hashtable *create_hashtable(size_t width, size_t cache_size) {
     hashtable *ret = (hashtable *) malloc(sizeof(hashtable) + width * sizeof(tableslice *));
@@ -60,7 +87,7 @@ static inline void _free_tableentry(tableentry *entry) {
     // TODO: free the mementries / data values
     // free(entry->entry->value);
     
-    free(entry->entry);
+    _free_synth(entry->entry, IGNORE_PERSISTENCE | IGNORE_HASHTABLE | 1);
     free(entry);
 }
 

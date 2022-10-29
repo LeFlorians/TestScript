@@ -16,6 +16,19 @@ static inline mementry *_register(bytecode *code, stackptr ptr, typing type) {
     return ret;
 }
 
+void free_bytecode(bytecode *code, char flags) {
+    // free the mementry elements
+    mementry *memptr;
+    size_t offset = code->elements;
+    while(offset != 0) {
+        memptr = *(mementry **)pop(code, &offset, sizeof(mementry *));
+        _free_synth(memptr, flags);
+    }
+
+    // free the stack itself
+    free_stack(code);
+}
+
 // TODO: does not work for multi-thread
 table_level max_level;
 

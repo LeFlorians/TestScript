@@ -43,7 +43,7 @@ mandelbrot = {
 characters = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
 characters_len = std.len(characters)
 ascii = {
-    characters[(std.ceil(@[0] / max_iter * (characters_len - 1)))]
+    characters[(std.floor(@[0] / max_iter * (characters_len - 1)))]
 }
 
 // iterate over all pixels

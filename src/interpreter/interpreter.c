@@ -78,7 +78,8 @@ void interpret(FILE *stream, char* filename) {
         // process bytecode, also passing debug information from parser
         process(code, &cac.info);
 
-        free_stack(code);
+        free_bytecode(code, IGNORE_PERSISTENCE);
+
     };
 
     #if DEBUG
@@ -96,6 +97,7 @@ void interpret(FILE *stream, char* filename) {
 
     // free token content
     free_stack(cac.bracketstack);
+    free_hashtable(memory);
     free(tkn.content);
 }
 

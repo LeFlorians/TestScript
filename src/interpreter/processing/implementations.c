@@ -30,29 +30,6 @@ char truth_of(mementry *entry) {
     return 1;
 }
 
-// free a synthetic mementry and its synthetic value
-void _free_synth(mementry *entry, char free_entry) {
-    if(!entry->flags.from_ht && !entry->flags.persistent) {
-
-        if(entry->flags.val_tmp){
-            switch(entry->type){
-                case UNDEFINED:
-                    break;
-                case ARRAY:
-                case TUPLE:
-                    free_array((array *) entry->value);
-                    break;
-                case FUNCTION:
-                    free_stack((bytecode *)entry->value);
-                    break;
-                default:
-                    free(entry->value);
-                    break; 
-            } 
-        }
-    }
-}
-
 mementry *_recursiveprocess(opargs *args, char flags) {
     // get the next mementry from the bytecode
     mementry *memptr = *(mementry **)pop(args->code, &args->offset, sizeof(mementry *));
@@ -84,9 +61,11 @@ mementry *_recursiveprocess(opargs *args, char flags) {
         // only return the value, if it's a mutable field
         if(memptr->type == REFERENCE) {
             memptr = memptr->value;
-            if(memptr->flags.from_ht)
+            if(memptr->flags.from_ht || memptr->flags.persistent)
                 return memptr;
         }
+        _free_synth(memptr, 1);
+        // only return null in this case
         return NULL;
     }
 
@@ -137,10 +116,12 @@ mementry *_decr(opargs *args) {
 }
 
 mementry *_lnot(opargs *args) {
-    mementry *dst = _recursiveprocess(args, MUTABLE); // Load only operand into mementry
-    if(dst == NULL){
-        throw(EI_REQ_MUTABLE, args->info);
-        return NULL;
+    mementry *src = _recursiveprocess(args, DEREFERENCE); // Load only operand into mementry
+    mementry *dst;
+    if(src->flags.from_ht || src->flags.persistent){
+        dst = _alloc_mementry();
+        dst->flags.val_tmp = 1;
+        dst->value = malloc(sizeof(number));
     }
 
     if(dst->type != NUMBER){
@@ -153,10 +134,12 @@ mementry *_lnot(opargs *args) {
 }
 
 mementry *_bnot(opargs *args) {
-    mementry *dst = _recursiveprocess(args, MUTABLE); // Load only operand into mementry
-    if(dst == NULL){
-        throw(EI_REQ_MUTABLE, args->info);
-        return NULL;
+    mementry *src = _recursiveprocess(args, DEREFERENCE); // Load only operand into mementry
+    mementry *dst;
+    if(src->flags.from_ht || src->flags.persistent){
+        dst = _alloc_mementry();
+        dst->flags.val_tmp = 1;
+        dst->value = malloc(sizeof(number));
     }
 
     if(dst->type != NUMBER){
@@ -190,13 +173,12 @@ mementry *_bnot(opargs *args) {
         dst = ro;\
     else {\
         dst = _alloc_mementry();\
-        dst->value = malloc(sizeof(number));\
         dst->type = NUMBER;\
-        dst->flags.val_tmp = 1; \
     }\
     \
     number *valdst = dst->flags.val_tmp ? dst->value : malloc(sizeof(number));\
     dst->value = valdst; \
+    dst->flags.val_tmp = 1; \
     \
     /* perform the requested calculation */\
     *valdst = calculation;\
@@ -234,13 +216,13 @@ mementry *_add(opargs *args){
         dst = ro;
     else {
         dst = _alloc_mementry();
-        dst->value = malloc(sizeof(number));
         dst->type = ro->type;
-        dst->flags.val_tmp = 1;
     }
     
-    char *valdst = dst->flags.val_tmp ? dst->value : 
+    void *valdst = dst->flags.val_tmp ? dst->value : 
         malloc(ro->type == STRING ? strlen((char *)ro->value)+strlen((char *)lo->value) + 1 : sizeof(number));
+    dst->flags.val_tmp = 1;
+    dst->value = valdst;
     
     /* perform the requested calculation */
     if(ro->type == STRING){
@@ -281,12 +263,12 @@ mementry *_equ(opargs *args){
         dst = ro;
     else {
         dst = _alloc_mementry();
-        dst->value = malloc(sizeof(number));
         dst->type = NUMBER;
-        dst->flags.val_tmp = 1;
     }
     
     number *valdst = dst->flags.val_tmp ? dst->value : malloc(sizeof(number));
+    dst->flags.val_tmp = 1;
+    dst->value = valdst;
     
     // check if equal
     // for stings, numbers, this checks contents
@@ -365,7 +347,7 @@ mementry *_ass(opargs *args){
     dst->type = src->type;
 
     // free original dst value
-    // ? free(dst->value);
+    _free_synth(dst, 0);
 
     // create value reference
     dst->value = src->value;
@@ -373,11 +355,15 @@ mementry *_ass(opargs *args){
     // reset flags
     dst->flags.val_tmp = 0;
 
+    // free src
+    if(!src->flags.from_ht && !src->flags.persistent)
+        free(src);
+
     return dst;
 }
 
 mementry *_hardset(opargs *args) {
-    
+    // not implemented 
 }
 
 mementry *_list(opargs *args){
@@ -399,6 +385,7 @@ mementry *_list(opargs *args){
         return left;
     } else if (right->type == TUPLE){
         set_element(right->value, left, 0);
+        _free_synth(left, 1);
         return right;
     } else {
         // create new array
@@ -407,6 +394,8 @@ mementry *_list(opargs *args){
         // set elements
         set_element(arr, left, 0);
         set_element(arr, right, 1);
+
+        // don't free left/right here, they are in arr
 
         // create new mementry for array
         mementry *ret = _alloc_mementry();
@@ -444,12 +433,12 @@ mementry *_pos(opargs *args){
         dst->value = malloc(sizeof(number));
         dst->type = NUMBER;
         dst->flags.val_tmp = 1;
-    }
-    
-    if(dst != o) {
         *(number *)dst->value = *(number *)o->value;
     }
 
+    if(!o->flags.from_ht && !o->flags.persistent)
+        free(o);
+   
     return dst;
 }
 
@@ -573,8 +562,11 @@ mementry *_index(opargs *args){
             mementry *dst;
             if(val->flags.val_tmp)
                 dst = val;
-            else
-                (dst = _alloc_mementry())->type = STRING;
+            else {
+                dst = _alloc_mementry();
+                dst->type = STRING;
+                dst->flags.val_tmp = 1;
+            }
 
             // create new substring
             char *substring = malloc(2);
@@ -617,6 +609,8 @@ mementry *_array(opargs *args){
 
     // set elements
     set_element(arr, content, 0);
+
+    // don't free content because it's in array
 
     // create new mementry for array
     mementry *ret = _alloc_mementry();

@@ -50,3 +50,6 @@ typedef stack bytecode;
 
 // Consumes a syntax tree (freeing it) and a hashtable and returns the corresponding bytecode 
 bytecode *consume(stnode *root);
+
+// free bytecode stack and all elements
+void free_bytecode(bytecode *code, char flags);
