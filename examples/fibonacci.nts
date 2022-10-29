@@ -1,5 +1,5 @@
-a, b
-a = 0 b = 1
+a = 0
+b = 1
 
 count = 10
 
@@ -9,6 +9,6 @@ std.repeat({
 
     std.print(a)
     std.print("\n")
-    
-    (count = count - 1)
+
+    count = count - 1
 })

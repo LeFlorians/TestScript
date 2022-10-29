@@ -138,12 +138,16 @@
 \section{Introduction}
 The importance of computers in today's world is unquestioned.
 But computers are not just the metals and semiconductors they are built from,
-but would be unusable without any programs running on them.
-Creating such programs, no matter if games, web browsers or even operating systems,
+but would be unusable without any software running on them.
+Creating programs, no matter if games, web browsers or even operating systems,
 involve the use of programming languages.
 Those serve as a bridge between the human mind and its imagination, and
 the capabilities of computer hardware and are a huge time-saver when compared
 to writing machine-native code, i.e. not using a programming language.
+By making use of just the term \emph{language} this paper will refer to programming
+languages specifically. Sources are mentioned fater cohesive paragraphs in
+square brackets, an index can be found in the \emph{Bibliography} on page
+\pageref{bibliography}.
 
 Since the year 1973, when the first programming language was invented, the
 research in programming languages has fastly advanced. But the goal has stayed
@@ -242,10 +246,11 @@ The C ecosystem is very easy to use on and fundamentally supported by
 \emph{GNU+Linux}, the operating system used to program on.
 The code editor used was \emph{Microsoft Visual Studio Code}, providing great
 help with built-in git integration and auto-completion features.
-\emph{Git} is the project management and tracking software used to back up and share
+The tools \emph{Valgrind} and \emph{gdb}, the GNU Project Debugger were of great help
+regarding the finding of errors and memory leaks, see section \ref{memleaks} for details.
+\emph{Git} is the project management and version tracking software used to back up and share
 the project files on \emph{GitHub.com}, a Microsoft hosted git repository and
 web front-end to store and collaborate on source code.
-% TODO: add gdb!
 
 \subsection{The Art of Simplification}
 When dealing with problems in general, it is helpful to map out and think about
@@ -262,10 +267,10 @@ Here is the problem, broken down into three steps as commonly done in other
 popular programming languages:
 \begin{enumerate}\pagelabel{simple_interpreter}
     \item To create meaningful groups of characters from the input string. This
-        process is called 'tokenization' and is done with the component called
-        tokenizer or lexer. As an example, the string 'aa + bb' could result
-        in three tokens, namely 'aa', '+' and 'bb'. In this case, space characters
-        are ignored. 
+        process is known as tokenization and is done with the component called
+        tokenizer or lexer. As an example, the string \emph{ab + cd} could result
+        in three tokens, namely \emph{ab}, \emph{+} and \emph{cd}. In this case, space characters
+        are simply ignored and could be left out, unlike in the English language where spaces are relevant. 
         This is only an example and the grouping of characters could be done 
         in any thinkable, logical way.
     \item To order the tokens into parse-tree, also called syntax-tree, as
@@ -412,7 +417,7 @@ as an example:
     \item \emph{Preprocessor Instructions.} Lines beginning with hashtags are
         C preprocessor instructions, they are dealt with by the C preprocessor.
         Preprocessing is what the compiler does before actually compiling the
-        code.
+        code. %TODO: add src (Preprocessor)
 
         The most common preprocessor instructions are the following.
         On one hand there is \expr{\#include $<$header.h$>$}
@@ -422,7 +427,10 @@ as an example:
         define A as an alias for B and replace every following occurrence of A
         with B.
 
-    \item \emph{Functions.} Every C function has a return type, a
+    \item \emph{Functions.} In programming, functions or methods are
+        a set of code that accomplish a certain task. They take in data,
+        process it and return a result. Calling a function means to evaluate it for a given input.
+        In C, every function has a return type, a
         function name, arguments and a function body in that order.
         Here is an example of a C function:
         \code{pseudocode/function.c}{1}{999}
@@ -431,13 +439,14 @@ as an example:
         of type 'int', has two arguments, 'argc' and 'argv', and a function body
         which, in the case of the example above, prints the value of the 'argc' argument.
 
-    \item \emph{Pointers.} Pointers are variables that store memory addresses
-        of data. In C-like syntax they are defined with the star '*' symbol.
-        An example from \hrc{src/main.c} is 'FILE *input;'. That means that input is not
+    \item \emph{Pointers.} Pointers are variables that store memory addresses. 
+        In C syntax they can be defined with the star '*' symbol.
+        An example from \hrc{src/main.c} is \expr{FILE *input;.} That means that \emph{input} is not
         actually a FILE, but rather a memory address pointing to a spot in memory where a FILE is.
         To dereference the pointer, i.e. to copy the value stored
-        at the memory address into a variable on the stack, another star is used like this:
-        'FILE value = *input;'.
+        at the memory address into another variable, another star is used like this:
+        \expr{FILE value = *input;}.
+        \emph{value} now contains a copy of the actual FILE that \emph{input} was pointing to.
 \end{itemize}
 
 For those who are further interested in the C programming language, there are
@@ -445,48 +454,51 @@ countless internet articles or tutorials about reading and understanding or
 writing and compiling C code. One such example is the article 'The C Beginner's
 Handbook' provided by freeCodeCamp.org linked in the sources
 on page \pageref{bibliography}.
+[\cte{freeCodeCamp}]
 
 Following is a very quick summary of the few 
 things happening in the \hrc{src/main.c} file.
 First, the \hrc{src/interpreter/interpreter.h} header file is included. 
-The main function decides whether to
-read a program from the standard input or from a file. 
-Then, the interpret function
+The main function then decides whether to
+read a program from a file or from standard input. 
+At last, the interpret function
 from the said included header is called with the selected input.
-[\cte{freeCodeCamp}]
 
 \subsubsection{The Interpreter}
 This section deals with the file 
 \hrc{src/interpreter/interpreter.c} which guides
 input data through the various stages of the \name{} interpreter as 
 seen in figure \ref{f_diagram} on page \pageref{f_diagram}.
-Following is a breakdown of the 'interpret' function from said file.
+Following is a breakdown of the \emph{interpret} function from said file
+as well as an overview of some of the stages that follow.
 
-The 'interpret' function calls the parser to generate a syntax-tree from tokens retrieved
+The \emph{interpret} function calls the parser to generate a syntax-tree from tokens retrieved
 from the tokenizer implemented in \hrc{src/interpreter/parser.c} and 
 \hrc{src/interpreter/tokenizer.c} respectively.
 
-After that, variables with names are 'localized', meaning their names are
+After that, the names of variables are
 mapped to addresses in memory where their value is stored. Doing this before
 bytecode compilation has a performance benefit. 
-The mapping is done with a custom hashtable datastructure with average time
-complexity of O(log n), n being the amount of different variables.
-The hashtable implementation used in \hrc{src/interpreter/memory/hashtable.c}
+The mapping is acheived with a custom hashtable datastructure with average time
+complexity of O(log n), n being the total amount of variables a \name{} program is using.
+The hashtable implementation used in \hrc{src/interpreter/memory/hashtable.c}                   % TODO: maybe its own paragraph! interpolation search vs binary search
 uses binary search to locate elements variable-sized arrays in the hashtable's buckets.
-For collision detection, i.e. to circumvent problems arising when two keys have the
-same hash, separate chaining is used. In this approach, linked lists with
-key-value pairs are used for each array index and keys are compared directly
+This is because for such few variables that are used in a standard \name{} program,
+an interpolation search algorithm is actually slower.
+For collision detection, i.e. to circumvent problems arising when two variable names have the
+same hash, a technique called separate chaining is used. In this approach, linked lists with
+key-value pairs are used for each array index of the buckets and variable names are compared directly
 to find exact matches.
 [\cte{separate_chaining}]
 
-The syntax tree could now be interpreted directly, but as said, is instead converted
+The syntax tree from the parser could now be interpreted directly, but as mentioned 
+before, is instead converted
 to an intermediate internal bytecode format by \hrc{src/interpreter/bytecode.c}.
-This step is done so that code that is run multiple times does not convey
-the problem of time overhead when traversing the syntax tree, but the current
-implementation does not take advantage of this.
+This step is done so that code that is run multiple times does not have
+the problem of time overhead when traversing the syntax tree.
 
 The final step is to process or execute said bytecode. This step is performed
-by \hrc{src/interpreter/runtime.c}.
+in \hrc{src/interpreter/runtime.c}.
 
 \subsubsection{The Tokenizer}
 The tokenizer is implemented in \hrc{src/interpreter/tokenizer.c}. Its job is to
@@ -497,12 +509,12 @@ The different types of tokens and other things are defined in the header file
 \hrc{src/interpreter/tokenizer.h}.
 
 Here is an example of tokenization:
-An input of 'std.test==23.4' would result in the following tokens according
+An input of \emph{a.b==23.4} would result in the following tokens according
 to the tokenizer implementation of this paper:
 \begin{enumerate}
-    \item Token of type FIELD with content 'std.text'.
-    \item Token of type SYMBOL with content '=='.
-    \item Token of type NUMBER with content '23.4'.
+    \item Token of type FIELD with content \emph{a.b}.
+    \item Token of type SYMBOL with content \emph{==}.
+    \item Token of type NUMBER with content \emph{23.4}.
 \end{enumerate}
 FIELD type tokens are later replaced by REFERENCE tokens, effectively mapping
 variable names to addresses in memory.
@@ -510,27 +522,36 @@ SYMBOL type tokens are mapped to operators such as plus or minux by \hrc{src/imp
 during parsing. NUMBER type tokens are replaced by an actual number type, which
 is C's 'long double' type as specified in \hrc{src/interpreter/bytecode.h}.
 
-The tokenizer used in this paper is a simple finite-state machine, reading
-character by character and determining the token type as it goes.
-
-These tokens are then directly consumed by the parser as described in the next
+While tokenizers can be programmed using regular expressions, 
+this paper uses a more simple finite-state machine tokenizer.
+It reads character by character, determining the token type as it goes.
+It stops when there is a token thad does no longer match the current token type.
+Tokens are each requested and integrated into a syntax-tree by the parser as described in the next
 section.
 
 \subsubsection{The Parser}
-The parser, implemented in \hrc{src/interpreter/parser.c}, generates a syntax-tree
-from tokens. The algorithm used is inspired by the Pratt Parsing
-algorithm first described by Vaughan Pratt in 1973, which is a kind of precedence
+The parser, implemented in \hrc{src/interpreter/parser.c}, generates a syntax tree,
+also called parse tree, from tokens. Since this paper's implementation 
+does not parse code from a
+concise context free grammar, the syntax tree the parser creates is very
+similar to an otherwise known abstract syntax tree, AST for short.
+ASTs describe source code conceptually and do not contain all syntactical
+elements required to parse code.
+In this paper the terms parse tree, syntax tree and AST will be used
+synonymously.
+
+The algorithm used is inspired by the 'Pratt Parsing
+algorithm' first described by Vaughan Pratt in 1973, which is a kind of precedence
 parser based on recursive descent. There is an explanation of the algorithm
-written by Jonathan Apodaca on dev.io linked in the references on page 
+written by Jonathan Apodaca on \emph{dev.io} linked in the references on page 
 \pageref{bibliography} which this paper's parser takes inspiration from.
 [\cte{pratt}, \cte{devio}]
 
-The syntax tree in the implementation of \name{} consists of 'stnode' type
-pointers defined in \hrc{src/interpreter/parser.h}. Each such node depending
-on its 'nodetype', declared in \hrc{src/interpreter/tokenizer.h},
-is either a value-node storing a pointer to data, e.g. a number or text, or a
-parent-node referencing two child nodes and an operator, e.g. two numbers as
-children and a plus-operator to signify an addition.
+The syntax tree in the implementation of \name{} is a binary tree consisting of nodes, internally
+called \emph{stnode}. The datatype is defined in the header file \hrc{src/interpreter/parser.h}.
+Each node can either be an internal node having one or two nodes as children, or a leaf node
+which stands for a value, e.g. a number or a text. Each internal node, also known as parent node, signifies
+an operation done on its children. This can be an addition of two numbers for example. 
 
 The difficult part of implementing a parser is precedence. Precedence together
 with associativity define the order of execution of statements. A simple example
@@ -542,23 +563,26 @@ left-to-right associative, meaning the stated expression is the same as
 \emph{(20/10)/2} and not as \emph{20/(10/2)}. Both precedence 
 and associativity are properties that are defined in the file \hrc{mapop.gpref} for
 each operator.
+In the end the parse tree contains all values and 
+operations as well as information about the order of execution.
 
 The parser implementation in \hrc{src/interpreter/parser.c} may be difficult to
 read and understand, which is why the most important functions are explained here:
 \begin{itemize}
-    \item \emph{advance.} This function reads a new token from the tokenizer.
-    \item \emph{secondary.} The 'secondary' function deals with parsing single,
-        simple values that make up the start of an expression, such as numbers,
-        fields, strings and it handles brackets, such as indexing with square
-        brackets, functions or code blocks with curly braces and sub-expressions
-        in standard brackets.
-    \item \emph{expr.} The 'expr' function calls 'secondary' which acts
+    \item \emph{advance.} This function reads the next token from the tokenizer.
+    \item \emph{secondary.} This function reads tokens that will become the leaf nodes
+        of the parse tree.
+        It deals with simple values that make up the start of an expression, such as numbers,
+        fields, strings and it handles brackets. 
+        In addition, it can handle prefix operators, such as the unary plus or unary minus.
+    \item \emph{expr.} The \emph{expr} function calls \emph{secondary} whose result acts
         as the basis for a new expression. It then repeatedly checks
-        if an operator follows the secondary token and creates a tree of
-        EXPR type stnodes, each having children which are recursively parsed
-        and information about the operator.
+        if an operator follows the secondary token and creates the syntax-tree
+        with help of recursive mechanisms. The nature of this function also 
+        removees the need for semi-colons,
+        which are essential in languages like Java or C.
     \item \emph{parse.} The parse function is a small wrapper which only
-        calls the 'expr' function, initiating the parsing process.
+        calls the \emph{expr} function a first time, initiating the parsing process.
 \end{itemize}
 
 Following is a piece of pseudocode to better illustrate the inner workings of the
@@ -574,25 +598,25 @@ The bytecode compiler is an internal part of the interpreter, located in the fil
 of byte-sized instructions and data from the syntax-tree the parser created.
 Using such an intermediary bytecode format instead of directly interpreting
 the parse-tree can be beneficial. This is the case when the same piece of code
-has to be run several times. Instead of generating a time and memory overhead 
-having to walk along tree-nodes recursively, only the list of instructions in
-the bytecode can be traversed, which takes less time overall. 
+has to be run several times. Compared to
+having to walk along tree nodes recursively, reading the list of instructions in
+the bytecode takes less time overall. 
 
 Not to be confused with machine-native bytecode, the bytecode compiler in \name{}
 generates byte-sequences in an internal format that are then interpreted. A
-JIT compiler would instead compile the AST down to machine-native bytecode, which
-could run directly on the system's hardware and would not have to be interpreted.
+Just-In-Time compiler, JIT compiler for short, would instead compile the AST 
+down to machine-native bytecode, which
+runs directly on the system's hardware and does not have to be interpreted.
 
 To generate the bytecode, \name{} recursively reads through the
 binary tree created by the parser and pushes found instructions onto a stack.
 The algorithm used is inspired by Edsger Dijkstra's 'Shunting yard 
 algorithm', traversing the tree post-order to create
 a prefix notation. 
-[\cte{shunting_yard}]
-
 A prefix notation is a way to write down mathematical expressions, except
 operators precede their operands, in contrast to the more common infix notation,
 where operands surround the operator.
+[\cte{shunting_yard}]
 
 In \hrc{src/interpreter/bytecode.c} we can see that first the left operand and then
 the right operand are added onto the stack of bytecode. Therefore, when
@@ -605,13 +629,14 @@ Here is an example:
     \item In common prefix notation, also called Polish notation, the
         operators would now precede the operands in this manner:
         \expr{\emph{- 1 (/ (* 2 4) (+ 5 6))}}
-    \item But in \name{} the operands are pushed onto the stack is reverse order.
+    \item But in \name{} the operands are pushed onto the stack is reverse order,
+        as popping from the stack again reverses the order back to the original.
         This would look like the following:
         \expr{\emph{- (/ (+ 6 5) (* 4 2)) 1}}
     \item The brackets are not needed, because for every operator, the amount
-        of operands is known. This is the case as e.g. the subtraction operator
-        and the negative operator, which are both a minus sign, are distinguished
-        beforehand. The above statement would therefore look like this:
+        of operands is known. This is also the case for the unary minus and unary plus,
+        because they are distinguished from their infix counterparts beforehand.
+        The above statement would therefore look like this:
         \expr{\emph{- / + 6 5 * 4 2 1}}
         This is how expressions are represented in the bytecode of \name{}.
 \end{enumerate}
@@ -624,7 +649,7 @@ compiler and evaluates expressions by plugging in the provided values.
 All available operators are implemented in 
 \hrc{src/interpreter/processing/implementations.c}.
 
-The evaluation of expressions also works in a recursive manner. Here is an 
+The evaluation of expressions works in a recursive manner. Here is an 
 example of \name{}'s bytecode notation and how it is evaluated at runtime:
 \begin{itemize}
     \item Assume the input in \name{}'s bytecode to resemble the following expression: 
@@ -633,12 +658,12 @@ example of \name{}'s bytecode notation and how it is evaluated at runtime:
         \expr{\emph{(4 * 3) - 6}.}
         The question arises, how can an algorithm compute the result of this
         calculation? The answer is recursion.
-    \item The runtime will read through the bytecode left-to-right. First it will
-        notice the subtraction-operator and accordingly assume that two
+    \item The runtime will read through the bytecode from left to right. First it will
+        notice the subtraction operator and accordingly assume that two
         operands must follow.
     \item The function recursively calls itself in order to evaluate the
-        right operand and notice the 6, a value. The function simply returns the six
-        to the subtraction expression.
+        right operand and notice the 6, a value and a leaf node in the parse tree. 
+        The function simply returns the 6 to the subtraction expression.
     \item Again, the function calls itself to find the next operand.
         As it now reaches a multiplication operator,
         it recursively reads through that sub-expression's right and then left
@@ -659,54 +684,50 @@ of the source code.
 parser and a basic tokenizer. It uses a hash table to map variable names to their
 memory addresses. There are no keywords, only a set of non-alphanumeric characters
 representing all possible operations. Extending upon that, there are some
-standard functions.
+standard functions that enlargen the capabilities of the language.
 
 \subsection{Syntax}
 The syntax of \name{} is unlike most modern, common programming languages' syntax,
-but can be compared somone to that of JavaScript.
+but comes closest to that of JavaScript.
 In \name{}, there are no keywords at all and everything is controlled via operators,
 which are non-alphanumeric characters. Such operators include the plus-sign 
-for addition, or the equals-sign for variable assignment.
+for addition, the equals-sign for variable assignment or a set of brackets to signal
+a function call.
 
 Following is a piece of example \name{} code, printing out the first ten numbers
 of the fibonacci sequence, as well as a disection of how that same code is interpreted.
 \code{examples/fibonacci.nts}{1}{999}
 \begin{itemize}
-\item The source code begins by declaring two variables \emph{a} and \emph{b}, which
+\item The source code begins with the definition two variables \emph{a} and \emph{b}, which
     will be utilized to keep track of the data used to calculate fibonacci numbers.
-    The memory allocation is done by creating a tuple of \emph{a} and \emph{b}, as suggested by 
-    the comma seperating the two. Since both variables \emph{a} and \emph{b} are not yet
-    known to the interpreter, they are automatically created and assigned a value
-    which has no content and the \emph{undefined} typing.
-\item The two variables \emph{a} and \emph{b} are then reassigned new values on line
-    2 of the program. In this case it is numbers with values zero and one respectively.
-    In this example, the two expressions are seperated by a space, but they can
-    also be separated by newline-characters or semicolons.
-\item Another variable \emph{count} is declared and defined as number in one step on line 4.
+    They are each assigned a number, zero and one respectively.
+    Since the variable names \emph{a} and \emph{b} are not yet
+    known to the interpreter, they are automatically allocated in the current scope
+    and assigned a default value. That default value is then overwritten with the
+    assignment operator.
+\item Another variable \emph{count} is declared and defined as the number ten on line 4.
     This variable will be used to limit the amount of numbers the program outputs.
-\item Yet another variable, \emph{f}, is declared and assigned a function as its
-    value on line 6. In \name{}, normal functions do not have any arguments, 
-    but they can interact with variables that were created outside their scope.
-\item Lines 7 to 10 hold mathematical expressions. At first, a is assigned its current value
-    plus the current value of b. Then in line 8, b is assigned the now new value of a minus the
-    current value of b, which corresponds to the value of a before it was just reassigned.
-    Lastly the variable \emph{count} is decremented by one.
-\item Now come the interesting parts of this program.
-    On lines 12 and 13, the function \emph{std.print} is referenced. This function is implemented
-    in plain C code, which internally is not handled the same as regular functions in \name{},
-    and is wrapper to C's function \emph{printf}. The \emph{std.print} function
-    takes any \name{} variable or value and prints it to standard output. On line 13, the "\\n"
-    is replaced by a newline-character, as \name{} can interpret Java-like escape-sequences.
-\item Another standard-library function is \emph{std.if}. It takes two or three arguments.
-    If the first argument is true, then the second, else the the third argument or 
-    \emph{undefined} is returned. A value is true, only if it is a number not equal to zero
-    or a non-empty string. In the case of this example, \emph{std.if} returns \emph{f} if 
-    count is greater than zero, and an empty function if count reaches zero. The two
-    brackets following the call of the \emph{std.if} function signal yet another call to the
-    returned value.
-\item The final thing left to do is to get the ball roling by calling the function \emph{f} for
-    the first time. As stated above, it will now print numbers and recursively call itsself,
-    until the variable \emph{count} reaches a value of zero.
+\item Now the function \emph{std.repeat} is called. This function is a
+    standard library function, meaning it is included in the \name{} interpreter and
+    written in C. Another function is passed as argument to the function call.
+    This function will be repeated.
+\item On line 7 and 8, some calculations are done.
+    Remember, the equals sign stands for an assignment, not an
+    equation. First, \emph{a} is assigned the sum of \emph{a} and \emph{b}. Then 
+    \emph{b} is set to be the new \emph{a} minus \emph{b}, 
+    which is in turn the same as \emph{a} before the reassignment on line 7.
+\item On lines 10 and 11, the standard library function \emph{std.print} is used
+    to print out the value of a and a line break. The backslash in the text
+    that is print out signifies a so-called escape-sequence. The \emph{n} stands
+    for a newline, but other letters such as a \emph{t} for a tabulator are possible.
+\item Lastly, line 13 contains another calculation in which the variable \emph{count}
+    is decremented by one. Since this is the last instruction in the inner function,
+    it is simoultaneously its return value, e.g. the value of count is returned
+    to the \emph{std.repeat} function. The \emph{std.repeat} function will
+    repeat the inner function until the returned value is zero or undefined.
+    This means the inner function is executed exacly ten times, because
+    the initial value of count has to be decremented by one ten times until
+    it equals zero.
 \end{itemize}
 
 \subsection{Name Shadowing}
@@ -715,7 +736,7 @@ original security concept implemented in \name{}.
 \code{examples/exec.nts}{1}{999}
 The code begins by creating the variable \emph{var}, which holds a string and
 \emph{f}, which calls the function \emph{std.exec} with var as argument.
-Line number six holds a comment, indicated by the two slashes at the start of the line.
+Line number seven holds a comment, indicated by the two slashes at the start of the line.
 Comments are ignored by the \name{} interpreter and their purpose is to contain notes
 and explanations inside the source code itself. Another type of commends are block-comments
 which span across multiple lines, such as on lines 9 to 12.
@@ -742,7 +763,18 @@ In \name{}, each imported file would instead have access to all variables and fu
 are made available to it, instead of having to include or import them seperately.
 This leads to another problem, but that is what the next section will be all about.
 
+% TODO: link more examples
+
 \section{Discussion}
+The following paragraphs will go over some positive results and some caveats of the
+final product.
+
+The name \name{} was chosen, because it implised this programming language
+to be a learning project as well as a scripting language, which employ
+high-level abstractions of underlying operations and interpret one line
+at a time. The file name extension \emph{.nts} is used in the examples. This
+file extension is not required, but was chosen as it stands for \emph{Not TypeScript}, because
+the language neither enforces strict typing, nor is it Microsoft's \emph{TypeScript}.
 
 \subsection{Distribution}
 % TODO
@@ -753,27 +785,35 @@ professional projects. In this section, a few shortcomings of \name{} are listed
 and discussed.
 
 \subsubsection{Numbers}
-% TODO
+Another goal that turned out not to be practical to acheive was to use just as much
+memory for each variable as needed and not more. This means every variable would
+have to be assigned a datatype, containing information about the size and possible values.
+Taking C as a reference, the datatype \emph{char} is exactly one byte in size, and
+can therefore be in exactly 2^8 or 256 different states. But in C, information about
+the datatype can be discarded at compile time, whereas in an interpreter like \name{} such
+information needs to persist throughout the program's lifetime.
 
-\subsubsection{Memory Leaks}
+\subsubsection{Memory Leaks}\label{memleaks}
 Memory leaks happen when a program reserves memory to store data, but
 never frees up the space for use for other programs, even though the data
 has long been forgotten about and will no longer be accessed.
-In \name{}, memory leaks are a major problem. Even though barely noticable for small
+In \name{}, memory leaks are a major problem. Even though barely noticable in small
 programs it interprets, \name{} does not have proper setups in place to free up
 all used memory that is not used any longer.
 
-Other programming languages, notably object-oriented languages such as Java,
-use Garbage-Collection, which automatically tracks unused allocated memory and
-frees it up automatically. While this is also the case with \name{}, there are
-many internal flaws that have nothing to do with variables used in a \name{}
-program, but rather internally. 
+Manx rogramming languages, such as Java and Python,
+make use of Garbage-Collection, a strategy to track unused allocated memory and
+free it up automatically. While \name{} also tries to make use of this technique,
+there are many flaws introduced while developing the interpreter that hinder 
+Garbage-Collection from working correctly.
 
-One reason memory leaks is the nature of the
+One reason for memory leaks is the nature of the
 C programming language, in which the \name{} interpreter was written in. The C language and
 compiler do not keep track of all possible states in which certain blocks of memory are
-forgotten about and do not warn the developer. Instead, memory leaks happen.
-More modern C alternatives such as Rust have an ownership-system in place,
+forgotten about and do not warn the developer. Instead, memory leaks happen and a program
+uses much more system resources than required.
+Modern alternatives for C such as Rust deal with the problem in a more elegant way. 
+Rust has an ownership system in place,
 in which any allocated memory is owned by a function. When the function
 is done processing, the memory is automatically freed. Such a system
 is a helpful tool for developers to create better programs without having to get
@@ -781,21 +821,28 @@ lost in the details.
 Inventing new ways to make the job of developers easier is what programming
 language design is all about.
 
+A tool that is helpful to find and fix memory leaks is Valgrind. It runs
+the executable program against an input and finds the origins of unfreed data.
+
 \subsubsection{Single-Threaded}
-The \name{} interpreter does not implement any multi-threaded, i.e. in parallel
-running programs as most other languages do. Instead, any \name{} program can
-only run sequentially. Since most modern computer processors
-are equipped with a handful of processing cores and threads, not being able to
-make use of this modern time's advantage is a major downside.
+The \name{} interpreter does not implement any multi-threading or multiprocessing.
+These techniques make use of the multiple CPU cores available in modern computers
+to run programs in parallel.
+Any \name{} program can therefore
+only contain instructions that run sequentially.
+Since most languages used today allow increasing a
+program's throughput using multi-threading, not having it at hand in \name{}
+is a major limitation.
 
 \subsubsection{Lack of a Development Environment}
-This is certainly the greatest problem of \name{}.
+This is probably the greatest problem of \name{} and any new prorgramming
+languages in general.
 
-Most modern programming languages not only consist
+Most widely used programming languages not only consist
 of a language specification and a compiler or interpreter, but of many more
 tools that surround themn.
 Such tools can include a package-manager, with which people around the world
-can share code. Examples would be npm or cargo, 
+can share code. Examples would be \emph{npm} or \emph{cargo}, 
 the 'Node Package Manager' for JavaScript applications and and Rust's package 
 manager respectively.
 Another example of a helpful tool is a debugger, helping developers
@@ -804,14 +851,25 @@ This includes the tool gdb, the GNU Project Debugger, that was used in this
 project to find errors in the \name{} implementation.
 [\cte{npm}, \cte{cargo}]
 
+On the other hand, having to deal with countless package-managers for each
+language can be annoying for developers. A solution is to build upon and
+extend already existing languages and their tools with e.g. a new syntax.
+This is exactly what Kotlin does. Kotlin can produce Java Virtual Machine
+compatible bytecode, can be transpiled into
+JavaScript, or ECMAScript 5.1 to be more specific,
+and it can be compiled to machine-native programs via LLVM. 
+[\cte{kotlin_compile}]
+
+% TODO: write about LLVM and recommend it lol6
+
 \subsection{Interesting Ideas untouched}
 Creating the ideal programming language takes a lot of planning and sketching
 out. This section of the paper gives insight on interesting ideas or concepts
-that are great to have and are used in other programming languages, but not 
+that are interesting and are used in other programming languages, but 
 could not be implemented into \name{}.
 
 \subsubsection{Foreign Function Interfaces}
-A foreign function interface often abbreviated as FFI,
+A foreign function interface, often abbreviated as FFI,
 is a mechanism by which one programming language can call functions written 
 in another. This makes a language more attractive, as it can be used with
 existing libraries from another language, instead of functions having to be
@@ -864,9 +922,9 @@ Most parts of the source code are annotated with comments, giving interested
 reader direct explanations of what is going on.
 Although there are several limitations and shortcomings as stated in section \ref{Limitations}
 of this paper, the details of the implementation brought about unexpected 
-problems and solutions. The goal of this paper to learn about 
-the inner workings of an interpreter has been achieved, as well as the goal
-to get to know the C language.
+problems and solutions. The goal of this project to learn about 
+the inner workings of an interpreter and
+to get to know the C language has been acheived.
 
 
 \section{Index}
@@ -889,12 +947,12 @@ on \url{https://app.diagrams.net}.
 \section{Declaration of Autonomy}
 Hereby I, Florian Donnelly, declare to have written this paper, also including
 the entire source code of \name{} by myself using resources listed under the
-'Bibliography' section on page \pageref{bibliography}.
+\emph{Bibliography} section on page \pageref{bibliography}.
 % TODO: check correctness of all file paths!! e.g. src/...
 
 \newpage\section{Appendix}\label{Appendix}
 The appendix contains the complete source code of \name{}.
-See the file tree under 'File Structure' in section \ref{FileStructure}
+See the file tree under \emph{File Structure} in section \ref{FileStructure}
 to get an overview.
 
 % Append all soruce files
