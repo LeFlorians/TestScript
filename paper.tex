@@ -14,7 +14,7 @@
 % Specify the version
 \newcommand{\ver}[1]{
     \expandafter\ifstrequal\expandafter{\jobname}{paper}
-    {#1}{\begin{center}-Removed, see full version-\end{center}}
+    {#1}{}
 }
 
 % hyperref abbreviations
@@ -107,12 +107,14 @@
     \vspace{1.5cm}
 
     % Include Mandelbrot on title page
+    \ver{
     \begin{figure}[H]
         \centering
         \paste{paper/mandelbrot.tex}
         \caption{ASCII representation of the Mandelbrot Set, generated with \name{}}
         \label{f_mandelbrot}
     \end{figure}
+    }
 
 
     \Large
@@ -145,12 +147,12 @@ Those serve as a bridge between the human mind and its imagination, and
 the capabilities of computer hardware and are a huge time-saver when compared
 to writing machine-native code, i.e. not using a programming language.
 By making use of just the term \emph{language} this paper will refer to programming
-languages specifically. Sources are mentioned fater cohesive paragraphs in
+languages specifically. Sources are mentioned after cohesive paragraphs in
 square brackets, an index can be found in the \emph{Bibliography} on page
 \pageref{bibliography}.
 
 Since the year 1973, when the first programming language was invented, the
-research in programming languages has fastly advanced. But the goal has stayed
+research in programming languages has vastly advanced. But the goal has stayed
 the same, to make programming as intuitive and easy, yet fast and efficient as
 possible.
 
@@ -247,7 +249,7 @@ The C ecosystem is very easy to use on and fundamentally supported by
 The code editor used was \emph{Microsoft Visual Studio Code}, providing great
 help with built-in git integration and auto-completion features.
 The tools \emph{Valgrind} and \emph{gdb}, the GNU Project Debugger were of great help
-regarding the finding of errors and memory leaks, see section \ref{memleaks} for details.
+when trying to find of errors and memory leaks, see section \ref{memleaks} for details.
 \emph{Git} is the project management and version tracking software used to back up and share
 the project files on \emph{GitHub.com}, a Microsoft hosted git repository and
 web front-end to store and collaborate on source code.
@@ -259,7 +261,7 @@ problem situation down to a simpler one and extending the solution to take into
 account all important aspects later.
 
 The problem to solve in this paper is concisely to make a computer understand
-human-written and -readable text, called source code, and follow the instructions
+human written and -readable text, called source code, and follow the instructions
 it proposes.
 Most interpreters follow a plain scheme to go about this problem, but the
 actual implementation of each of the steps can be heavily customized.
@@ -436,8 +438,8 @@ as an example:
         \code{pseudocode/function.c}{1}{999}
         This would be an example of a main function, similar to the one
         in \hrc{src/main.c}. It returns a value
-        of type 'int', has two arguments, 'argc' and 'argv', and a function body
-        which, in the case of the example above, prints the value of the 'argc' argument.
+        of type \emph{int}, has two arguments, \emph{argc} and \emph{argv}, and a function body
+        which, in the case of the example above, prints out the value of the \emph{argc} argument.
 
     \item \emph{Pointers.} Pointers are variables that store memory addresses. 
         In C syntax they can be defined with the star '*' symbol.
@@ -461,7 +463,7 @@ things happening in the \hrc{src/main.c} file.
 First, the \hrc{src/interpreter/interpreter.h} header file is included. 
 The main function then decides whether to
 read a program from a file or from standard input. 
-At last, the interpret function
+At last, the function \emph{interpret}
 from the said included header is called with the selected input.
 
 \subsubsection{The Interpreter}
@@ -472,16 +474,16 @@ seen in figure \ref{f_diagram} on page \pageref{f_diagram}.
 Following is a breakdown of the \emph{interpret} function from said file
 as well as an overview of some of the stages that follow.
 
-The \emph{interpret} function calls the parser to generate a syntax-tree from tokens retrieved
+The function \emph{interpret} calls the parser to generate a syntax-tree from tokens retrieved
 from the tokenizer implemented in \hrc{src/interpreter/parser.c} and 
 \hrc{src/interpreter/tokenizer.c} respectively.
 
 After that, the names of variables are
 mapped to addresses in memory where their value is stored. Doing this before
 bytecode compilation has a performance benefit. 
-The mapping is acheived with a custom hashtable datastructure with average time
+The mapping is achieved with a custom hash table data structure with average time
 complexity of O(log n), n being the total amount of variables a \name{} program is using.
-The hashtable implementation used in \hrc{src/interpreter/memory/hashtable.c}                   % TODO: maybe its own paragraph! interpolation search vs binary search
+The hash table implementation used in \hrc{src/interpreter/memory/hashtable.c}                   % TODO: maybe its own paragraph! interpolation search vs binary search
 uses binary search to locate elements variable-sized arrays in the hashtable's buckets.
 This is because for such few variables that are used in a standard \name{} program,
 an interpolation search algorithm is actually slower.
@@ -512,9 +514,9 @@ Here is an example of tokenization:
 An input of \emph{a.b==23.4} would result in the following tokens according
 to the tokenizer implementation of this paper:
 \begin{enumerate}
-    \item Token of type FIELD with content \emph{a.b}.
-    \item Token of type SYMBOL with content \emph{==}.
-    \item Token of type NUMBER with content \emph{23.4}.
+    \item A token of type FIELD with content \emph{a.b}.
+    \item A second token of type SYMBOL with content \emph{==}.
+    \item A third token of type NUMBER with content \emph{23.4}.
 \end{enumerate}
 FIELD type tokens are later replaced by REFERENCE tokens, effectively mapping
 variable names to addresses in memory.
@@ -523,9 +525,9 @@ during parsing. NUMBER type tokens are replaced by an actual number type, which
 is C's 'long double' type as specified in \hrc{src/interpreter/bytecode.h}.
 
 While tokenizers can be programmed using regular expressions, 
-this paper uses a more simple finite-state machine tokenizer.
+this paper uses a simpler finite-state machine tokenizer.
 It reads character by character, determining the token type as it goes.
-It stops when there is a token thad does no longer match the current token type.
+It stops when there is a token that does no longer match the current token type.
 Tokens are each requested and integrated into a syntax-tree by the parser as described in the next
 section.
 
@@ -557,8 +559,8 @@ The difficult part of implementing a parser is precedence. Precedence together
 with associativity define the order of execution of statements. A simple example
 would be to perform multiplication before addition, e.g. \emph{2+3*4} would
 result in \emph{14} and is not the same as \emph{(2+3)*4}.
-Assosiativity is either 'Left to Right' or 'Right to Left'. An example of associativity is
-\emph{20/10/2}. Both in C as well as in \name{}, the division operator is
+Associativity is either 'Left to Right' or 'Right to Left'. An example of associativity is
+\emph{20/10/2}. Both in C and in \name{}, the division operator is
 left-to-right associative, meaning the stated expression is the same as
 \emph{(20/10)/2} and not as \emph{20/(10/2)}. Both precedence 
 and associativity are properties that are defined in the file \hrc{mapop.gpref} for
@@ -579,13 +581,13 @@ read and understand, which is why the most important functions are explained her
         as the basis for a new expression. It then repeatedly checks
         if an operator follows the secondary token and creates the syntax-tree
         with help of recursive mechanisms. The nature of this function also 
-        removees the need for semi-colons,
+        removes the need for semicolons,
         which are essential in languages like Java or C.
     \item \emph{parse.} The parse function is a small wrapper which only
         calls the \emph{expr} function a first time, initiating the parsing process.
 \end{itemize}
 
-Following is a piece of pseudocode to better illustrate the inner workings of the
+Following is a piece of pseudo code to better illustrate the inner workings of the
 parser which is based on a Pratt-parser. 
 This is only an example and not completely accurate to the actual parser used
 by this project.
@@ -642,15 +644,15 @@ Here is an example:
 \end{enumerate}
 [\cte{polish_notation}]
 
-\subsubsection{The Runtime}
+\subsubsection{Program Evaluation}
 This is the last stage of interpreting program code as implemented in \name{}.
-The runtime steps through the intermediary bytecode created by the bytecode
+The interpreter steps through the intermediary bytecode created by the bytecode
 compiler and evaluates expressions by plugging in the provided values.
 All available operators are implemented in 
 \hrc{src/interpreter/processing/implementations.c}.
 
 The evaluation of expressions works in a recursive manner. Here is an 
-example of \name{}'s bytecode notation and how it is evaluated at runtime:
+example of \name{}'s bytecode notation and how it is evaluated:
 \begin{itemize}
     \item Assume the input in \name{}'s bytecode to resemble the following expression: 
         \expr{\emph{- 6 * 3 4}}
@@ -658,7 +660,7 @@ example of \name{}'s bytecode notation and how it is evaluated at runtime:
         \expr{\emph{(4 * 3) - 6}.}
         The question arises, how can an algorithm compute the result of this
         calculation? The answer is recursion.
-    \item The runtime will read through the bytecode from left to right. First it will
+    \item The interpreter will read through the bytecode from left to right. First it will
         notice the subtraction operator and accordingly assume that two
         operands must follow.
     \item The function recursively calls itself in order to evaluate the
@@ -674,8 +676,8 @@ example of \name{}'s bytecode notation and how it is evaluated at runtime:
 \end{itemize}
 
 That is it. With all the operators and standard functions that have been implemented, entire programs
-can be interpreted. Examples of such programs can be found in the \emph{examples} directory
-of the source code.
+can be interpreted. Examples of such programs can be found in the directory
+\emph{examples} of the source code.
 
 \section{Results}
 
@@ -684,7 +686,7 @@ of the source code.
 parser and a basic tokenizer. It uses a hash table to map variable names to their
 memory addresses. There are no keywords, only a set of non-alphanumeric characters
 representing all possible operations. Extending upon that, there are some
-standard functions that enlargen the capabilities of the language.
+standard functions that enlarge the capabilities of the language.
 
 \subsection{Syntax}
 The syntax of \name{} is unlike most modern, common programming languages' syntax,
@@ -695,11 +697,11 @@ for addition, the equals-sign for variable assignment or a set of brackets to si
 a function call.
 
 Following is a piece of example \name{} code, printing out the first ten numbers
-of the fibonacci sequence, as well as a disection of how that same code is interpreted.
+of the Fibonacci sequence, as well as a dissection of how that same code is interpreted.
 \code{examples/fibonacci.nts}{1}{999}
 \begin{itemize}
 \item The source code begins with the definition two variables \emph{a} and \emph{b}, which
-    will be utilized to keep track of the data used to calculate fibonacci numbers.
+    will be utilized to keep track of the data used to calculate Fibonacci numbers.
     They are each assigned a number, zero and one respectively.
     Since the variable names \emph{a} and \emph{b} are not yet
     known to the interpreter, they are automatically allocated in the current scope
@@ -718,14 +720,15 @@ of the fibonacci sequence, as well as a disection of how that same code is inter
     which is in turn the same as \emph{a} before the reassignment on line 7.
 \item On lines 10 and 11, the standard library function \emph{std.print} is used
     to print out the value of a and a line break. The backslash in the text
-    that is print out signifies a so-called escape-sequence. The \emph{n} stands
-    for a newline, but other letters such as a \emph{t} for a tabulator are possible.
+    that is print out signifies a so-called escape sequence and will be replaced with
+    piece of text that can not be entered directly. The \emph{n} stands
+    for a line break, but other letters such as a \emph{t} for a tabulator are possible.
 \item Lastly, line 13 contains another calculation in which the variable \emph{count}
     is decremented by one. Since this is the last instruction in the inner function,
-    it is simoultaneously its return value, e.g. the value of count is returned
+    it is simultaneously its return value, e.g. the value of count is returned
     to the \emph{std.repeat} function. The \emph{std.repeat} function will
     repeat the inner function until the returned value is zero or undefined.
-    This means the inner function is executed exacly ten times, because
+    This means the inner function is executed exactly ten times, because
     the initial value of count has to be decremented by one ten times until
     it equals zero.
 \end{itemize}
@@ -741,7 +744,7 @@ Comments are ignored by the \name{} interpreter and their purpose is to contain 
 and explanations inside the source code itself. Another type of commends are block-comments
 which span across multiple lines, such as on lines 9 to 12.
 On line seven, the \emph{std.exec} function is called for the first time. It runs the
-command it is given as argument in the user's shell, which is most commonly \emph{cmd} on
+command it is given as argument in the user's shell, which is most commonly \emph{cmd.exe} on
 Microsoft Windows and \emph{bash} on most Linux distributions. In this example, \emph{std.exec}
 launches the Firefox browser, but it is capable of all kinds of things that can otherwise be
 done in the shell, such as delete files or shut down the computer.
@@ -753,14 +756,14 @@ example to remove access to the \emph{std.exec} function, which is why the call 
 on line 16, trying to shut down the computer, will result in an error. Unexpectedly though, the
 call on line 20 to the function \emph{f} which was created as an as to \emph{std.exec} will work.
 
-This security concept enforces the use of a top-down programming model. First, safe-to-use aliases
+This security concept enforces the use of a top-down programming model. First, safe to use aliases
 to dangerous functions have to be created. Then, access to all those exploitable functions is
 revoked. This way, running unknown code can only access data and functions that are being provided.
-This contrasts the models of languages like Python. In Python, each seperate source file can
+This contrasts the models of languages like Python. In Python, each separate source file can
 make use of the \emph{import} keyword to include other files. Files imported this way do not
 have access or knowledge about the variables that exist in the file that includes them.
 In \name{}, each imported file would instead have access to all variables and functions that
-are made available to it, instead of having to include or import them seperately.
+are made available to it, instead of having to include or import them separately.
 This leads to another problem, but that is what the next section will be all about.
 
 % TODO: link more examples
@@ -769,7 +772,7 @@ This leads to another problem, but that is what the next section will be all abo
 The following paragraphs will go over some positive results and some caveats of the
 final product.
 
-The name \name{} was chosen, because it implised this programming language
+The name \name{} was chosen, because it implied this programming language
 to be a learning project as well as a scripting language, which employ
 high-level abstractions of underlying operations and interpret one line
 at a time. The file name extension \emph{.nts} is used in the examples. This
@@ -785,11 +788,11 @@ professional projects. In this section, a few shortcomings of \name{} are listed
 and discussed.
 
 \subsubsection{Numbers}
-Another goal that turned out not to be practical to acheive was to use just as much
+Another goal that turned out not to be practical to achieve was to use just as much
 memory for each variable as needed and not more. This means every variable would
 have to be assigned a datatype, containing information about the size and possible values.
 Taking C as a reference, the datatype \emph{char} is exactly one byte in size, and
-can therefore be in exactly 2^8 or 256 different states. But in C, information about
+can therefore be in exactly 2\^8 or 256 different states. But in C, information about
 the datatype can be discarded at compile time, whereas in an interpreter like \name{} such
 information needs to persist throughout the program's lifetime.
 
@@ -797,11 +800,11 @@ information needs to persist throughout the program's lifetime.
 Memory leaks happen when a program reserves memory to store data, but
 never frees up the space for use for other programs, even though the data
 has long been forgotten about and will no longer be accessed.
-In \name{}, memory leaks are a major problem. Even though barely noticable in small
+In \name{}, memory leaks are a major problem. Even though barely noticeable in small
 programs it interprets, \name{} does not have proper setups in place to free up
 all used memory that is not used any longer.
 
-Manx rogramming languages, such as Java and Python,
+Many programming languages, such as Java and Python,
 make use of Garbage-Collection, a strategy to track unused allocated memory and
 free it up automatically. While \name{} also tries to make use of this technique,
 there are many flaws introduced while developing the interpreter that hinder 
@@ -821,8 +824,8 @@ lost in the details.
 Inventing new ways to make the job of developers easier is what programming
 language design is all about.
 
-A tool that is helpful to find and fix memory leaks is Valgrind. It runs
-the executable program against an input and finds the origins of unfreed data.
+A tool that is helpful to find and fix memory leaks is \emph{Valgrind}. It runs
+the executable program against an input and finds the origins of not freed data.
 
 \subsubsection{Single-Threaded}
 The \name{} interpreter does not implement any multi-threading or multiprocessing.
@@ -840,7 +843,7 @@ languages in general.
 
 Most widely used programming languages not only consist
 of a language specification and a compiler or interpreter, but of many more
-tools that surround themn.
+tools that surround them.
 Such tools can include a package-manager, with which people around the world
 can share code. Examples would be \emph{npm} or \emph{cargo}, 
 the 'Node Package Manager' for JavaScript applications and and Rust's package 
@@ -855,7 +858,7 @@ On the other hand, having to deal with countless package-managers for each
 language can be annoying for developers. A solution is to build upon and
 extend already existing languages and their tools with e.g. a new syntax.
 This is exactly what Kotlin does. Kotlin can produce Java Virtual Machine
-compatible bytecode, can be transpiled into
+compatible bytecode, can be transcompiled, e.g. translated, into
 JavaScript, or ECMAScript 5.1 to be more specific,
 and it can be compiled to machine-native programs via LLVM. 
 [\cte{kotlin_compile}]
@@ -874,13 +877,13 @@ is a mechanism by which one programming language can call functions written
 in another. This makes a language more attractive, as it can be used with
 existing libraries from another language, instead of functions having to be
 re-written. Enabling C function calls often allows a certain language to
-directly interact with system libraries or the operating system itsself.
+directly interact with system libraries or the operating system itself.
 
 Foreign function interfaces are available in many modern languages.
 Examples are Java, Python and Rust.
 Java enables users to call C, C++ and even assembly code with the Java Native
 Interface, JNI for short, whereas within Python C function can
-be run with the standard ctypes library.
+be run with the standard library \emph{ctypes}.
 
 Foreign function interfaces are specially difficult to implement, or implement
 right. Let us assume a programming language interpreter \name{} written in C that
@@ -904,10 +907,6 @@ data and instructions.
 Another example is Java, providing methods and classes in the java.lang.reflect
 package that enable developers to examine and change properties or functions
 of objects.
-The advantage of reflection over not having it is that it allows for non-static
-programs and program flows, effectively making smaller executables and more
-resource efficient programs, as those programs can adjust themselves to run
-differently under different conditions at runtime.
 The easiest and simplest way to go about implementing Reflection in \name{} is
 certainly to allow the interpretation of strings at runtime. That way, strings
 holding program instructions can be created and modified and later executed.
@@ -932,7 +931,7 @@ This section contains a bibliography which links to all online articles
 this project could profit from, and the list of figures.
 The entire source code of \name{} can be found in the Appendix, section \ref{Appendix}.
 
-\newpage\subsection{Bibliography}
+\subsection{Bibliography}
 \renewcommand*{\bibfont}{\normalsize}
 \pagelabel{bibliography}\printbibliography[heading=none]
 
@@ -944,10 +943,10 @@ Figure \ref{f_diagram} was created using an online diagram creation tool availab
 on \url{https://app.diagrams.net}.
 [\cte{drawio}]
 
-\section{Declaration of Autonomy}
-Hereby I, Florian Donnelly, declare to have written this paper, also including
-the entire source code of \name{} by myself using resources listed under the
-\emph{Bibliography} section on page \pageref{bibliography}.
+\section{Declaration of Authenticity}
+Hereby I, Florian Donnelly, declare to have written this paper independently, 
+also including the entire source code of \name{} by myself using resources 
+listed under the \emph{Bibliography} section on page \pageref{bibliography}.
 % TODO: check correctness of all file paths!! e.g. src/...
 
 \newpage\section{Appendix}\label{Appendix}
