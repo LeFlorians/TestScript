@@ -27,6 +27,7 @@ void _type(mementry *args, mementry *dst, errorinfo *info) {
 void _random(mementry *args, mementry *dst, errorinfo *info) {
     dst->value = malloc(sizeof(number));
     *((number *)dst->value) = (number) rand() / (number) RAND_MAX;
+    dst->flags.val_tmp = 1;
     dst->type = NUMBER;
     return;
 }
@@ -92,10 +93,7 @@ void _if(mementry *args, mementry *dst, errorinfo *info) {
                 dst->type = ret->type;
                 dst->level = ret->level;
                 dst->value = ret->value;
-
-                // free fun if synthetic, but not value
-                if(ret->flags.synthetic)
-                    free(ret);
+                dst->flags.val_tmp = 0;
             }
             return;
         }
@@ -124,9 +122,6 @@ void _repeat(mementry *args, mementry *dst, errorinfo *info) {
         dst->type = tmp->type;
         dst->value = tmp->value;
     } while(truth_of(dst));
-    
-    // free params
-    free(params);
 }
 
 // get lenght of arrays, tuples, strings

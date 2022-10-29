@@ -63,8 +63,11 @@ void interpret(FILE *stream, char* filename) {
         #endif
 
         // break if null or FILE_END
-        if(root == NULL || root->type == FILE_END)
+        if(root == NULL || root->type == FILE_END) {
+            if(root != NULL)
+                free(root);
             break;
+        }
 
         // resolve fields
         localize(root, memory, &cac.info);
@@ -91,6 +94,7 @@ void interpret(FILE *stream, char* filename) {
     #endif
 
     // free token content
+    free_stack(cac.bracketstack);
     free(tkn.content);
 }
 

@@ -30,13 +30,22 @@ char truth_of(mementry *entry) {
     return 1;
 }
 
-
 // free a synthetic mementry and its synthetic value
 void _free_synth(mementry *entry) {
-    if(entry->flags.synthetic) {
-        if(entry->flags.value_synthetic && entry->type != UNDEFINED)
-            free(entry->value);
-        free(entry);
+    if(!entry->flags.from_ht) {
+        if(entry->flags.val_tmp){
+            switch(entry->type){
+                case UNDEFINED:
+                    break;
+                case ARRAY:
+                case TUPLE:
+                    free_array((array *) entry->value);
+                    break;
+                default:
+                    free(entry->value);
+                    break; 
+            } 
+        }
     }
 }
 
@@ -52,7 +61,6 @@ mementry *_recursiveprocess(opargs *args, char flags) {
         memptr = _alloc_mementry();
         memptr->type = UNDEFINED;
         memptr->value = NULL;
-        memptr->flags = (struct s_mementry_flags) {.mutable = 0, .synthetic = 1, .value_synthetic = 0};
         return memptr;
     }
 
@@ -72,7 +80,7 @@ mementry *_recursiveprocess(opargs *args, char flags) {
         // only return the value, if it's a mutable field
         if(memptr->type == REFERENCE) {
             memptr = memptr->value;
-            if(memptr->flags.mutable)
+            if(memptr->flags.from_ht)
                 return memptr;
         }
         return NULL;
@@ -172,31 +180,29 @@ mementry *_bnot(opargs *args) {
     \
     /* determine the dst entry (or allocate a new one if ro and lo are not synthetics) */\
     mementry *dst = NULL;\
-    if(lo->flags.synthetic)\
+    if(lo->flags.val_tmp)\
         dst = lo;\
-    else if(ro->flags.synthetic)\
+    else if(ro->flags.val_tmp)\
         dst = ro;\
     else {\
         dst = _alloc_mementry();\
         dst->value = malloc(sizeof(number));\
         dst->type = NUMBER;\
-        dst->flags = \
-        (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};\
+        dst->flags.val_tmp = 1; \
     }\
     \
-    number *valdst = dst->flags.value_synthetic ? dst->value : malloc(sizeof(number));\
+    number *valdst = dst->flags.val_tmp ? dst->value : malloc(sizeof(number));\
+    dst->value = valdst; \
     \
     /* perform the requested calculation */\
     *valdst = calculation;\
     \
-    if(!dst->flags.value_synthetic){\
-        dst->flags.value_synthetic = 1;\
-        dst->value = valdst;\
-    }\
-    \
     /* free right operand if it's not the entry to be returned */\
-    if(dst != ro)\
+    if(dst != lo && ro != lo)\
+        _free_synth(lo);\
+    if(dst != ro){\
         _free_synth(ro);\
+    }\
     \
     return dst;
 
@@ -219,19 +225,18 @@ mementry *_add(opargs *args){
     
     /* determine the dst entry (or allocate a new one if ro and lo are not synthetics) */
     mementry *dst = NULL;
-    if(lo->flags.synthetic)
+    if(lo->flags.val_tmp)
         dst = lo;
-    else if(ro->flags.synthetic)
+    else if(ro->flags.val_tmp)
         dst = ro;
     else {
         dst = _alloc_mementry();
         dst->value = malloc(sizeof(number));
         dst->type = ro->type;
-        dst->flags = 
-        (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
+        dst->flags.val_tmp = 1;
     }
     
-    char *valdst = dst->flags.value_synthetic ? dst->value : 
+    char *valdst = dst->flags.val_tmp ? dst->value : 
         malloc(ro->type == STRING ? strlen((char *)ro->value)+strlen((char *)lo->value) + 1 : sizeof(number));
     
     /* perform the requested calculation */
@@ -240,15 +245,13 @@ mementry *_add(opargs *args){
         strcat(valdst, (char *) ro->value);
     } else
         *(number *)valdst = a + b;
-    
-    if(!dst->flags.value_synthetic){
-        dst->flags.value_synthetic = 1;
-        dst->value = valdst;
-    }
-    
+       
     /* free right operand if it's not the entry to be returned */
-    if(dst != ro)
+    if(dst != lo && ro != lo)
+        _free_synth(lo);
+    if(dst != ro){
         _free_synth(ro);
+    }
     
     return dst;
 
@@ -270,19 +273,18 @@ mementry *_equ(opargs *args){
     
     /* determine the dst entry (or allocate a new one if ro and lo are not synthetics) */
     mementry *dst = NULL;
-    if(lo->flags.synthetic)
+    if(lo->flags.val_tmp)
         dst = lo;
-    else if(ro->flags.synthetic)
+    else if(ro->flags.val_tmp)
         dst = ro;
     else {
         dst = _alloc_mementry();
         dst->value = malloc(sizeof(number));
         dst->type = NUMBER;
-        dst->flags = 
-            (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
+        dst->flags.val_tmp = 1;
     }
     
-    number *valdst = dst->flags.value_synthetic ? dst->value : malloc(sizeof(number));
+    number *valdst = dst->flags.val_tmp ? dst->value : malloc(sizeof(number));
     
     // check if equal
     // for stings, numbers, this checks contents
@@ -298,15 +300,15 @@ mementry *_equ(opargs *args){
             *valdst = (lo->value == ro->value);
         }
     }
-    
-    if(!dst->flags.value_synthetic){
-        dst->flags.value_synthetic = 1;
-        dst->value = valdst;
-    }
-    
+       
     /* free right operand if it's not the entry to be returned */
-    if(dst != ro)
+    if(dst != lo && !lo->flags.from_ht)
+        free(lo);
+    if(dst != ro){
         _free_synth(ro);
+        if(!ro->flags.from_ht)
+            free(ro);
+    }
     
     return dst;
 }
@@ -370,11 +372,10 @@ mementry *_ass(opargs *args){
     dst->value = src->value;
 
     // reset flags
-    dst->flags = 
-        (struct s_mementry_flags) {.mutable = 0, .synthetic = 0, .value_synthetic = 0};
+    dst->flags.val_tmp = 0;
 
     // free src if synthetic
-    if(src->flags.synthetic)
+    if(!src->flags.from_ht)
         free(src);
 
     return dst;
@@ -437,23 +438,19 @@ mementry *_pos(opargs *args){
     
     /* determine the dst entry */
     mementry *dst = NULL;
-    if(o->flags.synthetic)
+    if(o->flags.val_tmp)
         dst = o;
     else {
         dst = _alloc_mementry();
         dst->value = malloc(sizeof(number));
         dst->type = NUMBER;
-        dst->flags = 
-            (struct s_mementry_flags) {.mutable=0, .synthetic=1, .value_synthetic=1};
+        dst->flags.val_tmp = 1;
     }
     
     if(dst != o) {
         *(number *)dst->value = *(number *)o->value;
     }
 
-    if(!dst->flags.value_synthetic)
-        dst->flags.value_synthetic = 1;
-    
     return dst;
 }
 
@@ -495,8 +492,7 @@ mementry *call(mementry *fun, mementry *params, errorinfo *info){
                 _g_params = _alloc_mementry();
                 _g_params->type = TUPLE;
                 _g_params->value = arr;
-                _g_params->flags = 
-                    (struct s_mementry_flags) {.mutable = 0, .synthetic = 1, .value_synthetic = 0};
+                _g_params->flags.val_tmp = 1;
 
                 set_element(arr, params, 0);
             } else
@@ -523,13 +519,14 @@ mementry *call(mementry *fun, mementry *params, errorinfo *info){
         }
 
         case CFUNCTION:
-            if(params->flags.synthetic)
+            if(params->flags.val_tmp)
                 dst = params;
-            else if(fun->flags.synthetic)
+            else if(fun->flags.val_tmp)
                 dst = fun;
             else {
                 // type and value will be set by the called function
                 dst = _alloc_mementry();
+                dst->flags.val_tmp=1;
             }
 
             // call function from shared object
@@ -575,7 +572,7 @@ mementry *_index(opargs *args){
            
             // create destination register
             mementry *dst;
-            if(val->flags.value_synthetic)
+            if(val->flags.val_tmp)
                 dst = val;
             else
                 (dst = _alloc_mementry())->type = STRING;
@@ -587,12 +584,8 @@ mementry *_index(opargs *args){
             substring[0] = *((char *)val->value + i);
             substring[1] = '\0';
 
-            // allocate previous string
-            if(dst == val){
-                if(val->flags.value_synthetic)
-                    free(val->value);
-            } else
-                _free_synth(dst);
+            // free val if synthetic
+            _free_synth(val);
 
             // set and return substring
             dst->value = substring;

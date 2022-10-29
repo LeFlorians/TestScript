@@ -39,15 +39,10 @@ typedef struct {
 
     // some flags
     struct s_mementry_flags {
-        // set if this mementry is a mutable field (mutable entry in hashtable)
-        unsigned char mutable: 1;
-
-        // > used by implementations.c < to see if
-        // a mementry only exists during expression-evaluation
-        unsigned char synthetic: 1; 
-        // used to check if the value this mementry is pointing to is synthetic
-        // this will only be set, if synthetic is set as well
-        unsigned char value_synthetic: 1;
+        // check if allocated by hashtable
+        unsigned char from_ht: 1;
+        // check if value is temporary, can be discarded
+        unsigned char val_tmp: 1;
     } flags;
 
 } mementry;

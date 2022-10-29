@@ -21,7 +21,7 @@ mementry *_alloc_mementry() {
     ret->value = NULL;
     ret->flags =
         (struct s_mementry_flags) 
-        {.mutable = 0, .synthetic = 0, .value_synthetic = 0};
+        {.from_ht= 0,.val_tmp=0};
     return ret;
 }
 
@@ -366,7 +366,7 @@ static inline tableentry *_find(hashtable *table, char *key) {
     new_value->entry->value = NULL;
     new_value->entry->level = table->level;
     new_value->entry->flags = 
-        (struct s_mementry_flags) {.mutable=1, .synthetic=0, .value_synthetic=0};
+        (struct s_mementry_flags) {.from_ht=1, .val_tmp=0};
 
     // register entry in cache
     table->cache[hash % table->cache_size] = new_value;
@@ -397,7 +397,8 @@ void walk_table(hashtable *table, void (*callback)(tableentry *)) {
 }
 
 mementry *find(hashtable *table, char *key) {
-    char *next = key = strdup(key);
+    char *tst;
+    char *next = tst = key = strdup(key);
     char done = 0;
 
     mementry *ret = NULL;
@@ -417,7 +418,7 @@ mementry *find(hashtable *table, char *key) {
         ret = _find(table, key)->entry;
 
         if(done || ret == NULL)
-            return ret;
+            break;
 
         // just allocate it as as an object
         if(ret->type == UNDEFINED) {
@@ -426,7 +427,7 @@ mementry *find(hashtable *table, char *key) {
         }
 
         if(ret->type != OBJECT)
-            return ret;
+            break;
 
         // make the result the new parent object
         table = (hashtable *)ret->value;
@@ -434,6 +435,8 @@ mementry *find(hashtable *table, char *key) {
         // make sure to search for the child's key
         key = ++next;
     }
+    free(tst);
+    return ret;
 }
 
 void free_mementry(mementry *entry) {
