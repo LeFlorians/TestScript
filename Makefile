@@ -52,7 +52,7 @@ paper: clean paper.tex paper/bibliography.bib
 # target to generate mapop.c
 # requires gperf to be installed
 mapop:
-	gperf --output-file=./src//interpreter/mappings/mapop.c ./mapop.gperf
+	gperf --output-file=./src/interpreter/mappings/mapop.c ./mapop.gperf
 
 clean:
 	@rm -f -- *.toc *.aux *.run.xml *.log *.bcf \

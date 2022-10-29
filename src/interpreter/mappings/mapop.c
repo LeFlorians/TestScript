@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.1 */
-/* Command-line: gperf --output-file=./src//interpreter/mappings/mapop.c ./mapop.gperf  */
+/* Command-line: gperf --output-file=./src/interpreter/mappings/mapop.c ./mapop.gperf  */
 /* Computed positions: -k'1-2' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \

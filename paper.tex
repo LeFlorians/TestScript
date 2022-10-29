@@ -17,21 +17,50 @@
     {#1}{}
 }
 
+\definecolor{mygreen}{rgb}{0.3, 0.5, 0.2}
+\definecolor{myteal}{rgb}{0.1, 0.2, 0.3}
+\definecolor{myblue}{rgb}{0.2, 0.0, 0.6}
+\definecolor{mypink}{rgb}{0.8, 0.3, 0.6}
+\definecolor{myorange}{rgb}{0.7, 0.4, 0.1}
+
+% Use fancier hyperrefs
+\hypersetup{
+    colorlinks=true,
+    pdfborder={3 3 .2},
+    citecolor=mygreen,
+    linkcolor=myteal,
+    urlcolor=myblue,
+}
+
 % hyperref abbreviations
+\makeatletter
+\DeclareRobustCommand{\filename}[1]{%
+    \begingroup
+    \def\textendash{-}%
+    \filename@parse{#1}%
+    \edef\filename@base{\detokenize\expandafter{\filename@base}}%
+    \texttt{\filename@base.\filename@ext}%
+    \endgroup
+}
+\makeatother
 \newcommand{\hr}[2]{\hyperref[#2]{#1}}
-\newcommand{\hrc}[1]{\hyperref[#1]{#1}}
+\newcommand{\hrc}[1]{\hyperref[#1]{\filename{#1}}}
 
 % Read contents of files.txt into \files
 \CatchFileDef{\files}{paper/files.txt}{\endlinechar=-1}
 
 % Include C code from file #1 from lines #2 to #3
-\newcommand{\sourcecode}[3] {
-    \ver{
-    \lstset{basicstyle=\scriptsize,keywordstyle=\color{blue},stepnumber=5,
-        stringstyle=\color[rgb]{.3,.5,.1},commentstyle=\color{gray},
+\lstset{basicstyle=\scriptsize,keywordstyle=\color{myorange},stepnumber=5,
+        frame=none,keepspaces=false,
+        rulecolor=\color{black},tabsize=2,
+        stringstyle=\color{mygreen},commentstyle=\color{mypink},
+        morekeywords={NULL},
         morecomment=[l][\color{magenta}]{\#},
         postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}}
-    \lstinputlisting[language=C,numbers=left,breaklines=true,
+
+\newcommand{\sourcecode}[3] {
+    \ver{
+        \lstinputlisting[language=C,numbers=left,breaklines=true,
         frame=single,title=#1,firstnumber=#2,firstline=#2,lastline=#3]{#1}
     }
 }
@@ -40,13 +69,8 @@
     \ver{
 
     \begin{minipage}{\linewidth}
-
-    \lstset{basicstyle=\scriptsize,keywordstyle=\color{blue},stepnumber=5,
-        stringstyle=\color[rgb]{.3,.5,.1},commentstyle=\color{gray},
-        morecomment=[l][\color{magenta}]{\#},
-        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}}
     \lstinputlisting[language=C,numbers=left,breaklines=true,
-        frame=single,title=\hrc{#1},
+        frame=single,title=\hr{#1}{#1},
         firstnumber=#2,firstline=#2,lastline=#3]{#1}
 
     \end{minipage}
@@ -135,7 +159,10 @@
     This is an abstract...
 }
 
-\tableofcontents\newpage
+{
+    \hypersetup{hidelinks}
+    \tableofcontents\newpage
+}
 
 \section{Introduction}
 The importance of computers in today's world is unquestioned.
@@ -246,9 +273,9 @@ supports more languages than solely C. Substantiating the development process is
 the final executable program step-by-step from the project source code and directory clean-up.
 The C ecosystem is very easy to use on and fundamentally supported by 
 \emph{GNU+Linux}, the operating system used to program on.
-The code editor used was \emph{Microsoft Visual Studio Code}, providing great
-help with built-in git integration and auto-completion features.
-The tools \emph{Valgrind} and \emph{gdb}, the GNU Project Debugger were of great help
+The code editor used was \emph{Microsoft Visual Studio Code}.
+It has built-in git integration and auto-completion features.
+The tools \emph{Valgrind} and \emph{gdb}, the GNU Project Debugger, were of help
 when trying to find of errors and memory leaks, see section \ref{memleaks} for details.
 \emph{Git} is the project management and version tracking software used to back up and share
 the project files on \emph{GitHub.com}, a Microsoft hosted git repository and
@@ -306,55 +333,55 @@ are of no further importance regarding \name are depicted.
     \scriptsize\setlength{\DTbaselineskip}{7pt}
     \dirtree{%
         .1 project root.
-        .2 \hr{.gitignore}{.gitignore}.
-        .2 \hr{README.md}{README.md}.
-        .2 \hr{Makefile}{Makefile}.
-        .2 \hr{mapop.gperf}{mapop.gperf}.
+        .2 \hrc{.gitignore}.
+        .2 \hrc{README.md}.
+        .2 \hrc{Makefile}.
+        .2 \hrc{mapop.gperf}.
         .2 pseudocode.
-            .3 \hr{parser.c}{pseudocode/parser.c}.
+            .3 \hrc{pseudocode/parser.c}.
         .2 examples.
-            .3 \hr{mandelbrot.nts}{examples/mandelbrot.nts}.
-            .3 \hr{fibonacci.nts}{examples/fibonacci.nts}.
-            .3 \hr{exec.nts}{examples/exec.nts}.
+            .3 \hrc{examples/mandelbrot.nts}.
+            .3 \hrc{examples/fibonacci.nts}.
+            .3 \hrc{examples/exec.nts}.
         .2 src.
-            .3 \hr{main.c}{src/main.c}.
+            .3 \hrc{src/main.c}.
             .3 interpreter.
-                .4 \hr{bytecode.c}{src/interpreter/bytecode.c}.
-                .4 \hr{bytecode.h}{src/interpreter/bytecode.h}.
+                .4 \hrc{src/interpreter/bytecode.c}.
+                .4 \hrc{src/interpreter/bytecode.h}.
                 .4 error.
-                    .5 \hr{error.c}{src/interpreter/error/error.c}.
-                    .5 \hr{error.h}{src/interpreter/error/error.h}.
-                .4 \hr{interpreter.c}{src/interpreter/interpreter.c}.
-                .4 \hr{interpreter.h}{src/interpreter/interpreter.h}.
+                    .5 \hrc{src/interpreter/error/error.c}.
+                    .5 \hrc{src/interpreter/error/error.h}.
+                .4 \hrc{src/interpreter/interpreter.c}.
+                .4 \hrc{src/interpreter/interpreter.h}.
                 .4 libraries.
-                    .5 \hr{libraries.c}{src/interpreter/libraries/libraries.c}.
-                    .5 \hr{libraries.h}{src/interpreter/libraries/libraries.h}.
+                    .5 \hrc{src/interpreter/libraries/libraries.c}.
+                    .5 \hrc{src/interpreter/libraries/libraries.h}.
                     .5 stdlib.
-                        .6 \hr{stdlib.c}{src/interpreter/libraries/stdlib/stdlib.c}.
-                        .6 \hr{stdlib.h}{src/interpreter/libraries/stdlib/stdlib.h}.
-                .4 \hr{localizer.c}{src/interpreter/localizer.c}.
-                .4 \hr{localizer.h}{src/interpreter/localizer.h}.
+                        .6 \hrc{src/interpreter/libraries/stdlib/stdlib.c}.
+                        .6 \hrc{src/interpreter/libraries/stdlib/stdlib.h}.
+                .4 \hrc{src/interpreter/localizer.c}.
+                .4 \hrc{src/interpreter/localizer.h}.
                 .4 mappings.
-                    .5 \hr{operations.c}{src/interpreter/mappings/operations.c}.
-                    .5 \hr{operations.h}{src/interpreter/mappings/operations.h}.
-                    .5 \hr{mapop.c}{src/interpreter/mappings/mapop.c}.
-                    .5 \hr{mapop.h}{src/interpreter/mappings/mapop.h}.
+                    .5 \hrc{src/interpreter/mappings/operations.c}.
+                    .5 \hrc{src/interpreter/mappings/operations.h}.
+                    .5 \hrc{src/interpreter/mappings/mapop.c}.
+                    .5 \hrc{src/interpreter/mappings/mapop.h}.
                 .4 memory.
-                    .5 \hr{hashtable.c}{src/interpreter/memory/hashtable.c}.
-                    .5 \hr{hashtable.h}{src/interpreter/memory/hashtable.h}.
-                    .5 \hr{array.c}{src/interpreter/memory/array.c}.
-                    .5 \hr{array.h}{src/interpreter/memory/array.h}.
-                    .5 \hr{stack.c}{src/interpreter/memory/stack.c}.
-                    .5 \hr{stack.h}{src/interpreter/memory/stack.h}.
-                .4 \hr{parser.c}{src/interpreter/parser.c}.
-                .4 \hr{parser.h}{src/interpreter/parser.h}.
+                    .5 \hrc{src/interpreter/memory/hashtable.c}.
+                    .5 \hrc{src/interpreter/memory/hashtable.h}.
+                    .5 \hrc{src/interpreter/memory/array.c}.
+                    .5 \hrc{src/interpreter/memory/array.h}.
+                    .5 \hrc{src/interpreter/memory/stack.c}.
+                    .5 \hrc{src/interpreter/memory/stack.h}.
+                .4 \hrc{src/interpreter/parser.c}.
+                .4 \hrc{src/interpreter/parser.h}.
                 .4 processing.
-                    .5 \hr{implementations.c}{src/interpreter/processing/implementations.c}.
-                    .5 \hr{implementations.h}{src/interpreter/processing/implementations.h}.
-                .4 \hr{runtime.c}{src/interpreter/runtime.c}.
-                .4 \hr{runtime.h}{src/interpreter/runtime.h}.
-                .4 \hr{tokenizer.c}{src/interpreter/tokenizer.c}.
-                .4 \hr{tokenizer.h}{src/interpreter/tokenizer.h}.
+                    .5 \hrc{src/interpreter/processing/implementations.c}.
+                    .5 \hrc{src/interpreter/processing/implementations.h}.
+                .4 \hrc{src/interpreter/runtime.c}.
+                .4 \hrc{src/interpreter/runtime.h}.
+                .4 \hrc{src/interpreter/tokenizer.c}.
+                .4 \hrc{src/interpreter/tokenizer.h}.
     }
 \end{flushleft}}
 
@@ -399,8 +426,9 @@ file, here depicted as 'Interpreter', chains all stages together.
 This section will explain the process of constructing and the inner workings of
 the \name{} interpreter. It is therefore the most complicated and detailed section
 in this paper. Examples will be made with both pseudo code and actual source
-code from the project to further illustrate the decisions made during
-interpreter design. The file paths used are relative to the project's root directory.
+code from the project to show the decisions made during
+interpreter design. Only file names are used, as those are unique. To view the
+entire file path, look up the file names in the file tree on page \pageref{FileStructure}.
 
 The syntax of \name{} is not specified in a formal programming language grammar,
 but rather implemented from scratch in the files src/interpreter/tokenizer.c 
@@ -464,7 +492,7 @@ First, the \hrc{src/interpreter/interpreter.h} header file is included.
 The main function then decides whether to
 read a program from a file or from standard input. 
 At last, the function \emph{interpret}
-from the said included header is called with the selected input.
+from the included header is called with the selected input.
 
 \subsubsection{The Interpreter}
 This section deals with the file 
@@ -838,7 +866,7 @@ program's throughput using multi-threading, not having it at hand in \name{}
 is a major limitation.
 
 \subsubsection{Lack of a Development Environment}
-This is probably the greatest problem of \name{} and any new prorgramming
+This is probably the largest problem of \name{} and new programming
 languages in general.
 
 Most widely used programming languages not only consist
@@ -935,7 +963,11 @@ The entire source code of \name{} can be found in the Appendix, section \ref{App
 \renewcommand*{\bibfont}{\normalsize}
 \pagelabel{bibliography}\printbibliography[heading=none]
 
-\subsection{List of Figures}\listoffigures
+\subsection{List of Figures}
+{
+    \hypersetup{hidelinks}
+    \listoffigures
+}
 \vspace{1cm}
 Figure \ref{f_mandelbrot} was generated using a \name{} program, the source code
 can be found in the file \hrc{examples/mandelbrot.nts}.
@@ -945,7 +977,7 @@ on \url{https://app.diagrams.net}.
 
 \section{Declaration of Authenticity}
 Hereby I, Florian Donnelly, declare to have written this paper independently, 
-also including the entire source code of \name{} by myself using resources 
+also including the entire source code of \name{}, using resources 
 listed under the \emph{Bibliography} section on page \pageref{bibliography}.
 % TODO: check correctness of all file paths!! e.g. src/...
 
