@@ -221,15 +221,14 @@ void readtkn(cache *cache) {
             default:
                 // set type
                 dst->type = SYMBOL;
-                char last, check = 0;
 
                 // read all following punctuation characters
                 while (ispunct(cur) && cur != '\'' && cur != '"') {
-                    if(check && (last == '@' || cur == '@'))
+                    // check if cur is a bracket
+                    if(strrchr("(){}[]", cur))
                         break;
-                    *con++ = last = cur;
+                    *con++ = cur;
                     cur = next(cache);
-                    check = 1;
                 };
 
                 // push back last read character if not space
