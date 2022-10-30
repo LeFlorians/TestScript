@@ -58,5 +58,5 @@ mapop:
 clean:
 	@rm -f -- *.toc *.aux *.run.xml *.log *.bcf \
 		*.bbl *.blg *.out *.pdf *.tex.bbl *.tex.blg \
-		paper/files.txt *.lof \
+		paper/*.txt *.lof \
 		$(TARGET) $(TARGET).exe gmon.out $(call rwildcard,src/,*.o)

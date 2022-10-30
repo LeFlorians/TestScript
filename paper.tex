@@ -48,9 +48,7 @@
 
 % Read contents of files.txt into \files
 \CatchFileDef{\files}{paper/files.txt}{\endlinechar=-1}
-% Get current git hash
 \CatchFileDef{\githash}{paper/githash.txt}{\endlinechar=-1}
-
 
 % Include C code from file #1 from lines #2 to #3
 \lstset{basicstyle=\scriptsize,keywordstyle=\color{myorange},stepnumber=5,
@@ -75,8 +73,8 @@
     \lstinputlisting[language=C,numbers=left,breaklines=true,
         frame=single,title=\hr{#1}{#1},
         firstnumber=#2,firstline=#2,lastline=#3]{#1}
-
     \end{minipage}
+
     }
 }
 
@@ -163,18 +161,24 @@
     interperter. The goal is to learn about algorithms and techniques already
     popular in the industry, while still creating something unique.
 
+    \vfill
+    \centerline{\begin{minipage}{\linewidth}
 
+    The source code of the interpreter can also be found on GitHub: 
 
-    The source code of the interpreter can be found on GitHub at
     \url{https://github.com/LeFlorians/TestScript}.
 
+    The source code as of the latest commit before the submission of the paper
+    is available at:
 
-    The source code as of the latest commit before hand-in date of the paper
-    is available at
-    \url{https://github.com/LeFlorians/TestScript/tree/\githash{}}.
+    \url{https://github.com/LeFlorians/TestScript/tree/\githash}.
+
+    \end{minipage}}
+
 }
 
 {
+    \newpage
     \hypersetup{hidelinks}
     \tableofcontents\newpage
 }
@@ -355,8 +359,10 @@ are of no further importance regarding \name are depicted.
         .2 \hrc{mapop.gperf}.
         .2 pseudocode.
             .3 \hrc{pseudocode/pratt_parser.c}.
+            .3 \hrc{pseudocode/function.c}.
         .2 examples.
             .3 \hrc{examples/mandelbrot.nts}.
+            .3 \hrc{examples/montecarlo.nts}.
             .3 \hrc{examples/fibonacci.nts}.
             .3 \hrc{examples/exec.nts}.
         .2 src.
@@ -649,7 +655,7 @@ parser which is based on a Pratt-parser.
 This is only an example and not completely accurate to the actual parser used
 by this project.
 % TODO: validate code
-\code{pseudocode/pratt_parser.c}{1}{999}
+\code{pseudocode/pratt-parser.c}{1}{999}
 
 \subsubsection{The Bytecode Compiler}
 The bytecode compiler is an internal part of the interpreter, located in the file
@@ -1017,7 +1023,7 @@ to get an overview.
 
 % Append all soruce files
 \ver{
-\foreach \f in \files{\pagelabel{\f}\sourcecode{\f}{1}{9999}}
+\foreach \fname in \files{\pagelabel{\fname}\code{\fname}{1}{9999}}
 }
 
 \end{document}
