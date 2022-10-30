@@ -1,10 +1,8 @@
-// width and height in terminal (generally 8:20)
+// Width and Height in Terminal (generally 8:20)
 width = 150
 height = 40
 
-// square of the boundary that has to be crossed
-limit2 = 4
-// max number of iterations
+// Max Number of Iterations
 max_iter = 200
 
 plane_x = -3
@@ -12,7 +10,7 @@ plane_y = -2
 plane_width = 6  
 plane_height = 4
 
-// iteration function
+// Iterating Function
 cr,ci,zr,zi,iter,tr
 mandelbrot = {
     // initialize variables
@@ -39,14 +37,14 @@ mandelbrot = {
     (iter)
 }
 
-// function to map value to ASCII character
+// Function to map Numbers to ASCII Characters
 characters = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
 characters_len = std.len(characters)
 ascii = {
     characters[(std.floor(@[0] / max_iter * (characters_len - 1)))]
 }
 
-// iterate over all pixels
+// Iterate over all Pixels in the Terminal
 y = 0
 std.repeat({
     x = 0

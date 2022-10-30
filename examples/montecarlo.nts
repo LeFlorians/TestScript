@@ -1,7 +1,5 @@
-// Approximate pi with monte-carlo simulation
-println = {std.print(@[0])std.print("\n")}
-
-n_iter = 100000
+// Approximate Pi with a Monte Carlo Simulation
+n_iter = 1000000
 
 x;y;val;res;count=0;hits=0
 std.repeat({
@@ -17,4 +15,5 @@ std.repeat({
 std.print("In ")
 std.print(n_iter)
 std.print(" steps, pi was approximated to be ")
-println(4 * hits / n_iter)
+std.print(4 * hits / n_iter)
+std.print(".\n")

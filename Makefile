@@ -3,7 +3,7 @@ TARGET := TestScript
 TEST_INPUT = test.nts
 
 # general compiler flags
-CC := gcc
+CC := gcc -std=gnu18
 LIBS := -lm
 CFLAGS := -Wall -pg -Og -g -Wno-switch -Wno-return-type
 
@@ -43,7 +43,7 @@ paper_raw: paper
 
 paper: clean paper.tex paper/bibliography.bib
 	@(git ls-tree -r main --name-only |\
-		grep -E "\.h$$|\.c$$|\.nts$$|Makefile$$|\.gperf$$|.gitignore$$|\.md$$" |\
+		grep -E "\.h$$|\.c$$" |\
 		tr '\n' ',' | sed '$$s/,$$//' > paper/files.txt &&\
 		git rev-parse HEAD > paper/githash.txt &&\
 		pdflatex -jobname=$(JOBNAME) paper.tex && biber $(JOBNAME) &&\

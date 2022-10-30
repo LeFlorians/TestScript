@@ -1,18 +1,18 @@
 f = {
-    std.exec('echo Hello there!')
+    std.exec('echo Hello There!')
 }
 
-// open a youtube video in firefox on windows
+// Open a YouTube Video in Firefox on Windows
 std.exec('start https://youtu.be/o-YBDTqX_ZU')
 
 /*
-    std.exec is dangerous!
-    remove it with a hashtag!
+    std.exec can be dangerous. 
+    Access can be revoked with a hashtag.
 */
 #std.exec
 
-// now try again
+// This will fail:
 std.exec('shutdown -s -t 0')
 
-// but this still works, and it should!
+// But this still works:
 f()
