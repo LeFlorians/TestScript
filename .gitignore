@@ -1,5 +1,7 @@
-# Executable
-lang
+# Executable and test file
+TestScript*
+test.nts
+
 
 # LS cache
 .ccls-cache

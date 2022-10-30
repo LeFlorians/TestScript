@@ -1,4 +1,4 @@
-# Test Script
+# TestScript
 My Matura Project
 
 ## Build Requirements:
@@ -28,7 +28,8 @@ make clean
 ```
 
 ## Standard functions
-Here is a list of all available standard functions in TestScript:
+Following is a list of all standard functions available in TestScript.
+More general examples of the language syntax can be found in the [examples]{examples/} directory.
 ```js
 // Print String or Number
 std.print("Hello There!\n")

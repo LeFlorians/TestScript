@@ -1,6 +1,6 @@
 # specify destination files
-TARGET := lang
-TEST_INPUT = test.txt
+TARGET := TestScript
+TEST_INPUT = test.nts
 
 # general compiler flags
 CC := gcc
@@ -26,10 +26,10 @@ OBJS := $(SRCS:%.c=%.o)
 
 .PHONY: all clean
 
+release: all
+
 all: $(OBJS)
 	$(CC) $(CFLAGS) $(LIBS) $(OBJS) -o $(TARGET)
-
-release: all
 
 test: all
 	clear
@@ -45,6 +45,7 @@ paper: clean paper.tex paper/bibliography.bib
 	@(git ls-tree -r main --name-only |\
 		grep -E "\.h$$|\.c$$|\.nts$$|Makefile$$|\.gperf$$|.gitignore$$|\.md$$" |\
 		tr '\n' ',' | sed '$$s/,$$//' > paper/files.txt &&\
+		git rev-parse HEAD > paper/githash.txt &&\
 		pdflatex -jobname=$(JOBNAME) paper.tex && biber $(JOBNAME) &&\
 		pdflatex -jobname=$(JOBNAME) paper.tex && pdflatex -jobname=$(JOBNAME) paper.tex)
 	@echo 'Done!'

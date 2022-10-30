@@ -48,6 +48,9 @@
 
 % Read contents of files.txt into \files
 \CatchFileDef{\files}{paper/files.txt}{\endlinechar=-1}
+% Get current git hash
+\CatchFileDef{\githash}{paper/githash.txt}{\endlinechar=-1}
+
 
 % Include C code from file #1 from lines #2 to #3
 \lstset{basicstyle=\scriptsize,keywordstyle=\color{myorange},stepnumber=5,
@@ -156,7 +159,19 @@
 \normalsize
 
 \abstract{
-    This is an abstract...
+    This paper is about creating a programming language and an accompanying
+    interperter. The goal is to learn about algorithms and techniques already
+    popular in the industry, while still creating something unique.
+
+
+
+    The source code of the interpreter can be found on GitHub at
+    \url{https://github.com/LeFlorians/TestScript}.
+
+
+    The source code as of the latest commit before hand-in date of the paper
+    is available at
+    \url{https://github.com/LeFlorians/TestScript/tree/\githash{}}.
 }
 
 {
@@ -171,8 +186,9 @@ but would be unusable without any software running on them.
 Creating programs, no matter if games, web browsers or even operating systems,
 involve the use of programming languages.
 Those serve as a bridge between the human mind and its imagination, and
-the capabilities of computer hardware and are a huge time-saver when compared
+the capabilities of computer hardware, and are a huge time-saver when compared
 to writing machine-native code, i.e. not using a programming language.
+
 By making use of just the term \emph{language} this paper will refer to programming
 languages specifically. Sources are mentioned after cohesive paragraphs in
 square brackets, an index can be found in the \emph{Bibliography} on page
@@ -187,7 +203,7 @@ A programming language is itself only a description or specification, i.e. a
 set of grammar rules defining how single instructions and entire programs
 can be written. Source code, which is a program written in a certain language,
 has to be understood by the computer hardware in order to run. It can either
-be translated to machine-native bytecode with the help of a compiler, or
+be translated to machine-native code with the help of a compiler, or
 read line-by-line and interpreted by another program known as interpreter.
 Such compilers or interpreters are programs on their own that are classified
 as programming language implementation. The focus of this paper will be to
@@ -216,7 +232,7 @@ the interpreter of \name{} will be written in.
 \section{Theory}
 \subsection{Different Types of Interpreters}
 In computing, there are several types of interpreters that behave differently.
-Here are some examples and their use-cases:
+Here are a few examples and their use-cases:
 \begin{itemize}
     \item \emph{Just in time Compiler.} JIT-compilers blur the line between
         classical interpreters and compilers. As the name suggests, code is
@@ -269,8 +285,8 @@ At the heart of making any project in the C programming language
 stands the C compiler. This project uses
 \emph{gcc}, the GNU Compiler Collection, which, as the name suggests, also 
 supports more languages than solely C. Substantiating the development process is 
-\emph{GNU Make}, a general-purpose build system. It handles tasks like building
-the final executable program step-by-step from the project source code and directory clean-up.
+\emph{GNU Make}, a general-purpose build system. It simplifies repetitive tasks,
+removing the need to write and remember long build commands.
 The C ecosystem is very easy to use on and fundamentally supported by 
 \emph{GNU+Linux}, the operating system used to program on.
 The code editor used was \emph{Microsoft Visual Studio Code}.
@@ -338,7 +354,7 @@ are of no further importance regarding \name are depicted.
         .2 \hrc{Makefile}.
         .2 \hrc{mapop.gperf}.
         .2 pseudocode.
-            .3 \hrc{pseudocode/parser.c}.
+            .3 \hrc{pseudocode/pratt_parser.c}.
         .2 examples.
             .3 \hrc{examples/mandelbrot.nts}.
             .3 \hrc{examples/fibonacci.nts}.
@@ -397,11 +413,25 @@ available to other source or header files. The actual implementations or
 variable values are stored in the respective .c files.
 % TODO:explain C compilation or link example, fix hash citation below
 
-% TODO: say sth about README.md and expand it
+% TODO: say sth about README.md and expand it, makefile
+The file named \hrc{Makefile} carries information for the program \emph{GNU make}.
+It contains built targets, which are specifications on how to build and compile
+the C source code down to the final executable interpreter. 
+These build targets contain shell commands, which would otherwise have to be
+typed out in their entirety every time the project should be built. 
+[\cte{makefile_tutorial}]
 
-The file mapop.gperf is also a source file. It is used in conjunction with the GNU gperf
+A short guide on how to build the \name{} interpreter can be found in 
+the file \hrc{README.md}. The file name is spelled in capital letters by convention.
+It tells users about
+which programs have to be preinstalled to compile the project and which \emph{GNU make}
+commands are used to build or clean up the project.
+It also contains some information about all the available standard library
+functions that are included.
+
+The file \hrc{mapop.gperf} is also a source file. It is used in conjunction with the GNU gperf
 tool. The tool creates a perfect hash function, which is output to the file
-src/interpreter/mappings/mapop.c. The perfect hash function is used to translate
+\hrc{src/interpreter/mappings/mapop.c}. The perfect hash function is used to translate
 single- or multi-character symbols, such as '!=' and '+', to their respective
 interpreter internal representation in constant time.
 [\cte{c_compilation}, \cte{gperf}]
@@ -526,7 +556,6 @@ before, is instead converted
 to an intermediate internal bytecode format by \hrc{src/interpreter/bytecode.c}.
 This step is done so that code that is run multiple times does not have
 the problem of time overhead when traversing the syntax tree.
-
 The final step is to process or execute said bytecode. This step is performed
 in \hrc{src/interpreter/runtime.c}.
 
@@ -620,7 +649,7 @@ parser which is based on a Pratt-parser.
 This is only an example and not completely accurate to the actual parser used
 by this project.
 % TODO: validate code
-\code{pseudocode/parser.c}{1}{999}
+\code{pseudocode/pratt_parser.c}{1}{999}
 
 \subsubsection{The Bytecode Compiler}
 The bytecode compiler is an internal part of the interpreter, located in the file
@@ -632,10 +661,10 @@ has to be run several times. Compared to
 having to walk along tree nodes recursively, reading the list of instructions in
 the bytecode takes less time overall. 
 
-Not to be confused with machine-native bytecode, the bytecode compiler in \name{}
+Not to be confused with machine-native code, the bytecode compiler in \name{}
 generates byte-sequences in an internal format that are then interpreted. A
 Just-In-Time compiler, JIT compiler for short, would instead compile the AST 
-down to machine-native bytecode, which
+down to machine-native code, which
 runs directly on the system's hardware and does not have to be interpreted.
 
 To generate the bytecode, \name{} recursively reads through the

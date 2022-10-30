@@ -23,8 +23,8 @@
 struct s_op;
 
 %%
-++\   OP_INCR,    POSTFIX, LTR, 14    /*  Increment                 */
---\   OP_DECR,    POSTFIX, LTR, 14    /*  Decrement                 */
+++\   OP_INCR,    PREFIX,  LTR, 14    /*  Increment                 */
+--\   OP_DECR,    PREFIX,  LTR, 14    /*  Decrement                 */
 !\    OP_LNOT,    PREFIX,  RTL, 13    /*  Logical NOT               */
 @\    OP_ARGS,    PREFIX,  RTL, 13    /*  Function args (special)   */
 ~\    OP_BNOT,    PREFIX,  RTL, 13    /*  Bitwise NOT               */
@@ -45,10 +45,7 @@ struct s_op;
 &&\   OP_LAND,    INFIX,   LTR, 5     /*  Logical AND               */
 ||\   OP_LOR,     INFIX,   LTR, 4     /*  Logical OR                */
 =\    OP_ASS,     INFIX,   RTL, 3     /*  Assign                    */
-:\    OP_HARDSET, INFIX,   RTL, 3     /*  Set in current scope      */
-->\   OP_LAMBDA,  INFIX,   RTL, 3     /*  Lambda declaration        */
 ,\    OP_LIST,    INFIX,   LTR, 2     /*  List                      */
-;\    OP_END,     POSTFIX, RTL, 1     /*  Semicolon; end expression */
 %%
 
 operator *mapop(char *expr) {
@@ -56,9 +53,8 @@ operator *mapop(char *expr) {
 }
 
 operator *mappreop(char *expr) {
+    // remap unary operators
     static operator virt[] = {
-        {"++_",      OP_PREINCR, PREFIX, RTL, 9},
-        {"--_",      OP_PREDECR, PREFIX, RTL, 9},
         {"+_",       OP_POS,     PREFIX, RTL, 9},
         {"-_",       OP_NEG,     PREFIX, RTL, 9},
     };
@@ -67,17 +63,11 @@ operator *mappreop(char *expr) {
 
     if(ret != 0) {
         switch(ret->opcode) {
-            case OP_INCR:
+            case OP_ADD:
                 ret = &virt[0];
                 break;
-            case OP_DECR:
-                ret = &virt[1];
-                break;
-            case OP_ADD:
-                ret = &virt[2];
-                break;
             case OP_SUB:
-                ret = &virt[3];
+                ret = &virt[1];
             default: break;
         }
     }
