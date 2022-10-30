@@ -172,7 +172,7 @@
     popular in the industry while still creating something unique.
     The paper will explain the tools and procedures used to implement
     the different entities that make up an interpreter. 
-    The interpreter is written in plain C in the gnu18 dialect with
+    The interpreter is written in plain C in the gnu18 dialect, with
     the only library used being libc, the C standard library.
 
     \vfill
@@ -228,11 +228,11 @@ set of grammar rules defining how single instructions and entire programs
 can be written. Source code, which is a program written in a certain language,
 has to be understood by the computer hardware in order to run. It can either
 be translated to machine-native code with the help of a compiler, or
-read line-by-line and interpreted by another program known as interpreter.
+read line-by-line and interpreted by another program known as an interpreter.
 Such compilers or interpreters are programs on their own that are classified
 as programming language implementation. The focus of this paper will be to
-create such a programming language implementation, more specific an interpreter
-of the custom-made \name{} language.
+create such a programming language implementation,or more specific, an interpreter
+of the custom-designed \name{} language.
 
 \subsection{Goals}
 The focus of this project is learning about the internal design of interpreters
@@ -286,20 +286,20 @@ Here are a few examples and their use-cases:
         language they themselves are written in. This requires a program
         written in another language running an interpreter for the wanted
         language, in which runs another interpreted for and written in said
-        language. Using a host language to initiate such system is called
+        language. Using a host language to initiate such a system is called
         bootstrapping.
 
         Self-interpreters are closely related to self-hosting compilers. These
-        are in turn compilers which are written in the language they compile.
+        are compilers written in the language they compile.
         An example of a compiler written in itself is rustc, the Rust
         compiler, which was bootstrapped by the OCaml language.
 \end{itemize}
 [Source \cte{interpreters}]
 
 This paper will implement a mixture form of an AST compiler and bytecode
-interpreter. The advantage is that an AST carries along lots of information
-not needed in later stages of interpretation which can be discarded. The AST
-is converted to an intermediary bytecode format which only contains
+interpreter. This has benefits, as an AST carries along lots of information
+that is not needed in later stages of interpretation and can be discarded.
+The AST is converted to an intermediary bytecode format which only contains
 necessary information about the program. Such bytecode can then be cached,
 e.g. kept in memory, meaning it only has to be converted once and can be
 used many times, also leading to a performance benefit.
@@ -335,8 +335,8 @@ human written and -readable text, called source code, and follow the instruction
 it proposes.
 Most interpreters follow a plain scheme to go about this problem, but the
 actual implementation of each of the steps can be heavily customized.
-Here is the problem, broken down into three steps as commonly done in other
-popular programming languages:
+Here is a possible approach on implementing an interpreter, broken
+down into three steps:
 \begin{enumerate}\pagelabel{simple_interpreter}
     \item To create meaningful groups of characters from the input string. This
         process is known as tokenization and is done with the component called
@@ -487,7 +487,7 @@ file, here depicted as 'Interpreter', chains all stages together.
 \subsection{Implementing \name{}}
 This section will explain the process of constructing and the inner workings of
 the \name{} interpreter. It is therefore the most complicated and detailed section
-in this paper. Examples will be made with both pseudo code, i.e. code for
+in this paper. Examples will be made with both pseudocode, i.e. code for
 illustration purposes, and actual, working source
 code from the project to show the decisions made during
 interpreter design. Only file names are used, as those are unique. To view the
@@ -513,7 +513,7 @@ as an example:
         code. %TODO: add src (Preprocessor)
 
         The most common preprocessor instructions are the following.
-        On one hand there is \expr{\#include $<$header.h$>$}
+        On one hand, there is \expr{\#include $<$header.h$>$}
         to include various definitions from a header file, i.e. to paste
         its content at where the 'include' statement lies.
         On the other hand exists \expr{\#define A B} used to
@@ -533,7 +533,7 @@ as an example:
         which, in the case of the example above, prints out the value of the \emph{argc} argument.
 
     \item \emph{Pointers.} Pointers are variables that store memory addresses. 
-        In C syntax they can be defined with the star '*' symbol.
+        In C syntax they can be defined with the star (*) symbol.
         An example from \hrc{src/main.c} is \expr{FILE *input;.} That means that \emph{input} is not
         actually a FILE, but rather a memory address pointing to a spot in memory where a FILE is.
         To dereference the pointer, i.e. to copy the value stored
@@ -575,9 +575,9 @@ bytecode compilation has a performance benefit.
 The mapping is achieved with a custom hash table data structure with average time
 complexity of O(log n), n being the total amount of variables a \name{} program is using.
 The hash table implementation used in \hrc{src/interpreter/memory/hashtable.c}                   % TODO: maybe its own paragraph! interpolation search vs binary search
-uses binary search to locate elements variable-sized arrays in the hashtable's buckets.
-This is because for such few variables that are used in a standard \name{} program,
-an interpolation search algorithm is actually slower.
+uses binary search to locate elements variable-sized arrays in the hash table's buckets.
+This is because for such few variables as are used in a standard \name{} program,
+an interpolation search algorithm actually performs worse.
 For collision detection, i.e. to circumvent problems arising when two variable names have the
 same hash, a technique called separate chaining is used. In this approach, linked lists with
 key-value pairs are used for each array index of the buckets and variable names are compared directly
@@ -610,7 +610,7 @@ to the tokenizer implementation of this paper:
 \end{enumerate}
 FIELD type tokens are later replaced by REFERENCE tokens, effectively mapping
 variable names to addresses in memory.
-SYMBOL type tokens are mapped to operators such as plus or minux by \hrc{src/implementation/mappings/mapop.c}
+SYMBOL type tokens are mapped to operators such as plus or minus by \hrc{src/implementation/mappings/mapop.c}
 during parsing. NUMBER type tokens are replaced by an actual number type, which
 is C's 'long double' type as specified in \hrc{src/interpreter/bytecode.h}.
 
@@ -644,7 +644,7 @@ The syntax tree in the implementation of \name{} is a binary tree consisting of 
 called \emph{stnode}. The datatype is defined in the header file \hrc{src/interpreter/parser.h}.
 Each node can either be an internal node having one or two nodes as children, or a leaf node
 which stands for a value, e.g. a number or a text. Each internal node, also known as parent node, signifies
-an operation done on its children. This can be an addition of two numbers for example. 
+an operation done on its children. This can be for example the addition of two numbers. 
 
 The difficult part of implementing a parser is precedence. Precedence together
 with associativity define the order of execution of statements. A simple example
@@ -656,7 +656,7 @@ left-to-right associative, meaning the stated expression is the same as
 \emph{(20/10)/2} and not as \emph{20/(10/2)}. Both precedence 
 and associativity are properties that are defined in the file \hrc{mapop.gpref} for
 each operator.
-In the end the parse tree contains all values and 
+In the end, the parse tree contains all values and 
 operations as well as information about the order of execution.
 
 The parser implementation in \hrc{src/interpreter/parser.c} may be difficult to
@@ -666,10 +666,10 @@ read and understand, which is why the most important functions are explained her
     \item \emph{secondary.} This function reads tokens that will become the leaf nodes
         of the parse tree.
         It deals with simple values that make up the start of an expression, such as numbers,
-        fields, strings and it handles brackets. 
+        fields, strings, and it handles brackets. 
         In addition, it can handle prefix operators, such as the unary plus or unary minus.
-    \item \emph{expr.} The \emph{expr} function calls \emph{secondary} whose result acts
-        as the basis for a new expression. It then repeatedly checks
+    \item \emph{expr.} The \emph{expr} function calls \emph{secondary}, the result of which
+        acts as the basis for a new expression. It then repeatedly checks
         if an operator follows the secondary token and creates the syntax-tree
         with help of recursive mechanisms. The nature of this function also 
         removes the need for semicolons,
@@ -679,7 +679,7 @@ read and understand, which is why the most important functions are explained her
 \end{itemize}
 
 \centerline{\begin{minipage}{\linewidth}
-Following is a piece of pseudo code to better illustrate the inner workings of the
+Following is a piece of pseudocode to better illustrate the inner workings of the
 parser which is based on a Pratt-Parser. 
 This is only an example and not completely accurate to the actual parser used
 by this project.
@@ -753,10 +753,10 @@ example of \name{}'s bytecode notation and how it is evaluated:
         \expr{\emph{(4 * 3) - 6}.}
         The question arises, how can an algorithm compute the result of this
         calculation? The answer is recursion.
-    \item The interpreter will read through the bytecode from left to right. First it will
+    \item The interpreter will read through the bytecode from left to right. First, it will
         notice the subtraction operator and accordingly assume that two
         operands must follow.
-    \item The function recursively calls itself in order to evaluate the
+    \item The function then recursively calls itself in order to evaluate the
         right operand and notice the 6, a value and a leaf node in the parse tree. 
         The function simply returns the 6 to the subtraction expression.
     \item Again, the function calls itself to find the next operand.
@@ -812,11 +812,11 @@ of the Fibonacci sequence, as well as a dissection of how that same code is inte
     Remember, the equals sign stands for an assignment, not an
     equation. First, \emph{a} is assigned the sum of \emph{a} and \emph{b}. Then 
     \emph{b} is set to be the new \emph{a} minus \emph{b}, 
-    which is in turn the same as \emph{a} before the reassignment on line 7.
+    which is again the same as \emph{a} before the reassignment on line 7.
 \item On lines 10 and 11, the standard library function \emph{std.print} is used
     to print out the value of a and a line break. The backslash in the text
     that is print out signifies a so-called escape sequence and will be replaced with
-    piece of text that can not be entered directly. The \emph{n} stands
+    another piece of text that can not be entered directly. The \emph{n} stands
     for a line break, but other letters such as a \emph{t} for a tabulator are possible.
 \item Lastly, line 13 contains another calculation in which the variable \emph{count}
     is decremented by one. Since this is the last instruction in the inner function,
@@ -934,7 +934,7 @@ of a language specification and a compiler or interpreter, but of many more
 tools that surround them.
 Such tools can include a package-manager, with which people around the world
 can share code. Examples would be \emph{npm} or \emph{cargo}, 
-the 'Node Package Manager' for JavaScript applications and and Rust's package 
+the 'Node Package Manager' for JavaScript applications and Rust's package 
 manager respectively.
 Another example of a helpful tool is a debugger, helping developers
 find the cause of errors, so-called bugs, in their programs.
@@ -944,9 +944,9 @@ project to find errors in the \name{} implementation.
 
 On the other hand, having to deal with countless package-managers for each
 language can be annoying for developers. A solution is to build upon and
-extend already existing languages and their tools with e.g. a new syntax.
+extend already existing languages and their tools with for example a new syntax.
 This is exactly what Kotlin does. Kotlin can produce Java Virtual Machine
-compatible bytecode, can be transcompiled, e.g. translated, into
+compatible bytecode, can be transcompiled, i.e. translated, into
 JavaScript, or ECMAScript 5.1 to be more specific,
 and it can be compiled to machine-native programs via LLVM. 
 [Source \cte{kotlin_compile}]
@@ -974,7 +974,7 @@ be run with the standard library \emph{ctypes}.
 Foreign function interfaces are specially difficult to implement, or implement
 right. Let us assume a programming language interpreter \name{} written in C that
 would like to call some functions that are part of yet another C program or
-library. The problem lies in the fact that at runtime, C does not know
+library. The problem lies in the fact that at runtime, C does not know the
 structure of the functions to be called, say return- or argument-types, which
 is by the way where the term foreign functions originates from. This is why the
 \name{} developer would have to provide that information by re-declaring the
@@ -1004,7 +1004,7 @@ had to be planned and commented strictly, not to get lost in the complex web
 of source code later on. The final product is a success, a working interpreter
 hosting a custom programming language that can run human-readable programs.
 Most parts of the source code are annotated with comments, giving interested
-reader direct explanations of what is going on.
+readers direct explanations of what is going on.
 Although there are several limitations and shortcomings as stated in section \ref{Limitations}
 of this paper, the details of the implementation brought about unexpected 
 problems and solutions. The goal of this project to learn about 
