@@ -56,7 +56,7 @@ std.repeat({
         x = x + 1
         (x < width)
     })
-    std.print("\n")  
+    std.print("\n")
     y = y + 1
     (y < height)
 })

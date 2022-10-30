@@ -33,14 +33,9 @@ mementry *_bxor(opargs *args);
 mementry *_bor(opargs *args);
 mementry *_land(opargs *args);
 mementry *_lor(opargs *args);
-mementry *_lambda(opargs *args);
 mementry *_ass(opargs *args);
-mementry *_hardset(opargs *args);
 mementry *_list(opargs *args);
-mementry *_end(opargs *args);
 
-mementry *_preincr(opargs *args);
-mementry *_predecr(opargs *args);
 mementry *_pos(opargs *args);
 mementry *_neg(opargs *args);
 

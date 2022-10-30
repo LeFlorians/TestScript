@@ -314,10 +314,6 @@ mementry *_land(opargs *args){ CALCULATE(a && b) }
 
 mementry *_lor(opargs *args){ CALCULATE(a || b) }
 
-mementry *_lambda(opargs *args){
-
-}
-
 mementry *_ass(opargs *args){
     mementry *src = _recursiveprocess(args, 0); // Load right operand into src
     mementry *dst = _recursiveprocess(args, 0); // Load left operand into dst
@@ -362,10 +358,6 @@ mementry *_ass(opargs *args){
     return dst;
 }
 
-mementry *_hardset(opargs *args) {
-    // not implemented 
-}
-
 mementry *_list(opargs *args){
     mementry *right = _recursiveprocess(args, DEREFERENCE);
     mementry *left = _recursiveprocess(args, DEREFERENCE);
@@ -403,16 +395,6 @@ mementry *_list(opargs *args){
         ret->value = arr;
         return ret;
     }
-}
-
-mementry *_end(opargs *args){
-}
-
-
-mementry *_preincr(opargs *args){
-}
-
-mementry *_predecr(opargs *args){
 }
 
 mementry *_pos(opargs *args){

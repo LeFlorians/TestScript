@@ -1,6 +1,6 @@
 /* ANSI-C code produced by gperf version 3.1 */
 /* Command-line: gperf --output-file=./src/interpreter/mappings/mapop.c ./mapop.gperf  */
-/* Computed positions: -k'1-2' */
+/* Computed positions: -k'1' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
       && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
@@ -45,12 +45,12 @@
 #line 23 "./mapop.gperf"
 struct s_op;
 
-#define TOTAL_KEYWORDS 26
+#define TOTAL_KEYWORDS 23
 #define MIN_WORD_LENGTH 1
 #define MAX_WORD_LENGTH 2
 #define MIN_HASH_VALUE 1
-#define MAX_HASH_VALUE 62
-/* maximum key range = 62, duplicates = 0 */
+#define MAX_HASH_VALUE 32
+/* maximum key range = 32, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -64,45 +64,34 @@ hash (register const char *str, register size_t len)
 {
   static unsigned char asso_values[] =
     {
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63,  8, 63, 63, 63, 14, 30, 63,
-      63, 63, 31, 25, 26,  5, 63,  6, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 28, 23,
-       3,  0, 15, 63, 18, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 13, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 20, 63, 10, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
-      63, 63, 63, 63, 63, 63
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33,  3, 33, 33, 33, 14, 30, 33,
+      33, 33,  9, 25, 28, 20, 33, 23, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      15, 10,  5, 33, 18, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 13, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33,  0, 33,  8, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+      33, 33, 33, 33, 33, 33
     };
-  register unsigned int hval = len;
-
-  switch (hval)
-    {
-      default:
-        hval += asso_values[(unsigned char)str[1]];
-      /*FALLTHROUGH*/
-      case 1:
-        hval += asso_values[(unsigned char)str[0]];
-        break;
-    }
-  return hval;
+  return len + asso_values[(unsigned char)str[0]];
 }
 
 struct s_op *
@@ -111,68 +100,59 @@ lookup (register const char *str, register size_t len)
   static struct s_op wordlist[] =
     {
       {""},
-#line 47 "./mapop.gperf"
-      {"=",    OP_ASS,     INFIX,   RTL, 3     /*  Assign                    */},
-#line 40 "./mapop.gperf"
-      {"==",   OP_EQU,     INFIX,   LTR, 9     /*  Equals                    */},
-      {""},
-#line 36 "./mapop.gperf"
-      {"<",    OP_LET,     INFIX,   LTR, 10    /*  Less Than                 */},
-#line 37 "./mapop.gperf"
-      {"<=",   OP_LEQ,     INFIX,   LTR, 10    /*  Less than or equal to     */},
-#line 35 "./mapop.gperf"
-      {"-",    OP_SUB,     INFIX,   LTR, 11    /*  Subtract                  */},
-#line 32 "./mapop.gperf"
-      {"/",    OP_DIV,     INFIX,   LTR, 12    /*  Divide                    */},
+#line 44 "./mapop.gperf"
+      {"|",    OP_BOR,     INFIX,   LTR, 6     /*  Bitwise OR                */},
+#line 46 "./mapop.gperf"
+      {"||",   OP_LOR,     INFIX,   LTR, 4     /*  Logical OR                */},
       {""},
 #line 28 "./mapop.gperf"
       {"!",    OP_LNOT,    PREFIX,  RTL, 13    /*  Logical NOT               */},
 #line 41 "./mapop.gperf"
       {"!=",   OP_NEQU,    INFIX,   LTR, 9     /*  Not Equals                */},
-#line 30 "./mapop.gperf"
-      {"~",    OP_BNOT,    PREFIX,  RTL, 13    /*  Bitwise NOT               */},
-#line 27 "./mapop.gperf"
-      {"--",   OP_DECR,    POSTFIX, LTR, 14    /*  Decrement                 */},
-      {""},
-#line 43 "./mapop.gperf"
-      {"^",    OP_BXOR,    INFIX,   LTR, 7     /*  Bitwise XOR               */},
-#line 33 "./mapop.gperf"
-      {"%",  OP_MOD,     INFIX,   LTR, 12    /*  Modulo                    */},
 #line 38 "./mapop.gperf"
       {">",    OP_GRT,     INFIX,   LTR, 10    /*  Greater than              */},
 #line 39 "./mapop.gperf"
       {">=",   OP_GEQ,     INFIX,   LTR, 10    /*  Greater than or equal to  */},
       {""},
+#line 30 "./mapop.gperf"
+      {"~",    OP_BNOT,    PREFIX,  RTL, 13    /*  Bitwise NOT               */},
+#line 31 "./mapop.gperf"
+      {"*",    OP_MUL,     INFIX,   LTR, 12    /*  Multiply                  */},
+#line 47 "./mapop.gperf"
+      {"=",    OP_ASS,     INFIX,   RTL, 3     /*  Assign                    */},
+#line 40 "./mapop.gperf"
+      {"==",   OP_EQU,     INFIX,   LTR, 9     /*  Equals                    */},
+      {""},
+#line 43 "./mapop.gperf"
+      {"^",    OP_BXOR,    INFIX,   LTR, 7     /*  Bitwise XOR               */},
+#line 33 "./mapop.gperf"
+      {"%",  OP_MOD,     INFIX,   LTR, 12    /*  Modulo                    */},
+#line 36 "./mapop.gperf"
+      {"<",    OP_LET,     INFIX,   LTR, 10    /*  Less Than                 */},
+#line 37 "./mapop.gperf"
+      {"<=",   OP_LEQ,     INFIX,   LTR, 10    /*  Less than or equal to     */},
+      {""},
 #line 29 "./mapop.gperf"
       {"@",    OP_ARGS,    PREFIX,  RTL, 13    /*  Function args (special)   */},
       {""},
-#line 44 "./mapop.gperf"
-      {"|",    OP_BOR,     INFIX,   LTR, 6     /*  Bitwise OR                */},
-#line 49 "./mapop.gperf"
-      {"->",   OP_LAMBDA,  INFIX,   RTL, 3     /*  Lambda declaration        */},
+#line 35 "./mapop.gperf"
+      {"-",    OP_SUB,     INFIX,   LTR, 11    /*  Subtract                  */},
+#line 27 "./mapop.gperf"
+      {"--",   OP_DECR,    PREFIX,  LTR, 14    /*  Decrement                 */},
       {""},
-#line 51 "./mapop.gperf"
-      {";",    OP_END,     POSTFIX, RTL, 1     /*  Semicolon; end expression */},
+#line 32 "./mapop.gperf"
+      {"/",    OP_DIV,     INFIX,   LTR, 12    /*  Divide                    */},
       {""},
 #line 34 "./mapop.gperf"
       {"+",    OP_ADD,     INFIX,   LTR, 11    /*  Add                       */},
-#line 50 "./mapop.gperf"
-      {",",    OP_LIST,    INFIX,   LTR, 2     /*  List                      */},
+#line 26 "./mapop.gperf"
+      {"++",   OP_INCR,    PREFIX,  LTR, 14    /*  Increment                 */},
       {""},
 #line 48 "./mapop.gperf"
-      {":",    OP_HARDSET, INFIX,   RTL, 3     /*  Set in current scope      */},
+      {",",    OP_LIST,    INFIX,   LTR, 2     /*  List                      */},
       {""},
 #line 42 "./mapop.gperf"
       {"&",    OP_BAND,    INFIX,   LTR, 8     /*  Bitwise AND               */},
-#line 31 "./mapop.gperf"
-      {"*",    OP_MUL,     INFIX,   LTR, 12    /*  Multiply                  */},
-      {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""},
-#line 46 "./mapop.gperf"
-      {"||",   OP_LOR,     INFIX,   LTR, 4     /*  Logical OR                */},
-      {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""},
-#line 26 "./mapop.gperf"
-      {"++",   OP_INCR,    POSTFIX, LTR, 14    /*  Increment                 */},
-      {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""},
 #line 45 "./mapop.gperf"
       {"&&",   OP_LAND,    INFIX,   LTR, 5     /*  Logical AND               */}
     };
@@ -191,7 +171,7 @@ lookup (register const char *str, register size_t len)
     }
   return 0;
 }
-#line 52 "./mapop.gperf"
+#line 49 "./mapop.gperf"
 
 
 operator *mapop(char *expr) {
@@ -199,9 +179,8 @@ operator *mapop(char *expr) {
 }
 
 operator *mappreop(char *expr) {
+    // remap unary operators
     static operator virt[] = {
-        {"++_",      OP_PREINCR, PREFIX, RTL, 9},
-        {"--_",      OP_PREDECR, PREFIX, RTL, 9},
         {"+_",       OP_POS,     PREFIX, RTL, 9},
         {"-_",       OP_NEG,     PREFIX, RTL, 9},
     };
@@ -210,17 +189,11 @@ operator *mappreop(char *expr) {
 
     if(ret != 0) {
         switch(ret->opcode) {
-            case OP_INCR:
+            case OP_ADD:
                 ret = &virt[0];
                 break;
-            case OP_DECR:
-                ret = &virt[1];
-                break;
-            case OP_ADD:
-                ret = &virt[2];
-                break;
             case OP_SUB:
-                ret = &virt[3];
+                ret = &virt[1];
             default: break;
         }
     }

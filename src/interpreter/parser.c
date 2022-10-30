@@ -117,11 +117,12 @@ stnode *expr(cache *cache, unsigned char rbp) {
     repeat:
 
     if(cache->cur->type == SYMBOL) {
-        operator *op;
+        operator *op = 0;
         stnode *new;
 
         while(
             cache->cur->type == SYMBOL &&
+            cache->cur->content[0] != ';' &&
             (op = mapop(cache->cur->content)) != 0 &&
             op->precedence > rbp
         ) {
@@ -136,15 +137,15 @@ stnode *expr(cache *cache, unsigned char rbp) {
                 new->data.parent.right = expr(cache, op->precedence - op->associativity);
             } else {
                 new->data.parent.right = NULL;
-
-                // return on semicolon
-                if(op->opcode == OP_END)
-                    return left;
             }
 
             left = new;
         }
         if(op == 0) {
+            // return on semicolon (without advance!)
+            if(cache->cur->content[0] == ';')
+                return left;
+
             // free already allocated nodes
             free_stnode(left);
             
@@ -218,6 +219,11 @@ stnode *expr(cache *cache, unsigned char rbp) {
 stnode *secondary(cache *cache, unsigned char rbp){
     // declare node to return
     stnode *ret = NULL;
+
+    // clear left-over semicolon
+    if(cache->cur->type == SYMBOL && cache->cur->content[0] == ';')
+        advance(cache);
+
 
     switch(cache->cur->type) {
         case BRACKET:
@@ -349,6 +355,7 @@ stnode *secondary(cache *cache, unsigned char rbp){
             }
 
             if(ret->data.parent.op->position != PREFIX) {
+                printf("got operator %s which is not prefix\n", cache->cur->content);
                 throw(EP_EXPECTED_PREFIX_OPERATOR, &cache->info);
                 
                 ret->type = FILE_END;

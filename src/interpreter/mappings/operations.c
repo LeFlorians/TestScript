@@ -30,14 +30,9 @@ operation implementationof(opcode code) {
             [OP_BOR]       = _bor,
             [OP_LAND]      = _land,
             [OP_LOR]       = _lor,
-            [OP_LAMBDA]    = _lambda,
             [OP_ASS]       = _ass,
-            [OP_HARDSET]   = _hardset,
             [OP_LIST]      = _list,
-            [OP_END]       = _end,
 
-            [OP_PREINCR]   = _preincr,
-            [OP_PREDECR]   = _predecr,
             [OP_POS]       = _pos,
             [OP_NEG]       = _neg,
 

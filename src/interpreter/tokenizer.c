@@ -223,11 +223,17 @@ void readtkn(cache *cache) {
                 dst->type = SYMBOL;
 
                 // read all following punctuation characters
-                while (ispunct(cur) && cur != '\'' && cur != '"') {
-                    // check if cur is a bracket
-                    if(strrchr("(){}[]", cur))
-                        break;
+                while (ispunct(cur) 
+                        && cur != '\'' && cur != '"' 
+                        && !strrchr("(){}[]", cur)) {
                     *con++ = cur;
+
+                    // break on semicolon
+                    if(cur == ';'){
+                        cur = 0;
+                        break;
+                    }
+
                     cur = next(cache);
                 };
 
