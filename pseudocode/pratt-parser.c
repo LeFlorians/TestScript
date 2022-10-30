@@ -1,36 +1,27 @@
-// implement functions
 stnode* parse() {
-    // just call expr
-    return expr(0);
+    return expr(0); // parse is a wrapper function for expr
 }
 
 stnode *expr(int precedence) {
-    // read secondary
-    stnode *left = secondary();
+    stnode *left = secondary(); // Generate a secondary node
     stnode *ret = left;
 
-    // reached end of file
-    if(left == NULL)
-        return NULL;
+    if(left == NULL) return NULL; // Reached the end of the source code
 
     token next;
     while(precedence_of(next = peek_token()) > precedence 
             && next.type == SYMBOL) {
-        // allocate a new node
-        ret = allocate_stnode(EXPR);
-        ret->left_child = sec;
+        ret = allocate_stnode(EXPR); // Allocate a new node
+        ret->left_child = left;
         ret->right_child = expr(presedence_of(next) - associativity_of(next));
         ret->operator = operator_of_token(next);
 
-        // throw away token
-        next = next_token();
-
-        sec = ret;
+        next = advance(); // Throw away the token, request a new one
+        left = ret;
     }
     return ret;
 }
 
 stnode *secondary() {
-    // dealing with brackets left out, see full source code...
-    return stnode_from(next_token()); 
+    return stnode_from(advance());  // See the full source code for details
 }
