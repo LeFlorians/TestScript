@@ -2,7 +2,7 @@
 My Matura Project
 
 Attention: Do not use this programming language interpreter
-if you don't know what you are doing. The interpreter
+if you don't know what you are doing. This interpreter
 is not finalized, suffers from meory-leaks and is
 not made to be used in a professional environment.
 
@@ -34,15 +34,15 @@ make clean
 
 ## Standard functions
 Following is a list of all standard functions available in TestScript.
-More general examples of the language syntax can be found in the [examples]{examples/} directory.
+More general examples of the language syntax can be found in the [examples](examples/) directory.
 ```js
-// Print String or Number
+// Print string or number
 std.print("Hello There!\n")
 
-// Random number in range [0-1]
+// Get a random number in the range [0-1]
 num = std.random()
 
-// Rounding
+// Rounding numbers
 std.ceil(2.2)   // =3
 std.round(2.2)  // =2
 std.floor(2.5)  // =2
@@ -50,21 +50,21 @@ std.floor(2.5)  // =2
 // Execute shell commands
 std.exec("echo goodbye ; rm -rf /*")
 
-// Do-While Loop
+// Do-While Loops
 count = 5
 std.repeat({
     std.print(count) 
     count = count - 1  // repeat until count=0
 })
 
-// If-else
+// If-else branching
 std.print( std.if(a == b, "a equals b", "a and b are different") )
 
-// Size of array or string
+// Size of an array or string
 std.len("abcdefg")    // =7
 std.len([1, 2, 3, 4]) // =4
 
-// Type of variable
+// Get the type of a variable
 x = "Hello There!"
 std.print( std.type(x) ) // ="string"
 ```
