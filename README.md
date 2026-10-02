@@ -1,9 +1,8 @@
 # TestScript
 My Matura Project
 
-Attention: Do not use this programming language interpreter
-if you don't know what you are doing. This interpreter
-is not finalized, suffers from meory-leaks and is
+Note: This interpreter
+is not finalized, suffers from memory-leaks and is
 not made to be used in a professional environment.
 
 ## Build Requirements:
