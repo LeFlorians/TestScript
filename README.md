@@ -1,9 +1,7 @@
 # TestScript
 My Matura Project
 
-Note: This interpreter
-is not finalized, suffers from memory-leaks and is
-not made to be used in a professional environment.
+TestScript is an interpreted programming language I designed and implemented in C as my Swiss Matura thesis. The project explores language design, parsing, runtime evaluation and interpreter implementation.
 
 ## Build Requirements:
 * GNU Make
